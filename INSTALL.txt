@@ -1,0 +1,102 @@
+Gitea MCP Server v0.9.2
+=======================
+
+Installation Instructions
+-------------------------
+
+This package contains the pre-built Gitea MCP Server.
+
+Directory Structure:
+  dist/          - Compiled JavaScript files
+  README.md      - Full documentation
+  package.json   - Package metadata
+  INSTALL.txt    - This file
+
+Configuration:
+--------------
+
+1. For Claude Desktop:
+   Edit: ~/Library/Application Support/Claude/claude_desktop_config.json (macOS)
+         ~/.config/Claude/claude_desktop_config.json (Linux)
+         %APPDATA%/Claude/claude_desktop_config.json (Windows)
+
+   Add this configuration:
+   {
+     "mcpServers": {
+       "gitea-service": {
+         "command": "node",
+         "args": ["<installation_path>/dist/index.js"],
+         "env": {
+           "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+           "GITEA_API_TOKEN": "your_token_here"
+         }
+       }
+     }
+   }
+
+2. For Claude CLI:
+   Edit: ~/.config/claude/mcp_config.json
+
+   Same configuration format as above.
+
+3. For VSCode (Cline):
+   Edit: .vscode/settings.json
+
+   {
+     "cline.mcpServers": {
+       "gitea-service": {
+         "command": "node",
+         "args": ["<installation_path>/dist/index.js"],
+         "env": {
+           "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+           "GITEA_API_TOKEN": "your_token_here"
+         }
+       }
+     }
+   }
+
+4. For Cursor:
+   Edit: ~/Library/Application Support/Cursor/User/settings.json (macOS)
+         ~/.config/Cursor/User/settings.json (Linux)
+         %APPDATA%/Cursor/User/settings.json (Windows)
+
+   Same format as VSCode.
+
+5. For Windsurf:
+   Edit: ~/Library/Application Support/Windsurf/User/settings.json (macOS)
+         ~/.config/Windsurf/User/settings.json (Linux)
+         %APPDATA%/Windsurf/User/settings.json (Windows)
+
+   Same format as VSCode.
+
+Environment Variables:
+----------------------
+
+GITEA_BASE_URL     - Your Gitea server URL (required)
+GITEA_API_TOKEN    - Your Gitea API token (required)
+
+Requirements:
+-------------
+
+- Node.js 20.0.0 or higher
+
+Quick Start:
+------------
+
+1. Extract this package to ~/.gitea-mcp (or your preferred location)
+2. Configure your MCP client using the examples above
+3. Replace <installation_path> with the actual path
+4. Set your GITEA_BASE_URL and GITEA_API_TOKEN
+5. Restart your MCP client
+
+Documentation:
+--------------
+
+For complete documentation, see README.md or visit:
+https://gitea.ktyun.cc/Kysion/entai-gitea-mcp
+
+Support:
+--------
+
+Report issues at:
+https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues
