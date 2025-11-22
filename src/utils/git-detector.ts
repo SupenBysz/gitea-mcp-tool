@@ -78,10 +78,12 @@ export function detectGitInfo(projectPath: string = process.cwd()): GitInfo {
         result.owner = parsed.owner;
         result.repo = parsed.repo;
         result.repoPath = `${parsed.owner}/${parsed.repo}`;
+      } else {
+        console.warn(`Failed to parse Git remote URL: ${remoteUrl}`);
       }
     } catch (error) {
       // Git remote not configured
-      console.debug('Git remote not configured');
+      console.warn('Git remote not configured:', error);
     }
 
     return result;
@@ -103,14 +105,20 @@ export function parseGitRemoteUrl(remoteUrl: string): {
 } | null {
   try {
     // Remove .git suffix
-    let url = remoteUrl.replace(/\.git$/, '');
+    let url = remoteUrl.trim().replace(/\.git$/, '');
 
-    // SSH format: git@gitea.ktyun.cc:Kysion/entai-gitea-mcp
-    const sshMatch = url.match(/^git@([^:]+):(.+)$/);
+    // SSH format: git@gitea.ktyun.cc:Kysion/entai-gitea-mcp or gitea@gitea.ktyun.cc:Kysion/entai-gitea-mcp
+    // Match any username before @ (commonly 'git' or 'gitea')
+    const sshMatch = url.match(/^[^@]+@([^:]+):(.+)$/);
     if (sshMatch) {
       const host = sshMatch[1];
       const repoPath = sshMatch[2];
       const [owner, repo] = repoPath.split('/');
+
+      if (!owner || !repo) {
+        console.warn(`Invalid repo path: ${repoPath}`);
+        return null;
+      }
 
       return {
         serverUrl: `https://${host}`,
