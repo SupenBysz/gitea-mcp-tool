@@ -47,12 +47,12 @@ Claude：
 当用户要求创建带标签的 issue 时：
 
 1. 使用 WebFetch 调用 POST /api/v1/repos/{owner}/{repo}/issues
-   - URL: http://10.16.72.101:3008/api/v1/repos/kysion/test/issues
+   - URL: https://gitea.ktyun.cc/api/v1/repos/kysion/test/issues
    - Headers: Authorization: token 0e0e61b4f6927e54e55f2edc08d8db4b77256db3
    - Body: { "title": "...", "body": "..." }
 
 2. 使用 WebFetch 调用 POST /api/v1/repos/{owner}/{repo}/issues/{index}/labels
-   - URL: http://10.16.72.101:3008/api/v1/repos/kysion/test/issues/123/labels
+   - URL: https://gitea.ktyun.cc/api/v1/repos/kysion/test/issues/123/labels
    - Headers: Authorization: token 0e0e61b4f6927e54e55f2edc08d8db4b77256db3
    - Body: { "labels": [1, 5] }
 
@@ -69,7 +69,7 @@ Claude：
 ```
 用户：创建一个 Bug 修复的 issue，添加 bug 和 urgent 标签
 Claude：
-1. WebFetch POST http://10.16.72.101:3008/api/v1/repos/kysion/test/issues
+1. WebFetch POST https://gitea.ktyun.cc/api/v1/repos/kysion/test/issues
    Headers: { Authorization: "token 0e0e61b4..." }
    Body: { title: "Bug修复", body: "..." }
 
@@ -77,10 +77,10 @@ Claude：
    - Token 从哪里来？硬编码？
    - kysion/test 从哪里来？每次都要问用户？
 
-2. WebFetch GET http://10.16.72.101:3008/api/v1/repos/kysion/test/labels
+2. WebFetch GET https://gitea.ktyun.cc/api/v1/repos/kysion/test/labels
    找到 "bug"=1, "urgent"=5
 
-3. WebFetch POST http://10.16.72.101:3008/api/v1/repos/kysion/test/issues/123/labels
+3. WebFetch POST https://gitea.ktyun.cc/api/v1/repos/kysion/test/issues/123/labels
    Headers: { Authorization: "token 0e0e61b4..." }
    Body: { labels: [1, 5] }
 ```
@@ -132,7 +132,7 @@ Authorization: token 0e0e61b4f6927e54e55f2edc08d8db4b77256db3
 
 ### 问题 2：环境切换
 
-**场景：** 本地开发用 localhost:3000，生产用 10.16.72.101:3008
+**场景：** 本地开发用 localhost:3000，生产用 gitea.ktyun.cc
 
 **MCP Tools:**
 ```bash
@@ -141,7 +141,7 @@ GITEA_BASE_URL=http://localhost:3000
 GITEA_API_TOKEN=dev_token
 
 # 生产环境 .env.prod
-GITEA_BASE_URL=http://10.16.72.101:3008
+GITEA_BASE_URL=https://gitea.ktyun.cc
 GITEA_API_TOKEN=prod_token
 
 # 切换环境只需换配置文件
@@ -150,7 +150,7 @@ GITEA_API_TOKEN=prod_token
 **直接调用 API:**
 ```markdown
 # 每个 skill 都硬编码了 URL
-POST http://10.16.72.101:3008/api/v1/...
+POST https://gitea.ktyun.cc/api/v1/...
 
 # 切换环境需要：
 # 1. 全局搜索替换所有 URL

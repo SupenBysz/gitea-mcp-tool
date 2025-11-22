@@ -57,8 +57,8 @@ Gitea API 的 MCP（Model Context Protocol）协议适配器，让 AI 助手（C
 
 ```bash
 # 克隆仓库
-git clone http://10.16.72.101:3008/Kysion/KysionAiStack.git
-cd KysionAiStack/packages/gitea-service-mcp
+git clone https://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
+cd entai-gitea-mcp
 
 # 安装依赖
 pnpm install
@@ -75,7 +75,7 @@ pnpm build
 
 ```bash
 # Gitea 服务器配置（必填）
-GITEA_BASE_URL=http://10.16.72.101:3008
+GITEA_BASE_URL=https://gitea.ktyun.cc
 
 # 认证配置（二选一）
 # 方式 1: API Token（推荐）
@@ -116,10 +116,10 @@ GITEA_TIMEOUT=30000
         "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token_here",
         "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "KysionAiStack"
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
       }
     }
   }
@@ -139,7 +139,7 @@ GITEA_TIMEOUT=30000
         "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token_here"
       }
     }
@@ -161,7 +161,7 @@ GITEA_TIMEOUT=30000
         "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token_here"
       }
     }
@@ -579,7 +579,7 @@ gitea-service-mcp/
 
 ## 🐛 问题反馈
 
-请在 [Gitea Issue](http://10.16.72.101:3008/Kysion/KysionAiStack/issues) 中提交问题。
+请在 [Gitea Issue](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues) 中提交问题。
 
 ## 📄 许可证
 

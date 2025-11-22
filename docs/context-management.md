@@ -63,7 +63,7 @@ gitea_project_get()
 
 ```bash
 # 基础配置（必填）
-GITEA_BASE_URL=http://10.16.72.101:3008
+GITEA_BASE_URL=https://gitea.ktyun.cc
 GITEA_API_TOKEN=your_token_here
 
 # 默认上下文（可选）
@@ -81,7 +81,7 @@ GITEA_DEFAULT_PROJECT=5
       "command": "npx",
       "args": ["-y", "@kysion/gitea-service-mcp"],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token",
         "GITEA_DEFAULT_OWNER": "kysion",
         "GITEA_DEFAULT_REPO": "test",

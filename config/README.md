@@ -17,7 +17,7 @@
 
 | 环境变量 | 说明 | 示例 |
 |---------|------|------|
-| `GITEA_BASE_URL` | Gitea 服务器地址 | `http://10.16.72.101:3008` |
+| `GITEA_BASE_URL` | Gitea 服务器地址 | `https://gitea.ktyun.cc` |
 
 ### 认证配置（二选一）
 
@@ -64,7 +64,7 @@ API Token 认证更安全，支持细粒度权限控制，推荐在生产环境�
 #### 2. 配置 Token
 
 ```bash
-GITEA_BASE_URL=http://10.16.72.101:3008
+GITEA_BASE_URL=https://gitea.ktyun.cc
 GITEA_API_TOKEN=your_generated_token_here
 ```
 
@@ -73,7 +73,7 @@ GITEA_API_TOKEN=your_generated_token_here
 用户名密码认证简单直接，适合开发测试环境。
 
 ```bash
-GITEA_BASE_URL=http://10.16.72.101:3008
+GITEA_BASE_URL=https://gitea.ktyun.cc
 GITEA_USERNAME=your_username
 GITEA_PASSWORD=your_password
 ```
@@ -100,10 +100,10 @@ GITEA_PASSWORD=your_password
         "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token_here",
         "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "KysionAiStack",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp",
         "LOG_LEVEL": "info",
         "NODE_ENV": "production"
       }
@@ -123,7 +123,7 @@ GITEA_PASSWORD=your_password
         "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token_here"
       }
     }
@@ -148,10 +148,10 @@ GITEA_PASSWORD=your_password
         "${workspaceFolder}/packages/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "${env:GITEA_API_TOKEN}",
         "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "KysionAiStack"
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
       }
     }
   }
@@ -169,7 +169,7 @@ GITEA_PASSWORD=your_password
         "/absolute/path/to/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_USERNAME": "your_username",
         "GITEA_PASSWORD": "your_password"
       }
@@ -192,10 +192,10 @@ GITEA_PASSWORD=your_password
         "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
       ],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token_here",
         "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "KysionAiStack",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp",
         "LOG_LEVEL": "info"
       }
     }
@@ -361,10 +361,10 @@ gitea_repo_get(owner="OtherOwner", repo="OtherRepo")
       "command": "node",
       "args": ["/path/to/gitea-service-mcp/dist/index.js"],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "${env:GITEA_API_TOKEN}",
         "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "KysionAiStack",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp",
         "LOG_LEVEL": "warn",
         "NODE_ENV": "production",
         "GITEA_TIMEOUT": "30000"
@@ -383,11 +383,11 @@ gitea_repo_get(owner="OtherOwner", repo="OtherRepo")
       "command": "node",
       "args": ["${workspaceFolder}/packages/gitea-service-mcp/dist/index.js"],
       "env": {
-        "GITEA_BASE_URL": "http://10.16.72.101:3008",
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_USERNAME": "dev-user",
         "GITEA_PASSWORD": "dev-password",
         "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "KysionAiStack",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp",
         "LOG_LEVEL": "debug",
         "NODE_ENV": "development"
       }
@@ -402,7 +402,7 @@ gitea_repo_get(owner="OtherOwner", repo="OtherRepo")
 
 1. 查看 [主文档](../README.md)
 2. 查看 [设计文档](../../../docs/modules/gitea-service-mcp/DESIGN.md)
-3. 提交 [Issue](http://10.16.72.101:3008/Kysion/KysionAiStack/issues)
+3. 提交 [Issue](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues)
 
 ---
 

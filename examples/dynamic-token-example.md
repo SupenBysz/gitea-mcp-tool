@@ -8,7 +8,7 @@
 // 场景：个人开发，使用配置文件中的 token
 
 // .env 文件
-GITEA_BASE_URL=http://10.16.72.101:3008
+GITEA_BASE_URL=https://gitea.ktyun.cc
 GITEA_API_TOKEN=your_personal_token
 
 // 调用时不需要传 token

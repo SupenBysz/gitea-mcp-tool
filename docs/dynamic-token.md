@@ -16,7 +16,7 @@ Gitea MCP 从 v0.8.0 开始支持**动态指定 API Token**，这意味着：
 在 `.env` 配置文件中设置：
 
 ```bash
-GITEA_BASE_URL=http://10.16.72.101:3008
+GITEA_BASE_URL=https://gitea.ktyun.cc
 GITEA_API_TOKEN=your_default_token_here
 ```
 
