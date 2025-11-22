@@ -1,6 +1,6 @@
 {
   "name": "@kysion/gitea-service-mcp",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "Universal MCP Server for Gitea - 通用 MCP 服务器，支持 Claude Desktop、Cline、Continue 等所有符合 MCP 规范的客户端访问 Gitea API",
   "type": "module",
   "main": "./dist/index.js",
