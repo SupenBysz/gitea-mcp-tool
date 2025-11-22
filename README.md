@@ -1,105 +1,105 @@
 # Gitea Service MCP Server
 
-Gitea API 的 MCP（Model Context Protocol）协议适配器，让 AI 助手（Claude Desktop、Cline、Continue 等）能够直接操作 Gitea 仓库、Issue、Pull Request 等。
+MCP (Model Context Protocol) adapter for Gitea API, enabling AI assistants (Claude Desktop, Cline, Continue) to interact with Gitea repositories, issues, and pull requests.
 
-## ✨ 功能特性
+## Features
 
-### 🎯 当前版本: v0.8.1
+### Current Version: v0.8.1
 
-提供 **46 个工具**，涵盖 Gitea 核心功能的完整操作：
+Provides 46 tools covering Gitea core functionality:
 
-- ✅ **配置初始化** (2个工具) 🆕
-  - 交互式配置向导，自动检测 Git 仓库信息
-  - 多语言支持（中文/英文）
-  - 全局和项目级配置管理
-  - Token 多种创建方式和安全存储
+**Configuration & Initialization** (3 tools)
+- Interactive configuration wizard with Git repository auto-detection
+- Multi-language support (English/Chinese)
+- Global and project-level configuration management
+- Multiple token creation methods with secure storage
 
-- ✅ **上下文管理** (3个工具)
-  - 设置默认 owner 和 repo，简化后续操作
-  - 自动从环境变量加载默认上下文
-  - 获取当前认证用户信息
+**Context Management** (3 tools)
+- Default owner and repository configuration
+- Automatic context loading from environment variables
+- Current user information retrieval
 
-- ✅ **仓库管理** (5个工具)
-  - 创建、查询、列表、删除、搜索仓库
-  - 支持私有仓库、自动初始化等高级选项
+**Repository Management** (5 tools)
+- Create, query, list, delete, and search repositories
+- Private repository support with auto-initialization
 
-- ✅ **Issue 管理** (6个工具)
-  - 创建、更新、评论、关闭 Issue
-  - 支持标签、里程碑、指派人等功能
-  - 列表查询和搜索
+**Issue Management** (6 tools)
+- Create, update, comment, and close issues
+- Support for labels, milestones, and assignees
+- List and search functionality
 
-- ✅ **Pull Request 管理** (6个工具)
-  - 创建、更新、合并、审查 PR
-  - 支持多种合并策略（merge、rebase、squash）
-  - PR 列表和详情查询
+**Pull Request Management** (6 tools)
+- Create, update, merge, and review PRs
+- Multiple merge strategies (merge, rebase, squash)
+- PR listing and details retrieval
 
-- ✅ **Project 看板管理** (7个工具)
-  - 创建、更新、删除项目看板
-  - 管理看板列（columns）
-  - 支持看板状态管理
+**Project Board Management** (7 tools)
+- Create, update, and delete project boards
+- Column management
+- Board state management
 
-- ✅ **Milestone 里程碑管理** (5个工具)
-  - 创建、查询、更新、删除里程碑
-  - 支持截止日期设置
-  - 查询里程碑统计信息
+**Milestone Management** (5 tools)
+- Create, query, update, and delete milestones
+- Due date configuration
+- Milestone statistics
 
-- ✅ **用户/组织管理** (4个工具)
-  - 查询用户信息和组织
-  - 列出组织成员
-  - 用户组织关系管理
+**User & Organization Management** (4 tools)
+- User and organization information queries
+- Organization member listing
+- User-organization relationship management
 
-- ✅ **Wiki 管理** (8个工具) 🆕
-  - 创建、查询、更新、删除 Wiki 页面
-  - 查看页面修订历史
-  - 获取特定版本的页面内容
-  - 搜索 Wiki 页面
+**Wiki Management** (8 tools)
+- Create, query, update, and delete Wiki pages
+- Page revision history
+- Specific version content retrieval
+- Wiki page search
 
-### 🔐 认证支持
+### Authentication
 
-- API Token 认证（推荐）
-- Username + Password 认证
+- API Token authentication (recommended)
+- Username + Password authentication
 
-## 📦 安装
+## Installation
 
 ```bash
-# 克隆仓库
+# Clone repository
 git clone https://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
 cd entai-gitea-mcp
 
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 构建
+# Build
 pnpm build
 ```
 
-## 🚀 快速开始
+## Quick Start
 
-### 方式一：使用初始化向导 🆕（推荐）
+### Method 1: Using Configuration Wizard (Recommended)
 
-运行交互式配置向导，自动完成配置：
+Run the interactive configuration wizard:
 
 ```bash
-# 在 Claude Desktop 中直接使用工具
+# In Claude Desktop, use the tool directly
 gitea_mcp_init
 
-# 或者使用语言切换工具
-gitea_mcp_language_set({ locale: "zh-CN" })  # 切换到中文
-gitea_mcp_language_get()  # 查看当前语言设置
+# Switch language if needed
+gitea_mcp_language_set({ locale: "zh-CN" })  # Switch to Chinese
+gitea_mcp_language_get()  # Check current language
 ```
 
-初始化向导提供：
-- ✅ **自动检测** Git 仓库信息（服务器、所有者、仓库名）
-- ✅ **多种认证方式** 创建 Token（用户名密码、手动输入、环境变量）
-- ✅ **灵活配置存储** 全局配置 + 项目配置 + 本地配置
-- ✅ **多语言支持** 中文和英文界面
-- ✅ **Token 缓存** 自动管理和复用 Token
+The wizard provides:
+- Git repository information auto-detection (server, owner, repository)
+- Multiple token creation methods (username/password, manual input, environment variable)
+- Flexible configuration storage (global + project + local)
+- Multi-language interface (Chinese and English)
+- Automatic token management and reuse
 
-> 📖 详细使用说明请参考：[初始化系统文档](./docs/initialization.md)
+See [Initialization Documentation](./docs/initialization.md) for details.
 
-### 方式二：手动配置环境变量
+### Method 2: Manual Environment Configuration
 
-创建 `.env` 文件（或在 MCP 客户端配置中设置环境变量）：
+Create `.env` file or set environment variables in MCP client configuration:
 
 ```bash
 # Gitea 服务器配置（必填）
@@ -129,11 +129,13 @@ GITEA_TIMEOUT=30000
 3. 点击 **生成新令牌**
 4. 复制令牌并设置到 `GITEA_API_TOKEN`
 
-### 3. 配置 MCP 客户端
+### 3. Configure MCP Client
 
 #### Claude Desktop
 
-编辑 `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+**Configuration Example** (replace `/path/to/gitea-mcp` with your actual project directory):
 
 ```json
 {
@@ -141,7 +143,7 @@ GITEA_TIMEOUT=30000
     "gitea-service": {
       "command": "node",
       "args": [
-        "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
+        "/path/to/gitea-mcp/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -156,7 +158,9 @@ GITEA_TIMEOUT=30000
 
 #### Cline (VSCode)
 
-编辑 `.vscode/settings.json`:
+Edit `.vscode/settings.json`:
+
+**Configuration Example** (replace `/path/to/gitea-mcp` with your actual project directory):
 
 ```json
 {
@@ -164,7 +168,7 @@ GITEA_TIMEOUT=30000
     "gitea-service": {
       "command": "node",
       "args": [
-        "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
+        "/path/to/gitea-mcp/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -177,7 +181,9 @@ GITEA_TIMEOUT=30000
 
 #### Continue (VSCode/JetBrains)
 
-编辑 `~/.continue/config.json`:
+Edit `~/.continue/config.json`:
+
+**Configuration Example** (replace `/path/to/gitea-mcp` with your actual project directory):
 
 ```json
 {
@@ -186,7 +192,7 @@ GITEA_TIMEOUT=30000
       "name": "gitea-service",
       "command": "node",
       "args": [
-        "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
+        "/path/to/gitea-mcp/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -197,9 +203,9 @@ GITEA_TIMEOUT=30000
 }
 ```
 
-### 4. 重启客户端
+### 4. Restart Client
 
-重启 Claude Desktop / VSCode，MCP Server 将自动启动。
+Restart Claude Desktop or VSCode to activate the MCP server.
 
 ## 🔧 可用工具
 
