@@ -25,6 +25,17 @@ REPO_OWNER="Kysion"
 REPO_NAME="entai-gitea-mcp"
 INSTALL_DIR="${HOME}/.gitea-mcp"
 
+# Check for authentication token (required for private repositories)
+check_auth() {
+    if [ -z "$GITEA_API_TOKEN" ]; then
+        log_warn "GITEA_API_TOKEN not set. If this is a private repository, download may fail."
+        log_info "To authenticate, set: export GITEA_API_TOKEN=your_token_here"
+        echo ""
+    else
+        log_info "Using authenticated access"
+    fi
+}
+
 # Get latest release version
 get_latest_version() {
     log_info "Fetching latest release version..."
@@ -32,18 +43,32 @@ get_latest_version() {
     # Try Gitea API
     local api_url="${GITEA_URL}/api/v1/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
 
+    # Build auth header if token is available
+    local auth_header=""
+    if [ -n "$GITEA_API_TOKEN" ]; then
+        auth_header="Authorization: token ${GITEA_API_TOKEN}"
+    fi
+
     if command_exists curl; then
-        VERSION=$(curl -s "${api_url}" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        if [ -n "$auth_header" ]; then
+            VERSION=$(curl -s -H "${auth_header}" "${api_url}" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        else
+            VERSION=$(curl -s "${api_url}" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        fi
     elif command_exists wget; then
-        VERSION=$(wget -qO- "${api_url}" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        if [ -n "$auth_header" ]; then
+            VERSION=$(wget -qO- --header="${auth_header}" "${api_url}" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        else
+            VERSION=$(wget -qO- "${api_url}" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        fi
     else
         log_error "Neither curl nor wget is available"
         exit 1
     fi
 
     if [ -z "$VERSION" ]; then
-        log_warn "Could not fetch latest version from API, using default: v0.8.1"
-        VERSION="v0.8.1"
+        log_warn "Could not fetch latest version from API, using default: v0.9.0"
+        VERSION="v0.9.0"
     fi
 
     log_info "Latest version: ${VERSION}"
@@ -79,18 +104,42 @@ download_release() {
 
     local temp_file="/tmp/${package_name}"
 
+    # Build auth header if token is available
+    local auth_header=""
+    if [ -n "$GITEA_API_TOKEN" ]; then
+        auth_header="Authorization: token ${GITEA_API_TOKEN}"
+    fi
+
     if command_exists curl; then
-        curl -L -o "${temp_file}" "${download_url}" || {
-            log_error "Download failed"
-            log_info "Please check: ${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases"
-            exit 1
-        }
+        if [ -n "$auth_header" ]; then
+            curl -L -H "${auth_header}" -o "${temp_file}" "${download_url}" || {
+                log_error "Download failed"
+                log_info "Please check: ${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases"
+                log_info "For private repositories, ensure GITEA_API_TOKEN is set correctly"
+                exit 1
+            }
+        else
+            curl -L -o "${temp_file}" "${download_url}" || {
+                log_error "Download failed"
+                log_info "Please check: ${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases"
+                exit 1
+            }
+        fi
     elif command_exists wget; then
-        wget -O "${temp_file}" "${download_url}" || {
-            log_error "Download failed"
-            log_info "Please check: ${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases"
-            exit 1
-        }
+        if [ -n "$auth_header" ]; then
+            wget --header="${auth_header}" -O "${temp_file}" "${download_url}" || {
+                log_error "Download failed"
+                log_info "Please check: ${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases"
+                log_info "For private repositories, ensure GITEA_API_TOKEN is set correctly"
+                exit 1
+            }
+        else
+            wget -O "${temp_file}" "${download_url}" || {
+                log_error "Download failed"
+                log_info "Please check: ${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases"
+                exit 1
+            }
+        fi
     fi
 
     TEMP_FILE="${temp_file}"
@@ -183,6 +232,7 @@ main() {
     log_info "=========================================="
     echo ""
 
+    check_auth
     get_latest_version
     check_node
     download_release
