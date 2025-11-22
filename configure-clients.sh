@@ -420,14 +420,33 @@ main() {
     check_jq
 
     # 获取配置信息
-    if [ -z "$GITEA_API_TOKEN" ]; then
-        echo ""
-        read -p "请输入 Gitea API Token: " GITEA_API_TOKEN
+    echo ""
+    log_info "配置参数设置"
+    echo ""
+
+    # 获取 Gitea 服务器地址
+    if [ -n "$GITEA_BASE_URL" ]; then
+        read -p "Gitea 服务器地址 [${GITEA_BASE_URL}]: " input_url
+        GITEA_BASE_URL="${input_url:-$GITEA_BASE_URL}"
+    else
+        read -p "Gitea 服务器地址 [https://gitea.ktyun.cc]: " input_url
+        GITEA_BASE_URL="${input_url:-https://gitea.ktyun.cc}"
     fi
 
-    if [ -z "$GITEA_BASE_URL" ]; then
-        read -p "请输入 Gitea 服务器地址 [https://gitea.ktyun.cc]: " input_url
-        GITEA_BASE_URL="${input_url:-https://gitea.ktyun.cc}"
+    # 获取 Gitea API Token
+    if [ -n "$GITEA_API_TOKEN" ]; then
+        local masked_token="${GITEA_API_TOKEN:0:10}..."
+        read -p "Gitea API Token [当前: ${masked_token}] (按回车保持不变): " input_token
+        if [ -n "$input_token" ]; then
+            GITEA_API_TOKEN="$input_token"
+        fi
+    else
+        while [ -z "$GITEA_API_TOKEN" ]; do
+            read -p "Gitea API Token (必填): " GITEA_API_TOKEN
+            if [ -z "$GITEA_API_TOKEN" ]; then
+                log_warn "API Token 不能为空，请重新输入"
+            fi
+        done
     fi
 
     # 显示配置信息
