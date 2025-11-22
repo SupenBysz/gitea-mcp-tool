@@ -76,7 +76,7 @@ get_latest_version() {
 
 # Check prerequisites
 check_node() {
-    log_step "1/4 Checking Node.js..."
+    log_step "1/5 Checking Node.js..."
 
     if ! command_exists node; then
         log_error "Node.js is not installed"
@@ -91,11 +91,19 @@ check_node() {
     fi
 
     log_info "Node.js $(node -v) ✓"
+
+    if ! command_exists npm; then
+        log_error "npm is not installed"
+        log_info "npm is required to install dependencies"
+        exit 1
+    fi
+
+    log_info "npm $(npm -v) ✓"
 }
 
 # Download release
 download_release() {
-    log_step "2/4 Downloading release package..."
+    log_step "2/5 Downloading release package..."
 
     local package_name="gitea-mcp-${VERSION}.tar.gz"
     local download_url="${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases/download/${VERSION}/${package_name}"
@@ -148,7 +156,7 @@ download_release() {
 
 # Install package
 install_package() {
-    log_step "3/4 Installing package..."
+    log_step "3/5 Installing package..."
 
     # Remove old installation
     if [ -d "${INSTALL_DIR}" ]; then
@@ -168,9 +176,25 @@ install_package() {
     log_info "Installed to: ${INSTALL_DIR}"
 }
 
+# Install dependencies
+install_dependencies() {
+    log_step "4/5 Installing dependencies..."
+
+    cd "${INSTALL_DIR}"
+
+    log_info "Running npm install..."
+    if npm install --production --silent > /dev/null 2>&1; then
+        log_info "Dependencies installed ✓"
+    else
+        log_warn "npm install completed with warnings"
+    fi
+
+    cd - > /dev/null
+}
+
 # Show configuration
 show_config() {
-    log_step "4/4 Configuration"
+    log_step "5/5 Configuration"
 
     echo ""
     log_info "=========================================="
@@ -290,6 +314,7 @@ main() {
     check_node
     download_release
     install_package
+    install_dependencies
     show_config
     ask_configure
 }

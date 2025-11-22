@@ -199,8 +199,7 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 #### Claude CLI
 
 配置文件位置：
-- macOS/Linux: `~/.config/claude/mcp_config.json`
-- Windows: `~/.config/claude/mcp_config.json`
+- macOS/Linux/Windows: `~/.claude/claude_code_config.json`
 
 添加配置：
 ```json

@@ -46,21 +46,21 @@ get_config_paths() {
     case "$OS" in
         macos)
             CLAUDE_DESKTOP_CONFIG="${HOME}/Library/Application Support/Claude/claude_desktop_config.json"
-            CLAUDE_CLI_CONFIG="${HOME}/.config/claude/mcp_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.claude/claude_code_config.json"
             VSCODE_USER_CONFIG="${HOME}/Library/Application Support/Code/User/settings.json"
             CURSOR_USER_CONFIG="${HOME}/Library/Application Support/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${HOME}/Library/Application Support/Windsurf/User/settings.json"
             ;;
         linux)
             CLAUDE_DESKTOP_CONFIG="${HOME}/.config/Claude/claude_desktop_config.json"
-            CLAUDE_CLI_CONFIG="${HOME}/.config/claude/mcp_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.claude/claude_code_config.json"
             VSCODE_USER_CONFIG="${HOME}/.config/Code/User/settings.json"
             CURSOR_USER_CONFIG="${HOME}/.config/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${HOME}/.config/Windsurf/User/settings.json"
             ;;
         windows)
             CLAUDE_DESKTOP_CONFIG="${APPDATA}/Claude/claude_desktop_config.json"
-            CLAUDE_CLI_CONFIG="${HOME}/.config/claude/mcp_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.claude/claude_code_config.json"
             VSCODE_USER_CONFIG="${APPDATA}/Code/User/settings.json"
             CURSOR_USER_CONFIG="${APPDATA}/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${APPDATA}/Windsurf/User/settings.json"
