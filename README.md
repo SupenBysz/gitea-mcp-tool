@@ -1,141 +1,141 @@
 # Gitea Service MCP Server
 
-MCP (Model Context Protocol) adapter for Gitea API, enabling AI assistants (Claude Desktop, Cline, Continue) to interact with Gitea repositories, issues, and pull requests.
+Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude Desktop、Cline、Continue）能够与 Gitea 仓库、Issue 和 Pull Request 进行交互。
 
-## Features
+## 功能特性
 
-### Current Version: v0.9.0
+### 当前版本：v0.9.0
 
-Provides 46 tools covering Gitea core functionality:
+提供 46 个工具，覆盖 Gitea 核心功能：
 
-**Configuration & Initialization** (3 tools)
-- Interactive configuration wizard with Git repository auto-detection
-- Multi-language support (English/Chinese)
-- Global and project-level configuration management
-- Multiple token creation methods with secure storage
+**配置与初始化**（3个工具）
+- 交互式配置向导，支持 Git 仓库自动检测
+- 多语言支持（中文/英文）
+- 全局和项目级配置管理
+- 多种令牌创建方式，支持安全存储
 
-**Context Management** (3 tools)
-- Default owner and repository configuration
-- Automatic context loading from environment variables
-- Current user information retrieval
+**上下文管理**（3个工具）
+- 默认 owner 和仓库配置
+- 从环境变量自动加载上下文
+- 获取当前用户信息
 
-**Repository Management** (5 tools)
-- Create, query, list, delete, and search repositories
-- Private repository support with auto-initialization
+**仓库管理**（5个工具）
+- 创建、查询、列表、删除和搜索仓库
+- 支持私有仓库和自动初始化
 
-**Issue Management** (6 tools)
-- Create, update, comment, and close issues
-- Support for labels, milestones, and assignees
-- List and search functionality
+**Issue 管理**（6个工具）
+- 创建、更新、评论和关闭 Issue
+- 支持标签、里程碑和指派人
+- 列表和搜索功能
 
-**Pull Request Management** (6 tools)
-- Create, update, merge, and review PRs
-- Multiple merge strategies (merge, rebase, squash)
-- PR listing and details retrieval
+**Pull Request 管理**（6个工具）
+- 创建、更新、合并和审查 PR
+- 多种合并策略（merge、rebase、squash）
+- PR 列表和详情获取
 
-**Project Board Management** (7 tools)
-- Create, update, and delete project boards
-- Column management
-- Board state management
+**项目看板管理**（7个工具）
+- 创建、更新和删除项目看板
+- 列管理
+- 看板状态管理
 
-**Milestone Management** (5 tools)
-- Create, query, update, and delete milestones
-- Due date configuration
-- Milestone statistics
+**里程碑管理**（5个工具）
+- 创建、查询、更新和删除里程碑
+- 截止日期配置
+- 里程碑统计
 
-**User & Organization Management** (4 tools)
-- User and organization information queries
-- Organization member listing
-- User-organization relationship management
+**用户与组织管理**（4个工具）
+- 用户和组织信息查询
+- 组织成员列表
+- 用户-组织关系管理
 
-**Wiki Management** (8 tools)
-- Create, query, update, and delete Wiki pages
-- Page revision history
-- Specific version content retrieval
-- Wiki page search
+**Wiki 管理**（8个工具）
+- 创建、查询、更新和删除 Wiki 页面
+- 页面修订历史
+- 特定版本内容获取
+- Wiki 页面搜索
 
-### Authentication
+### 认证方式
 
-- API Token authentication (recommended)
-- Username + Password authentication
+- API Token 认证（推荐）
+- 用户名 + 密码认证
 
-## Installation
+## 安装
 
-### Quick Installation (Recommended)
+### 快速安装（推荐）
 
-Download and install pre-built release (no compilation required):
+下载并安装预构建版本（无需编译）：
 
 ```bash
-# Download and run installation script
+# 下载并运行安装脚本
 curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
 ```
 
-This method:
-- Downloads latest pre-built release
-- Only requires Node.js 18+ (no build tools needed)
-- Installs to `~/.gitea-mcp/`
-- Fastest installation (~10 seconds)
+此方式特点：
+- 下载最新的预构建版本
+- 仅需 Node.js 18+（无需构建工具）
+- 安装到 `~/.gitea-mcp/`
+- 最快安装（约 10 秒）
 
-### Standard Installation
+### 标准安装
 
-Clone repository and build from source:
+克隆仓库并从源码构建：
 
 ```bash
-# Clone and install automatically
+# 克隆并自动安装
 git clone https://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
 cd entai-gitea-mcp
 ./install.sh
 ```
 
-This method:
-- Clones full repository with source code
-- Requires Node.js 18+, pnpm, git
-- Builds project from source
-- Suitable for development or customization
+此方式特点：
+- 克隆完整仓库和源码
+- 需要 Node.js 18+、pnpm、git
+- 从源码构建项目
+- 适合开发或自定义
 
-### Manual Installation
+### 手动安装
 
-For full control over the installation process:
+完全控制安装过程：
 
 ```bash
-# Clone repository
+# 克隆仓库
 git clone https://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
 cd entai-gitea-mcp
 
-# Install dependencies
+# 安装依赖
 pnpm install
 
-# Build
+# 构建
 pnpm build
 ```
 
-## Quick Start
+## 快速开始
 
-### Method 1: Using Configuration Wizard (Recommended)
+### 方法 1：使用配置向导（推荐）
 
-Run the interactive configuration wizard:
+运行交互式配置向导：
 
 ```bash
-# In Claude Desktop, use the tool directly
+# 在 Claude Desktop 中直接使用工具
 gitea_mcp_init
 
-# Switch language if needed
-gitea_mcp_language_set({ locale: "zh-CN" })  # Switch to Chinese
-gitea_mcp_language_get()  # Check current language
+# 如需切换语言
+gitea_mcp_language_set({ locale: "zh-CN" })  # 切换到中文
+gitea_mcp_language_get()  # 查看当前语言
 ```
 
-The wizard provides:
-- Git repository information auto-detection (server, owner, repository)
-- Multiple token creation methods (username/password, manual input, environment variable)
-- Flexible configuration storage (global + project + local)
-- Multi-language interface (Chinese and English)
-- Automatic token management and reuse
+配置向导功能：
+- Git 仓库信息自动检测（服务器、owner、仓库）
+- 多种令牌创建方式（用户名/密码、手动输入、环境变量）
+- 灵活的配置存储（全局 + 项目 + 本地）
+- 多语言界面（中文和英文）
+- 自动令牌管理和复用
 
-See [Initialization Documentation](./docs/initialization.md) for details.
+详见 [初始化文档](./docs/initialization.md)。
 
-### Method 2: Manual Environment Configuration
+### 方法 2：手动环境配置
 
-Create `.env` file or set environment variables in MCP client configuration:
+创建 `.env` 文件或在 MCP 客户端配置中设置环境变量：
 
 ```bash
 # Gitea 服务器配置（必填）
@@ -158,20 +158,20 @@ LOG_LEVEL=info
 GITEA_TIMEOUT=30000
 ```
 
-### 2. 获取 API Token
+### 获取 API Token
 
 1. 登录 Gitea
-2. 进入 **设置 → 应用**
-3. 点击 **生成新令牌**
+2. 进入 设置 → 应用
+3. 点击 生成新令牌
 4. 复制令牌并设置到 `GITEA_API_TOKEN`
 
-### 3. Configure MCP Client
+### 配置 MCP 客户端
 
 #### Claude Desktop
 
-Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
+编辑 `~/Library/Application Support/Claude/claude_desktop_config.json`：
 
-**Configuration Example** (replace `/path/to/gitea-mcp` with your actual project directory):
+**配置示例**（将 `/path/to/gitea-mcp` 替换为实际项目目录）：
 
 ```json
 {
@@ -194,9 +194,9 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 #### Cline (VSCode)
 
-Edit `.vscode/settings.json`:
+编辑 `.vscode/settings.json`：
 
-**Configuration Example** (replace `/path/to/gitea-mcp` with your actual project directory):
+**配置示例**（将 `/path/to/gitea-mcp` 替换为实际项目目录）：
 
 ```json
 {
@@ -217,9 +217,9 @@ Edit `.vscode/settings.json`:
 
 #### Continue (VSCode/JetBrains)
 
-Edit `~/.continue/config.json`:
+编辑 `~/.continue/config.json`：
 
-**Configuration Example** (replace `/path/to/gitea-mcp` with your actual project directory):
+**配置示例**（将 `/path/to/gitea-mcp` 替换为实际项目目录）：
 
 ```json
 {
@@ -239,15 +239,15 @@ Edit `~/.continue/config.json`:
 }
 ```
 
-### 4. Restart Client
+### 重启客户端
 
-Restart Claude Desktop or VSCode to activate the MCP server.
+重启 Claude Desktop 或 VSCode 以激活 MCP 服务器。
 
-## 🔧 可用工具
+## 可用工具
 
-共提供 **46 个工具**，完整覆盖 Gitea 核心功能。
+共提供 46 个工具，完整覆盖 Gitea 核心功能。
 
-### 0️⃣ 配置初始化 (2个) 🆕
+### 配置初始化（3个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -255,7 +255,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_mcp_language_set` | 设置UI语言 | `locale` (en, zh-CN) |
 | `gitea_mcp_language_get` | 获取当前语言设置 | - |
 
-### 1️⃣ 上下文管理 (3个)
+### 上下文管理（3个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -263,7 +263,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_context_set` | 设置默认上下文 | `owner?`, `repo?` |
 | `gitea_user_current` | 获取当前用户信息 | - |
 
-### 2️⃣ 仓库管理 (5个)
+### 仓库管理（5个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -273,7 +273,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_repo_delete` | 删除仓库 | `owner?`, `repo?` |
 | `gitea_repo_search` | 搜索仓库 | `q`, `sort?`, `order?`, `page?`, `limit?` |
 
-### 3️⃣ Issue 管理 (6个)
+### Issue 管理（6个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -284,7 +284,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_issue_comment` | 添加 Issue 评论 | `index`, `body`, `owner?`, `repo?` |
 | `gitea_issue_close` | 关闭 Issue | `index`, `owner?`, `repo?` |
 
-### 4️⃣ Pull Request 管理 (6个)
+### Pull Request 管理（6个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -295,7 +295,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_pr_merge` | 合并 Pull Request | `index`, `merge_method?`, `merge_title?`, `merge_message?`, `delete_branch_after_merge?` |
 | `gitea_pr_review` | 审查 Pull Request | `index`, `body`, `owner?`, `repo?` |
 
-### 5️⃣ Project 看板管理 (7个)
+### Project 看板管理（7个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -307,7 +307,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_project_columns` | 列出项目的列 | `id`, `owner?`, `repo?` |
 | `gitea_project_column_create` | 创建项目列 | `id`, `title`, `owner?`, `repo?` |
 
-### 6️⃣ Milestone 里程碑管理 (5个)
+### Milestone 里程碑管理（5个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -317,7 +317,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_milestone_update` | 更新里程碑 | `id`, `title?`, `description?`, `due_on?`, `state?` |
 | `gitea_milestone_delete` | 删除里程碑 | `id`, `owner?`, `repo?` |
 
-### 7️⃣ 用户/组织管理 (4个)
+### 用户/组织管理（4个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -326,7 +326,7 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_org_get` | 获取组织信息 | `org` |
 | `gitea_org_members` | 列出组织成员 | `org`, `page?`, `limit?` |
 
-### 8️⃣ Wiki 管理 (8个) 🆕
+### Wiki 管理（8个）
 
 | 工具名称 | 说明 | 主要参数 |
 |---------|------|----------|
@@ -339,11 +339,11 @@ Restart Claude Desktop or VSCode to activate the MCP server.
 | `gitea_wiki_get_revision` | 获取特定版本内容 | `pageName`, `revision`, `owner?`, `repo?` |
 | `gitea_wiki_search` | 搜索 Wiki 页面 | `query`, `limit?`, `owner?`, `repo?` |
 
-> **💡 提示**: 标记为 `?` 的参数为可选参数。未提供 `owner` 和 `repo` 时，将使用默认上下文。
+注：标记为 `?` 的参数为可选参数。未提供 `owner` 和 `repo` 时，将使用默认上下文。
 
-## 📖 使用示例
+## 使用示例
 
-### 1. 上下文管理
+### 上下文管理
 
 ```typescript
 // 设置默认上下文
@@ -359,7 +359,7 @@ gitea_context_get()
 gitea_user_current()
 ```
 
-### 2. 创建和管理 Issue
+### 创建和管理 Issue
 
 ```typescript
 // 创建 Issue
@@ -386,7 +386,7 @@ gitea_issue_comment({
 gitea_issue_close({ index: 1 })
 ```
 
-### 3. Pull Request 工作流
+### Pull Request 工作流
 
 ```typescript
 // 创建 Pull Request
@@ -394,7 +394,7 @@ gitea_pr_create({
   title: "feat: 添加用户认证功能",
   head: "feature/auth",
   base: "main",
-  body: "## 变更说明\n- 添加 JWT 认证\n- 实现用户登录/登出\n\n## 测试\n- ✅ 单元测试通过\n- ✅ 集成测试通过"
+  body: "## 变更说明\n- 添加 JWT 认证\n- 实现用户登录/登出\n\n## 测试\n- 单元测试通过\n- 集成测试通过"
 })
 
 // 审查 PR
@@ -412,7 +412,7 @@ gitea_pr_merge({
 })
 ```
 
-### 4. 仓库管理
+### 仓库管理
 
 ```typescript
 // 创建新仓库
@@ -438,7 +438,7 @@ gitea_repo_list({
 })
 ```
 
-### 5. Project 看板管理
+### Project 看板管理
 
 ```typescript
 // 创建项目看板
@@ -467,7 +467,7 @@ gitea_project_column_create({
 gitea_project_columns({ id: 1 })
 ```
 
-### 6. Milestone 里程碑管理
+### Milestone 里程碑管理
 
 ```typescript
 // 创建里程碑
@@ -507,7 +507,7 @@ gitea_milestone_delete({
 })
 ```
 
-### 7. 用户和组织
+### 用户和组织
 
 ```typescript
 // 获取用户信息
@@ -532,7 +532,7 @@ gitea_org_members({
 })
 ```
 
-### 8. Wiki 管理 🆕
+### Wiki 管理
 
 ```typescript
 // 列出所有 Wiki 页面
@@ -594,15 +594,18 @@ gitea_wiki_delete({
 })
 ```
 
-### 💡 使用技巧
+### 使用技巧
 
-1. **设置默认上下文**: 在开始工作前，使用 `gitea_context_set` 设置默认的 owner 和 repo，后续操作无需重复指定。
+**设置默认上下文**
+在开始工作前，使用 `gitea_context_set` 设置默认的 owner 和 repo，后续操作无需重复指定。
 
-2. **批量操作**: 可以结合 Issue 列表和更新操作，实现批量处理。
+**批量操作**
+结合 Issue 列表和更新操作，实现批量处理。
 
-3. **工作流自动化**: 组合多个工具实现 Git 工作流自动化，如自动创建 Issue、PR、合并等。
+**工作流自动化**
+组合多个工具实现 Git 工作流自动化，如自动创建 Issue、PR、合并等。
 
-## 🛠️ 开发
+## 开发
 
 ```bash
 # 安装依赖
@@ -621,7 +624,7 @@ pnpm test
 pnpm lint
 ```
 
-## 📁 项目结构
+## 项目结构
 
 ```
 gitea-service-mcp/
@@ -648,49 +651,50 @@ gitea-service-mcp/
 └── README.md
 ```
 
-## 📚 相关文档
+## 相关文档
 
-- [设计文档](../../docs/modules/gitea-service-mcp/DESIGN.md)
-- [配置指南](./config/README.md)
+- [初始化文档](./docs/initialization.md)
+- [上下文管理文档](./docs/context-management.md)
+- [动态令牌文档](./docs/dynamic-token.md)
 - [Gitea API 文档](https://docs.gitea.com/api/1.21/)
 - [MCP 协议规范](https://modelcontextprotocol.io/)
 
-## 🐛 问题反馈
+## 问题反馈
 
 请在 [Gitea Issue](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues) 中提交问题。
 
-## 📄 许可证
+## 许可证
 
 MIT License
 
-## 🤝 贡献
+## 贡献
 
-欢迎提交 Pull Request！
+欢迎提交 Pull Request。
 
 ---
 
-## 📊 开发进度
+## 开发进度
 
 | 阶段 | 功能 | 工具数 | 状态 |
 |------|------|--------|------|
-| Phase 1 | 基础框架 + 上下文管理 | 3 | ✅ 已完成 |
-| Phase 2 | Repository + Issue + PR 管理 | 17 | ✅ 已完成 |
-| Phase 3 | Project + Milestone + 用户/组织 | 16 | ✅ 已完成 |
-| Phase 4 | Wiki 管理 | 8 | ✅ 已完成 |
-| Phase 5 | 配置初始化系统 | 3 | ✅ 已完成 |
-| Phase 6 | 文档 + 测试 + 示例 | - | 🚧 进行中 |
+| Phase 1 | 基础框架 + 上下文管理 | 3 | 已完成 |
+| Phase 2 | Repository + Issue + PR 管理 | 17 | 已完成 |
+| Phase 3 | Project + Milestone + 用户/组织 | 16 | 已完成 |
+| Phase 4 | Wiki 管理 | 8 | 已完成 |
+| Phase 5 | 配置初始化系统 | 3 | 已完成 |
+| Phase 6 | 文档 + 测试 + 示例 | - | 进行中 |
 
-**当前版本**: v0.8.1 | **工具总数**: 46个
+**当前版本**：v0.9.0 | **工具总数**：46个
 
-**最新更新**: 2025-11-23
-- ✅ 完成 Phase 5 配置初始化系统 🆕
-- ✅ 新增交互式配置向导（`gitea_mcp_init`）
+**最新更新**：2025-11-23
+- 完成 Phase 5 配置初始化系统
+- 新增交互式配置向导（`gitea_mcp_init`）
   - 自动检测 Git 仓库信息
   - 支持多种 Token 创建方式
   - 全局 + 项目 + 本地三级配置管理
-- ✅ 多语言支持系统（i18n）
+- 多语言支持系统（i18n）
   - 中文和英文界面
   - 动态语言切换（`gitea_mcp_language_set`）
-- ✅ 优化 Git URL 解析
+- 优化 Git URL 解析
   - 支持灵活的 SSH 用户名（`git@` 和 `gitea@`）
-- ✅ 完整的测试和文档
+- 完整的测试和文档

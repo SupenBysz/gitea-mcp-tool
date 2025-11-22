@@ -1,202 +1,202 @@
-# Release Process
+# 发布流程
 
-This document describes the process for creating and publishing new releases.
+本文档描述新版本的创建和发布流程。
 
-## Prerequisites
+## 前置条件
 
-- Maintainer access to the repository
-- Local repository up to date with `main` branch
-- All changes committed and pushed
+- 仓库维护者访问权限
+- 本地仓库与 `main` 分支同步
+- 所有更改已提交并推送
 
-## Release Steps
+## 发布步骤
 
-### 1. Update Version
+### 1. 更新版本号
 
-Update version in `package.json`:
+更新 `package.json` 中的版本：
 
 ```bash
-# For patch release (0.8.1 -> 0.8.2)
+# 修订版本（0.8.1 -> 0.8.2）
 npm version patch
 
-# For minor release (0.8.1 -> 0.9.0)
+# 次版本（0.8.1 -> 0.9.0）
 npm version minor
 
-# For major release (0.8.1 -> 1.0.0)
+# 主版本（0.8.1 -> 1.0.0）
 npm version major
 ```
 
-This will automatically:
-- Update version in package.json
-- Create a git tag
-- Commit the change
+此命令将自动：
+- 更新 package.json 中的版本号
+- 创建 git 标签
+- 提交更改
 
-### 2. Update CHANGELOG
+### 2. 更新 CHANGELOG
 
-Edit `CHANGELOG.md` and add release notes:
+编辑 `CHANGELOG.md` 并添加发布说明：
 
 ```markdown
 ## [0.8.2] - 2025-11-23
 
-### Added
-- New feature description
+### 新增
+- 新功能描述
 
-### Fixed
-- Bug fix description
+### 修复
+- Bug 修复描述
 
-### Changed
-- Change description
+### 变更
+- 更改描述
 ```
 
-Commit the changes:
+提交更改：
 
 ```bash
 git add CHANGELOG.md
-git commit -m "docs: Update CHANGELOG for v0.8.2"
+git commit -m "docs: 更新 v0.8.2 版本的 CHANGELOG"
 ```
 
-### 3. Build and Pack
+### 3. 构建和打包
 
-Build the project and create release package:
+构建项目并创建发布包：
 
 ```bash
-# Build project
+# 构建项目
 pnpm build
 
-# Create release package
+# 创建发布包
 ./pack.sh
 ```
 
-This creates: `gitea-mcp-v0.8.2.tar.gz`
+生成文件：`gitea-mcp-v0.8.2.tar.gz`
 
-**Note the SHA256 checksum** displayed by pack.sh for release notes.
+**记录 SHA256 校验和**，pack.sh 将显示该值用于发布说明。
 
-### 4. Push Changes and Tag
+### 4. 推送更改和标签
 
 ```bash
 git push
 git push --tags
 ```
 
-### 5. Create GitHub/Gitea Release
+### 5. 创建 GitHub/Gitea 发布
 
-1. Go to: https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/releases/new
+1. 访问：https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/releases/new
 
-2. Select the tag (e.g., `v0.8.2`)
+2. 选择标签（例如 `v0.8.2`）
 
-3. Fill in release information:
-   - **Title**: `v0.8.2 - Release Name`
-   - **Description**: Copy from CHANGELOG.md
+3. 填写发布信息：
+   - **标题**：`v0.8.2 - 发布名称`
+   - **描述**：从 CHANGELOG.md 复制内容
 
-4. Add release notes template:
+4. 添加发布说明模板：
 
-```markdown
-## 🎉 What's New
+````markdown
+## 更新内容
 
-[Brief summary of main changes]
+[主要变更的简要概述]
 
-## ✨ Features
-- Feature 1
-- Feature 2
+## 新增功能
+- 功能 1
+- 功能 2
 
-## 🐛 Bug Fixes
-- Fix 1
-- Fix 2
+## Bug 修复
+- 修复 1
+- 修复 2
 
-## 📦 Installation
+## 安装
 
-### Quick Installation (Recommended)
-\`\`\`bash
+### 快速安装（推荐）
+```bash
 curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
-\`\`\`
+```
 
-### Download Package
-Download `gitea-mcp-v0.8.2.tar.gz` below and extract:
-\`\`\`bash
+### 下载安装包
+下载下方的 `gitea-mcp-v0.8.2.tar.gz` 并解压：
+```bash
 tar -xzf gitea-mcp-v0.8.2.tar.gz
 cd gitea-mcp-v0.8.2
-# See INSTALL.txt for configuration
-\`\`\`
+# 查看 INSTALL.txt 了解配置方法
+```
 
-## 🔐 Verification
+## 安全校验
 
-**SHA256 Checksum:**
-\`\`\`
-[paste SHA256 from pack.sh output]
-\`\`\`
+**SHA256 校验和：**
+```
+[粘贴 pack.sh 输出的 SHA256 值]
+```
 
-Verify download:
-\`\`\`bash
+验证下载文件：
+```bash
 shasum -a 256 gitea-mcp-v0.8.2.tar.gz
-\`\`\`
+```
 
-## 📚 Documentation
+## 文档
 - [README](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp)
-- [Initialization Guide](./docs/initialization.md)
-- [API Documentation](./docs/)
+- [初始化指南](./docs/initialization.md)
+- [API 文档](./docs/)
 
-## 🆕 Upgrading from v0.8.1
+## 从 v0.8.1 升级
 
-[Add any breaking changes or upgrade notes]
+[添加任何破坏性变更或升级注意事项]
 
 ---
 
-**Full Changelog**: https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/compare/v0.8.1...v0.8.2
-```
+**完整变更日志**：https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/compare/v0.8.1...v0.8.2
+````
 
-5. **Attach Files**: Upload `gitea-mcp-v0.8.2.tar.gz`
+5. **附加文件**：上传 `gitea-mcp-v0.8.2.tar.gz`
 
-6. Click **Publish Release**
+6. 点击**发布**
 
-### 6. Verify Installation
+### 6. 验证安装
 
-Test the quick installation script:
+测试快速安装脚本：
 
 ```bash
-# In a clean directory
+# 在新目录中测试
 curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
 ```
 
-Verify:
-- Script downloads the new release
-- Package extracts correctly
-- Configuration paths are correct
+验证：
+- 脚本下载新版本
+- 包正确解压
+- 配置路径正确
 
-## Release Checklist
+## 发布检查清单
 
-Before publishing a release, ensure:
+发布前确认：
 
-- [ ] Version updated in package.json
-- [ ] CHANGELOG.md updated with release notes
-- [ ] All tests passing (`pnpm test`)
-- [ ] Project builds successfully (`pnpm build`)
-- [ ] Release package created (`./pack.sh`)
-- [ ] SHA256 checksum noted
-- [ ] Changes pushed to main branch
-- [ ] Tag pushed to repository
-- [ ] Gitea release created
-- [ ] Release package attached
-- [ ] Release notes complete with SHA256
-- [ ] Quick install script tested
+- [ ] package.json 中版本已更新
+- [ ] CHANGELOG.md 已添加发布说明
+- [ ] 所有测试通过（`pnpm test`）
+- [ ] 项目构建成功（`pnpm build`）
+- [ ] 发布包已创建（`./pack.sh`）
+- [ ] SHA256 校验和已记录
+- [ ] 更改已推送到 main 分支
+- [ ] 标签已推送到仓库
+- [ ] Gitea 发布已创建
+- [ ] 发布包已附加
+- [ ] 发布说明包含 SHA256
+- [ ] 快速安装脚本已测试
 
-## Rollback Procedure
+## 回滚程序
 
-If a release needs to be rolled back:
+如需回滚发布：
 
-1. Delete the tag:
+1. 删除标签：
    ```bash
    git tag -d v0.8.2
    git push origin :refs/tags/v0.8.2
    ```
 
-2. Delete the release on Gitea
+2. 在 Gitea 上删除发布
 
-3. Revert version in package.json if necessary
+3. 如有必要，恢复 package.json 中的版本
 
-4. Fix issues and create new release
+4. 修复问题后创建新发布
 
-## Automated Release (Future)
+## 自动化发布（未来）
 
-Consider setting up GitHub Actions / Gitea Actions for automated releases:
+考虑使用 GitHub Actions / Gitea Actions 实现自动化发布：
 
 ```yaml
 # .gitea/workflows/release.yml
@@ -224,14 +224,14 @@ jobs:
           files: gitea-mcp-*.tar.gz
 ```
 
-## Version Numbering
+## 版本号规则
 
-Follow [Semantic Versioning](https://semver.org/):
+遵循[语义化版本](https://semver.org/)：
 
-- **MAJOR** (1.0.0): Breaking changes
-- **MINOR** (0.9.0): New features, backwards compatible
-- **PATCH** (0.8.2): Bug fixes, backwards compatible
+- **主版本号（MAJOR）**（1.0.0）：不兼容的 API 修改
+- **次版本号（MINOR）**（0.9.0）：向下兼容的功能新增
+- **修订号（PATCH）**（0.8.2）：向下兼容的问题修正
 
-## Support
+## 支持
 
-For questions about the release process, contact the maintainers or open an issue.
+关于发布流程的问题，请联系维护者或创建 issue。

@@ -1,6 +1,6 @@
 # Gitea MCP 配置初始化系统
 
-## 📋 目录
+## 目录
 
 - [概述](#概述)
 - [核心功能](#核心功能)
@@ -14,7 +14,7 @@
 
 Gitea MCP 配置初始化系统提供了一套完整的交互式配置解决方案，让你能够快速、安全地配置 Gitea MCP Server。
 
-### 🎯 设计目标
+### 设计目标
 
 1. **简化配置流程** - 从手动编辑配置文件到交互式向导
 2. **自动检测** - 智能识别 Git 仓库信息
@@ -24,44 +24,44 @@ Gitea MCP 配置初始化系统提供了一套完整的交互式配置解决方�
 
 ## 核心功能
 
-### 1. 交互式配置向导 (`gitea_mcp_init`)
+### 1. 交互式配置向导
 
-8 步交互式配置流程：
+`gitea_mcp_init` 提供 8 步交互式配置流程：
 
 ```
-🚀 Gitea MCP Configuration Wizard
+Gitea MCP Configuration Wizard
 
 Step 1: Server Selection
-  ├─ Auto-detect from Git repository ✨
-  ├─ Use existing global server
-  └─ Add new server
+  - Auto-detect from Git repository
+  - Use existing global server
+  - Add new server
 
 Step 2: Project Information
-  ├─ Auto-detected from Git ✨
-  └─ Manual input
+  - Auto-detected from Git
+  - Manual input
 
 Step 3: Token Configuration
-  ├─ Create with username/password
-  ├─ Enter existing token
-  ├─ Use cached token
-  └─ Use environment variable
+  - Create with username/password
+  - Enter existing token
+  - Use cached token
+  - Use environment variable
 
 Step 4: Token Save Method
-  ├─ Save to global config (reusable)
-  ├─ Save to local config (project-only)
-  └─ Use environment variable (temporary)
+  - Save to global config (reusable)
+  - Save to local config (project-only)
+  - Use environment variable (temporary)
 
 Step 5: Default Context
-  └─ Set as default for future operations
+  - Set as default for future operations
 
 Step 6: Summary & Confirmation
-  └─ Review all configurations
+  - Review all configurations
 
 Step 7: Save Configuration
-  ├─ .gitea-mcp.json (public, committed)
-  └─ .gitea-mcp.local.json (private, .gitignore)
+  - .gitea-mcp.json (public, committed)
+  - .gitea-mcp.local.json (private, .gitignore)
 
-Step 8: Complete ✅
+Step 8: Complete
 ```
 
 ### 2. 多语言支持
@@ -83,8 +83,8 @@ gitea_mcp_language_get()
 
 | 语言代码 | 语言名称 | 状态 |
 |---------|---------|------|
-| `en` | English | ✅ 默认 |
-| `zh-CN` | 简体中文 | ✅ 可用 |
+| `en` | English | 默认 |
+| `zh-CN` | 简体中文 | 可用 |
 
 ### 3. 三级配置系统
 
@@ -98,12 +98,12 @@ gitea_mcp_language_get()
 2. Project Config (项目配置)
    位置: .gitea-mcp.json
    用途: 项目团队共享配置
-   提交: ✅ 应该提交到 Git
+   提交: 应该提交到 Git
 
 3. Local Config (本地配置)
    位置: .gitea-mcp.local.json
    用途: 个人私密配置（Token等）
-   提交: ❌ 不应提交（自动添加到 .gitignore）
+   提交: 不应提交（自动添加到 .gitignore）
 ```
 
 #### 配置优先级
@@ -140,10 +140,10 @@ http://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
 
 #### 检测信息
 
-- ✅ Gitea 服务器 URL
-- ✅ 仓库所有者 (owner)
-- ✅ 仓库名称 (repo)
-- ✅ 完整仓库路径
+- Gitea 服务器 URL
+- 仓库所有者 (owner)
+- 仓库名称 (repo)
+- 完整仓库路径
 
 ### 5. Token 管理
 
@@ -160,9 +160,9 @@ http://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
 
 | 策略 | 位置 | 安全性 | 复用性 |
 |-----|------|--------|--------|
-| **全局配置** | `~/.gitea-mcp/config.json` | 🟡 中等 | ✅ 高 |
-| **本地配置** | `.gitea-mcp.local.json` | 🟢 较高 | ❌ 仅当前项目 |
-| **环境变量** | 不持久化 | 🟢 高 | ❌ 临时 |
+| **全局配置** | `~/.gitea-mcp/config.json` | 中等 | 高 |
+| **本地配置** | `.gitea-mcp.local.json` | 较高 | 仅当前项目 |
+| **环境变量** | 不持久化 | 高 | 临时 |
 
 ## 快速开始
 
@@ -177,9 +177,9 @@ gitea_mcp_init
 ```
 
 向导将自动：
-- ✅ 检测 Git remote URL
-- ✅ 解析服务器、owner、repo
-- ✅ 引导完成所有配置
+- 检测 Git remote URL
+- 解析服务器、owner、repo
+- 引导完成所有配置
 
 ### 方法二：带参数运行
 
@@ -211,7 +211,9 @@ gitea_context_get()
 
 ## 配置文件
 
-### 全局配置 (~/.gitea-mcp/config.json)
+### 全局配置
+
+~/.gitea-mcp/config.json
 
 ```json
 {
@@ -254,7 +256,9 @@ gitea_context_get()
 }
 ```
 
-### 项目配置 (.gitea-mcp.json)
+### 项目配置
+
+.gitea-mcp.json
 
 ```json
 {
@@ -275,7 +279,9 @@ gitea_context_get()
 }
 ```
 
-### 本地配置 (.gitea-mcp.local.json)
+### 本地配置
+
+.gitea-mcp.local.json
 
 ```json
 {
@@ -365,11 +371,11 @@ interface LanguageResult {
 ```typescript
 // 切换到中文
 gitea_mcp_language_set({ locale: "zh-CN" })
-// 返回: { success: true, message: "✓ 语言已更改为：简体中文", currentLanguage: "zh-CN" }
+// 返回: { success: true, message: "语言已更改为：简体中文", currentLanguage: "zh-CN" }
 
 // 切换到英文
 gitea_mcp_language_set({ locale: "en" })
-// 返回: { success: true, message: "✓ Language changed to: English", currentLanguage: "en" }
+// 返回: { success: true, message: "Language changed to: English", currentLanguage: "en" }
 ```
 
 ### gitea_mcp_language_get
@@ -449,19 +455,17 @@ gitea_issue_create(...)
 
 ### 4. 安全建议
 
-```bash
-✅ DO
+**应该做的：**
 - 使用 .gitea-mcp.local.json 存储个人 Token
 - 确保 .local.json 在 .gitignore 中
 - 定期更新和轮换 Token
 - 使用最小权限原则创建 Token
 
-❌ DON'T
+**不应该做的：**
 - 不要在 .gitea-mcp.json 中存储 Token
 - 不要提交 .gitea-mcp.local.json 到 Git
 - 不要在公共场所暴露配置文件
 - 不要使用过期或不明来源的 Token
-```
 
 ## 故障排查
 
@@ -595,12 +599,12 @@ gitea_mcp_init  # 创建 project-b 的配置
 
 ### v0.8.1 (2025-11-23)
 
-- ✅ 实现完整的初始化向导系统
-- ✅ 添加多语言支持（中英文）
-- ✅ 优化 Git URL 解析（支持灵活的 SSH 用户名）
-- ✅ 完善三级配置系统
-- ✅ 添加 Token 多种创建和存储方式
+- 实现完整的初始化向导系统
+- 添加多语言支持（中英文）
+- 优化 Git URL 解析（支持灵活的 SSH 用户名）
+- 完善三级配置系统
+- 添加 Token 多种创建和存储方式
 
 ---
 
-💡 **提示**: 如有问题或建议，请在 [Gitea Issues](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues) 中反馈。
+提示：如有问题或建议，请在 [Gitea Issues](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues) 中反馈。
