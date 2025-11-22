@@ -61,6 +61,23 @@ Provides 46 tools covering Gitea core functionality:
 
 ## Installation
 
+### One-Click Installation (Recommended)
+
+```bash
+# Clone and install automatically
+git clone https://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
+cd entai-gitea-mcp
+./install.sh
+```
+
+The script will:
+- Check prerequisites (Node.js 18+, pnpm, git)
+- Install dependencies automatically
+- Build the project
+- Display configuration instructions with correct paths
+
+### Manual Installation
+
 ```bash
 # Clone repository
 git clone https://gitea.ktyun.cc/Kysion/entai-gitea-mcp.git
