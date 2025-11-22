@@ -61,7 +61,24 @@ Provides 46 tools covering Gitea core functionality:
 
 ## Installation
 
-### One-Click Installation (Recommended)
+### Quick Installation (Recommended)
+
+Download and install pre-built release (no compilation required):
+
+```bash
+# Download and run installation script
+curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
+```
+
+This method:
+- Downloads latest pre-built release
+- Only requires Node.js 18+ (no build tools needed)
+- Installs to `~/.gitea-mcp/`
+- Fastest installation (~10 seconds)
+
+### Standard Installation
+
+Clone repository and build from source:
 
 ```bash
 # Clone and install automatically
@@ -70,13 +87,15 @@ cd entai-gitea-mcp
 ./install.sh
 ```
 
-The script will:
-- Check prerequisites (Node.js 18+, pnpm, git)
-- Install dependencies automatically
-- Build the project
-- Display configuration instructions with correct paths
+This method:
+- Clones full repository with source code
+- Requires Node.js 18+, pnpm, git
+- Builds project from source
+- Suitable for development or customization
 
 ### Manual Installation
+
+For full control over the installation process:
 
 ```bash
 # Clone repository

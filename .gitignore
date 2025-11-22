@@ -38,3 +38,8 @@ coverage/
 # Temporary files
 *.tmp
 .temp/
+
+# Release packages
+*.tar.gz
+temp_gitea-mcp-*
+gitea-mcp-v*
