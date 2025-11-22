@@ -4,7 +4,7 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 
 ## 功能特性
 
-### 当前版本：v0.9.0
+### 当前版本：v0.9.1
 
 提供 46 个工具，覆盖 Gitea 核心功能：
 
@@ -65,12 +65,49 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 
 下载并安装预构建版本（无需编译）：
 
+#### 公开仓库
+
 ```bash
-# 下载并运行安装脚本
+# 一行命令快速安装
 curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
 ```
 
-此方式特点：
+#### 私有/内部仓库（需要认证）
+
+**方式 1：带认证的一行命令**
+```bash
+# 设置环境变量后安装
+export GITEA_API_TOKEN=your_token_here
+curl -fsSL -H "Authorization: token ${GITEA_API_TOKEN}" \
+  https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
+```
+
+**方式 2：两步安装（推荐）**
+```bash
+# 步骤 1: 下载安装脚本
+export GITEA_API_TOKEN=your_token_here
+curl -fsSL -H "Authorization: token ${GITEA_API_TOKEN}" \
+  https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh \
+  -o /tmp/install-gitea-mcp.sh
+
+# 步骤 2: 执行安装
+bash /tmp/install-gitea-mcp.sh
+```
+
+**方式 3：使用 Bootstrap 脚本**
+```bash
+# 下载 bootstrap 脚本到本地
+export GITEA_API_TOKEN=your_token_here
+curl -fsSL -H "Authorization: token ${GITEA_API_TOKEN}" \
+  https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/bootstrap.sh | bash
+```
+
+**方式 4：从发布页下载**
+1. 访问 [Releases 页面](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/releases)
+2. 下载最新的 `gitea-mcp-v*.tar.gz` 文件
+3. 解压并按照 INSTALL.txt 说明操作
+
+#### 安装特点
 - 下载最新的预构建版本
 - 仅需 Node.js 18+（无需构建工具）
 - 安装到 `~/.gitea-mcp/`
