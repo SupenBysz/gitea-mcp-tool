@@ -20,6 +20,8 @@ import { createLogger } from './logger.js';
 import { loadConfigFromEnv, validateConfig } from './config.js';
 import { GiteaClient } from './gitea-client.js';
 import { ContextManager } from './context-manager.js';
+import { getProjectConfig } from './config/project.js';
+import { detectGitInfo } from './utils/git-detector.js';
 import * as RepositoryTools from './tools/repository.js';
 import * as IssueTools from './tools/issue.js';
 import * as PullRequestTools from './tools/pull-request.js';
@@ -86,6 +88,37 @@ async function main() {
 
       return {
         tools: [
+          // ========== 初始化和配置工具 ==========
+          {
+            name: 'gitea_init',
+            description: 'Initialize project configuration files (.gitea-mcp.json). Auto-detects Git repository info if available.',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                owner: {
+                  type: 'string',
+                  description: 'Repository owner (username or organization). Auto-detected from Git if not provided.',
+                },
+                repo: {
+                  type: 'string',
+                  description: 'Repository name. Auto-detected from Git if not provided.',
+                },
+                gitea_url: {
+                  type: 'string',
+                  description: 'Gitea server URL. Auto-detected from Git remote if not provided.',
+                },
+                set_as_default: {
+                  type: 'boolean',
+                  description: 'Set this repository as default context (default: true)',
+                },
+                force: {
+                  type: 'boolean',
+                  description: 'Force overwrite existing configuration (default: false)',
+                },
+              },
+            },
+          },
+
           // ========== 上下文管理工具 ==========
           {
             name: 'gitea_context_get',
@@ -2418,6 +2451,90 @@ async function main() {
         let result: unknown;
 
         switch (name) {
+          // ========== 初始化和配置工具 ==========
+          case 'gitea_init': {
+            const typedArgs = args as {
+              owner?: string;
+              repo?: string;
+              gitea_url?: string;
+              set_as_default?: boolean;
+              force?: boolean;
+            };
+
+            // 获取工作目录
+            const workingDir = process.cwd();
+
+            // 自动检测 Git 信息
+            const gitInfo = detectGitInfo(workingDir);
+
+            // 确定配置参数（优先使用参数，其次使用 Git 检测）
+            const owner = typedArgs.owner || gitInfo.owner;
+            const repo = typedArgs.repo || gitInfo.repo;
+            const giteaUrl = typedArgs.gitea_url || gitInfo.serverUrl || config.baseUrl;
+            const setAsDefault = typedArgs.set_as_default !== false; // 默认为 true
+            const force = typedArgs.force || false;
+
+            // 验证必需参数
+            if (!owner || !repo) {
+              throw new Error(
+                'Missing required parameters: owner and repo. ' +
+                'These can be provided explicitly or auto-detected from Git repository. ' +
+                `Auto-detection result: owner=${gitInfo.owner || 'N/A'}, repo=${gitInfo.repo || 'N/A'}`
+              );
+            }
+
+            // 获取项目配置管理器
+            const projectConfig = getProjectConfig(workingDir);
+
+            // 检查是否已存在配置
+            if (!force && projectConfig.hasProjectConfig()) {
+              result = {
+                success: false,
+                error: 'Project configuration already exists. Use force=true to overwrite.',
+                configPath: projectConfig.getProjectConfigPath(),
+              };
+              break;
+            }
+
+            // 创建项目配置
+            const createdConfig = projectConfig.createProjectConfig(
+              {
+                url: giteaUrl,
+                name: giteaUrl.replace(/https?:\/\//, ''),
+              },
+              {
+                owner,
+                repo,
+              },
+              {
+                setAsDefaultContext: setAsDefault,
+              }
+            );
+
+            // 如果设置为默认上下文，更新上下文管理器
+            if (setAsDefault) {
+              contextManager.setContext({
+                owner,
+                repo,
+              });
+            }
+
+            result = {
+              success: true,
+              message: 'Project configuration initialized successfully',
+              filesCreated: [projectConfig.getProjectConfigPath()],
+              config: createdConfig,
+              detectedInfo: {
+                isGitRepo: gitInfo.isGitRepo,
+                detectedOwner: gitInfo.owner,
+                detectedRepo: gitInfo.repo,
+                detectedUrl: gitInfo.serverUrl,
+              },
+              defaultContext: setAsDefault ? { owner, repo } : null,
+            };
+            break;
+          }
+
           // ========== 上下文管理工具 ==========
           case 'gitea_context_get': {
             const context = contextManager.getContext();
