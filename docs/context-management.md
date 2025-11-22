@@ -522,5 +522,6 @@ gitea_issue_list()  // backend 的 issues
 
 ## 相关文档
 
+- [初始化系统](./initialization.md) - 🆕 推荐使用初始化向导快速配置
 - [动态 Token 支持](./dynamic-token.md)
 - [配置说明](../README.md#配置)
