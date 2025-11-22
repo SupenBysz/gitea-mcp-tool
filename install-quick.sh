@@ -227,7 +227,7 @@ show_config() {
 # 询问是否运行配置向导
 ask_configure() {
     echo ""
-    read -p "$(echo -e ${BLUE}是否现在运行配置向导来自动配置 MCP 客户端? \(y/n\):${NC} )" -n 1 -r
+    read -p "$(echo -e ${BLUE}是否现在运行配置向导来自动配置 MCP 客户端? \(y/n\):${NC} )" -n 1 -r < /dev/tty
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         log_info "正在下载配置向导..."

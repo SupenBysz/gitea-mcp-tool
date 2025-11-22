@@ -101,7 +101,7 @@ configure_claude_desktop() {
     # 创建配置目录
     if [ ! -d "$config_dir" ]; then
         log_warn "Claude Desktop 配置目录不存在: $config_dir"
-        read -p "是否创建配置目录? (y/n): " -n 1 -r
+        read -p "是否创建配置目录? (y/n): " -n 1 -r < /dev/tty
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             mkdir -p "$config_dir"
@@ -156,7 +156,7 @@ configure_claude_cli() {
     # 创建配置目录
     if [ ! -d "$config_dir" ]; then
         log_warn "Claude CLI 配置目录不存在: $config_dir"
-        read -p "是否创建配置目录? (y/n): " -n 1 -r
+        read -p "是否创建配置目录? (y/n): " -n 1 -r < /dev/tty
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             mkdir -p "$config_dir"
@@ -210,7 +210,7 @@ configure_vscode() {
 
     if [ ! -d "$config_dir" ]; then
         log_warn "VSCode 配置目录不存在: $config_dir"
-        read -p "是否创建配置目录? (y/n): " -n 1 -r
+        read -p "是否创建配置目录? (y/n): " -n 1 -r < /dev/tty
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             mkdir -p "$config_dir"
@@ -362,7 +362,7 @@ select_clients() {
     echo "  5) Windsurf"
     echo "  6) 全部配置"
     echo ""
-    read -p "请输入选项 (1-6): " choice
+    read -p "请输入选项 (1-6): " choice < /dev/tty
 
     case $choice in
         1)
@@ -426,23 +426,23 @@ main() {
 
     # 获取 Gitea 服务器地址
     if [ -n "$GITEA_BASE_URL" ]; then
-        read -p "Gitea 服务器地址 [${GITEA_BASE_URL}]: " input_url
+        read -p "Gitea 服务器地址 [${GITEA_BASE_URL}]: " input_url < /dev/tty
         GITEA_BASE_URL="${input_url:-$GITEA_BASE_URL}"
     else
-        read -p "Gitea 服务器地址 [https://gitea.ktyun.cc]: " input_url
+        read -p "Gitea 服务器地址 [https://gitea.ktyun.cc]: " input_url < /dev/tty
         GITEA_BASE_URL="${input_url:-https://gitea.ktyun.cc}"
     fi
 
     # 获取 Gitea API Token
     if [ -n "$GITEA_API_TOKEN" ]; then
         local masked_token="${GITEA_API_TOKEN:0:10}..."
-        read -p "Gitea API Token [当前: ${masked_token}] (按回车保持不变): " input_token
+        read -p "Gitea API Token [当前: ${masked_token}] (按回车保持不变): " input_token < /dev/tty
         if [ -n "$input_token" ]; then
             GITEA_API_TOKEN="$input_token"
         fi
     else
         while [ -z "$GITEA_API_TOKEN" ]; do
-            read -p "Gitea API Token (必填): " GITEA_API_TOKEN
+            read -p "Gitea API Token (必填): " GITEA_API_TOKEN < /dev/tty
             if [ -z "$GITEA_API_TOKEN" ]; then
                 log_warn "API Token 不能为空，请重新输入"
             fi
