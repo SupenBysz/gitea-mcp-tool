@@ -199,13 +199,16 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 #### Claude CLI
 
 配置文件位置：
-- macOS/Linux/Windows: `~/.claude/claude_code_config.json`
+- macOS/Linux/Windows: `~/.claude.json`
 
-添加配置：
+**注意**：此文件是 Claude CLI 的主配置文件，包含所有 Claude Code 设置。请勿覆盖整个文件！
+
+在顶层 `mcpServers` 字段中添加配置：
 ```json
 {
   "mcpServers": {
     "gitea-service": {
+      "type": "stdio",
       "command": "node",
       "args": ["~/.gitea-mcp/dist/index.js"],
       "env": {
@@ -216,6 +219,12 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
   }
 }
 ```
+
+**重要说明**：
+- Claude CLI 配置需要 `"type": "stdio"` 字段
+- `~/.claude.json` 是 Claude Code 的主配置文件，包含用户偏好设置、项目历史等信息
+- 只需在现有文件的顶层 `mcpServers` 对象中添加 `"gitea-service"` 条目
+- 建议使用配置向导自动配置，或使用 `jq` 工具手动更新
 
 #### VSCode (Cline)
 

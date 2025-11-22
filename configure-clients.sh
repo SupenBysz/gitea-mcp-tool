@@ -46,21 +46,21 @@ get_config_paths() {
     case "$OS" in
         macos)
             CLAUDE_DESKTOP_CONFIG="${HOME}/Library/Application Support/Claude/claude_desktop_config.json"
-            CLAUDE_CLI_CONFIG="${HOME}/.claude/claude_code_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.claude.json"
             VSCODE_USER_CONFIG="${HOME}/Library/Application Support/Code/User/settings.json"
             CURSOR_USER_CONFIG="${HOME}/Library/Application Support/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${HOME}/Library/Application Support/Windsurf/User/settings.json"
             ;;
         linux)
             CLAUDE_DESKTOP_CONFIG="${HOME}/.config/Claude/claude_desktop_config.json"
-            CLAUDE_CLI_CONFIG="${HOME}/.claude/claude_code_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.claude.json"
             VSCODE_USER_CONFIG="${HOME}/.config/Code/User/settings.json"
             CURSOR_USER_CONFIG="${HOME}/.config/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${HOME}/.config/Windsurf/User/settings.json"
             ;;
         windows)
             CLAUDE_DESKTOP_CONFIG="${APPDATA}/Claude/claude_desktop_config.json"
-            CLAUDE_CLI_CONFIG="${HOME}/.claude/claude_code_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.claude.json"
             VSCODE_USER_CONFIG="${APPDATA}/Code/User/settings.json"
             CURSOR_USER_CONFIG="${APPDATA}/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${APPDATA}/Windsurf/User/settings.json"
@@ -78,10 +78,25 @@ check_jq() {
     fi
 }
 
-# 创建 MCP 服务器配置 JSON
+# 创建 MCP 服务器配置 JSON (for Claude Desktop)
 create_mcp_config() {
     cat <<EOF
 {
+  "command": "node",
+  "args": ["${INSTALL_DIR}/dist/index.js"],
+  "env": {
+    "GITEA_BASE_URL": "${GITEA_BASE_URL}",
+    "GITEA_API_TOKEN": "${GITEA_API_TOKEN}"
+  }
+}
+EOF
+}
+
+# 创建 MCP 服务器配置 JSON (for Claude CLI - needs "type": "stdio")
+create_mcp_config_stdio() {
+    cat <<EOF
+{
+  "type": "stdio",
   "command": "node",
   "args": ["${INSTALL_DIR}/dist/index.js"],
   "env": {
@@ -151,55 +166,44 @@ EOF
 configure_claude_cli() {
     log_step "配置 Claude CLI..."
 
-    local config_dir=$(dirname "${CLAUDE_CLI_CONFIG}")
+    # 检查配置文件是否存在
+    if [ ! -f "${CLAUDE_CLI_CONFIG}" ]; then
+        log_error "Claude CLI 配置文件不存在: ${CLAUDE_CLI_CONFIG}"
+        log_warn "请先运行 Claude CLI 一次以创建配置文件，然后重新运行此脚本"
+        log_warn "或者手动创建配置文件"
+        return
+    fi
 
-    # 创建配置目录
-    if [ ! -d "$config_dir" ]; then
-        log_warn "Claude CLI 配置目录不存在: $config_dir"
-        read -p "是否创建配置目录? (y/n): " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            mkdir -p "$config_dir"
-        else
-            log_warn "跳过 Claude CLI 配置"
-            return
-        fi
+    # 检查是否安装 jq
+    if [ "$HAS_JQ" != true ]; then
+        log_error "配置 Claude CLI 需要安装 jq"
+        log_warn "请安装 jq: brew install jq (macOS) 或 apt-get install jq (Linux)"
+        return
     fi
 
     # 备份现有配置
-    if [ -f "${CLAUDE_CLI_CONFIG}" ]; then
-        cp "${CLAUDE_CLI_CONFIG}" "${CLAUDE_CLI_CONFIG}.backup.$(date +%s)"
-        log_info "已备份现有配置"
-    fi
+    cp "${CLAUDE_CLI_CONFIG}" "${CLAUDE_CLI_CONFIG}.backup.$(date +%s)"
+    log_info "已备份现有配置"
 
-    # 创建或更新配置
-    if [ "$HAS_JQ" = true ]; then
-        # 使用 jq 更新配置
-        local mcp_config=$(create_mcp_config)
-        if [ -f "${CLAUDE_CLI_CONFIG}" ]; then
-            # 更新现有配置
-            jq --argjson config "$mcp_config" \
-                '.mcpServers["gitea-service"] = $config' \
-                "${CLAUDE_CLI_CONFIG}" > "${CLAUDE_CLI_CONFIG}.tmp"
-            mv "${CLAUDE_CLI_CONFIG}.tmp" "${CLAUDE_CLI_CONFIG}"
-        else
-            # 创建新配置
-            jq -n --argjson config "$mcp_config" \
-                '{mcpServers: {"gitea-service": $config}}' \
-                > "${CLAUDE_CLI_CONFIG}"
-        fi
+    # 更新配置（在顶层 mcpServers 字段中添加 gitea-service）
+    local mcp_config=$(create_mcp_config_stdio)
+
+    # 检查是否已有 mcpServers 字段
+    if jq -e '.mcpServers' "${CLAUDE_CLI_CONFIG}" > /dev/null 2>&1; then
+        # 更新现有 mcpServers
+        jq --argjson config "$mcp_config" \
+            '.mcpServers["gitea-service"] = $config' \
+            "${CLAUDE_CLI_CONFIG}" > "${CLAUDE_CLI_CONFIG}.tmp"
     else
-        # 手动创建配置
-        cat > "${CLAUDE_CLI_CONFIG}" <<EOF
-{
-  "mcpServers": {
-    "gitea-service": $(create_mcp_config)
-  }
-}
-EOF
+        # 创建 mcpServers 字段
+        jq --argjson config "$mcp_config" \
+            '. + {mcpServers: {"gitea-service": $config}}' \
+            "${CLAUDE_CLI_CONFIG}" > "${CLAUDE_CLI_CONFIG}.tmp"
     fi
 
+    mv "${CLAUDE_CLI_CONFIG}.tmp" "${CLAUDE_CLI_CONFIG}"
     log_info "✓ Claude CLI 配置完成: ${CLAUDE_CLI_CONFIG}"
+    log_info "  配置位置: 顶层 mcpServers 字段 (全局配置)"
 }
 
 # 配置 VSCode (Cline)

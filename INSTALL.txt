@@ -35,9 +35,26 @@ Configuration:
    }
 
 2. For Claude CLI:
-   Edit: ~/.config/claude/mcp_config.json
+   Edit: ~/.claude.json (all platforms)
 
-   Same configuration format as above.
+   IMPORTANT: This is Claude CLI's main config file. DO NOT overwrite it!
+   Add gitea-service to the top-level "mcpServers" field:
+
+   {
+     "mcpServers": {
+       "gitea-service": {
+         "type": "stdio",
+         "command": "node",
+         "args": ["<installation_path>/dist/index.js"],
+         "env": {
+           "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+           "GITEA_API_TOKEN": "your_token_here"
+         }
+       }
+     }
+   }
+
+   Note: Requires "type": "stdio" field. Use jq for safe updating.
 
 3. For VSCode (Cline):
    Edit: .vscode/settings.json
