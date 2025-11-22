@@ -214,14 +214,67 @@ show_config() {
     echo '  }'
     echo ""
     log_info "Next steps:"
-    echo "  1. Configure your MCP client with the path above"
-    echo "  2. Set GITEA_BASE_URL and GITEA_API_TOKEN"
-    echo "  3. Restart your MCP client"
-    echo "  4. Use gitea_mcp_init tool for interactive setup"
+    echo "  1. Run configuration wizard (recommended)"
+    echo "  2. Or manually configure your MCP client"
+    echo "  3. Set GITEA_BASE_URL and GITEA_API_TOKEN"
+    echo "  4. Restart your MCP client"
     echo ""
     log_info "Documentation: ${INSTALL_DIR}/README.md"
     log_info "Support: ${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/issues"
     echo ""
+}
+
+# 询问是否运行配置向导
+ask_configure() {
+    echo ""
+    read -p "$(echo -e ${BLUE}是否现在运行配置向导来自动配置 MCP 客户端? \(y/n\):${NC} )" -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        log_info "正在下载配置向导..."
+        local config_script="/tmp/configure-clients-$$.sh"
+        local script_url="${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/raw/branch/main/configure-clients.sh"
+
+        # 构建认证头
+        local auth_header=""
+        if [ -n "$GITEA_API_TOKEN" ]; then
+            auth_header="Authorization: token ${GITEA_API_TOKEN}"
+        fi
+
+        # 下载配置脚本
+        if command_exists curl; then
+            if [ -n "$auth_header" ]; then
+                curl -fsSL -H "${auth_header}" "${script_url}" -o "${config_script}" 2>/dev/null || {
+                    log_warn "下载配置向导失败，请手动配置"
+                    return
+                }
+            else
+                curl -fsSL "${script_url}" -o "${config_script}" 2>/dev/null || {
+                    log_warn "下载配置向导失败，请手动配置"
+                    return
+                }
+            fi
+        elif command_exists wget; then
+            if [ -n "$auth_header" ]; then
+                wget --header="${auth_header}" -qO "${config_script}" "${script_url}" 2>/dev/null || {
+                    log_warn "下载配置向导失败，请手动配置"
+                    return
+                }
+            else
+                wget -qO "${config_script}" "${script_url}" 2>/dev/null || {
+                    log_warn "下载配置向导失败，请手动配置"
+                    return
+                }
+            fi
+        fi
+
+        if [ -f "${config_script}" ]; then
+            chmod +x "${config_script}"
+            bash "${config_script}"
+            rm -f "${config_script}"
+        fi
+    else
+        log_info "跳过配置向导，请参考上方示例手动配置"
+    fi
 }
 
 # Main
@@ -238,6 +291,7 @@ main() {
     download_release
     install_package
     show_config
+    ask_configure
 }
 
 main

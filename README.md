@@ -146,6 +146,94 @@ pnpm install
 pnpm build
 ```
 
+## 客户端配置
+
+安装完成后，需要配置 MCP 客户端以使用 Gitea MCP 服务器。
+
+### 自动配置（推荐）
+
+安装脚本会在完成后询问是否运行配置向导，或者手动运行：
+
+```bash
+# 下载并运行配置向导
+curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configure-clients.sh | bash
+
+# 或使用本地脚本（如果已克隆仓库）
+./configure-clients.sh
+```
+
+配置向导支持的客户端：
+- **Claude Desktop** - AI 助手桌面应用
+- **VSCode (Cline)** - VSCode 中的 AI 编程助手
+- **Cursor** - AI 驱动的代码编辑器
+- **Windsurf** - Codeium 的 AI 编辑器
+
+### 手动配置
+
+如果不使用配置向导，可以手动编辑客户端配置文件：
+
+#### Claude Desktop
+
+配置文件位置：
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
+
+添加配置：
+```json
+{
+  "mcpServers": {
+    "gitea-service": {
+      "command": "node",
+      "args": ["~/.gitea-mcp/dist/index.js"],
+      "env": {
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+        "GITEA_API_TOKEN": "your_token_here"
+      }
+    }
+  }
+}
+```
+
+#### VSCode (Cline)
+
+配置文件位置：
+- macOS: `~/Library/Application Support/Code/User/settings.json`
+- Windows: `%APPDATA%/Code/User/settings.json`
+- Linux: `~/.config/Code/User/settings.json`
+
+添加配置：
+```json
+{
+  "cline.mcpServers": {
+    "gitea-service": {
+      "command": "node",
+      "args": ["~/.gitea-mcp/dist/index.js"],
+      "env": {
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+        "GITEA_API_TOKEN": "your_token_here"
+      }
+    }
+  }
+}
+```
+
+#### Cursor
+
+类似 Claude Desktop 配置：
+- macOS: `~/Library/Application Support/Cursor/User/settings.json`
+- Windows: `%APPDATA%/Cursor/User/settings.json`
+- Linux: `~/.config/Cursor/User/settings.json`
+
+#### Windsurf
+
+类似 Claude Desktop 配置：
+- macOS: `~/Library/Application Support/Windsurf/User/settings.json`
+- Windows: `%APPDATA%/Windsurf/User/settings.json`
+- Linux: `~/.config/Windsurf/User/settings.json`
+
+配置完成后，重启相应的 MCP 客户端即可使用。
+
 ## 快速开始
 
 ### 方法 1：使用配置向导（推荐）
