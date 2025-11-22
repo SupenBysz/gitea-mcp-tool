@@ -4,7 +4,7 @@ MCP (Model Context Protocol) adapter for Gitea API, enabling AI assistants (Clau
 
 ## Features
 
-### Current Version: v0.8.1
+### Current Version: v0.9.0
 
 Provides 46 tools covering Gitea core functionality:
 
