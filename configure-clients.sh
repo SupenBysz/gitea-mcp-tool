@@ -46,18 +46,21 @@ get_config_paths() {
     case "$OS" in
         macos)
             CLAUDE_DESKTOP_CONFIG="${HOME}/Library/Application Support/Claude/claude_desktop_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.config/claude/mcp_config.json"
             VSCODE_USER_CONFIG="${HOME}/Library/Application Support/Code/User/settings.json"
             CURSOR_USER_CONFIG="${HOME}/Library/Application Support/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${HOME}/Library/Application Support/Windsurf/User/settings.json"
             ;;
         linux)
             CLAUDE_DESKTOP_CONFIG="${HOME}/.config/Claude/claude_desktop_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.config/claude/mcp_config.json"
             VSCODE_USER_CONFIG="${HOME}/.config/Code/User/settings.json"
             CURSOR_USER_CONFIG="${HOME}/.config/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${HOME}/.config/Windsurf/User/settings.json"
             ;;
         windows)
             CLAUDE_DESKTOP_CONFIG="${APPDATA}/Claude/claude_desktop_config.json"
+            CLAUDE_CLI_CONFIG="${HOME}/.config/claude/mcp_config.json"
             VSCODE_USER_CONFIG="${APPDATA}/Code/User/settings.json"
             CURSOR_USER_CONFIG="${APPDATA}/Cursor/User/settings.json"
             WINDSURF_USER_CONFIG="${APPDATA}/Windsurf/User/settings.json"
@@ -142,6 +145,61 @@ EOF
     fi
 
     log_info "✓ Claude Desktop 配置完成: ${CLAUDE_DESKTOP_CONFIG}"
+}
+
+# 配置 Claude CLI
+configure_claude_cli() {
+    log_step "配置 Claude CLI..."
+
+    local config_dir=$(dirname "${CLAUDE_CLI_CONFIG}")
+
+    # 创建配置目录
+    if [ ! -d "$config_dir" ]; then
+        log_warn "Claude CLI 配置目录不存在: $config_dir"
+        read -p "是否创建配置目录? (y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            mkdir -p "$config_dir"
+        else
+            log_warn "跳过 Claude CLI 配置"
+            return
+        fi
+    fi
+
+    # 备份现有配置
+    if [ -f "${CLAUDE_CLI_CONFIG}" ]; then
+        cp "${CLAUDE_CLI_CONFIG}" "${CLAUDE_CLI_CONFIG}.backup.$(date +%s)"
+        log_info "已备份现有配置"
+    fi
+
+    # 创建或更新配置
+    if [ "$HAS_JQ" = true ]; then
+        # 使用 jq 更新配置
+        local mcp_config=$(create_mcp_config)
+        if [ -f "${CLAUDE_CLI_CONFIG}" ]; then
+            # 更新现有配置
+            jq --argjson config "$mcp_config" \
+                '.mcpServers["gitea-service"] = $config' \
+                "${CLAUDE_CLI_CONFIG}" > "${CLAUDE_CLI_CONFIG}.tmp"
+            mv "${CLAUDE_CLI_CONFIG}.tmp" "${CLAUDE_CLI_CONFIG}"
+        else
+            # 创建新配置
+            jq -n --argjson config "$mcp_config" \
+                '{mcpServers: {"gitea-service": $config}}' \
+                > "${CLAUDE_CLI_CONFIG}"
+        fi
+    else
+        # 手动创建配置
+        cat > "${CLAUDE_CLI_CONFIG}" <<EOF
+{
+  "mcpServers": {
+    "gitea-service": $(create_mcp_config)
+  }
+}
+EOF
+    fi
+
+    log_info "✓ Claude CLI 配置完成: ${CLAUDE_CLI_CONFIG}"
 }
 
 # 配置 VSCode (Cline)
@@ -295,31 +353,36 @@ show_config_info() {
 # 选择要配置的客户端
 select_clients() {
     echo ""
-    log_info "请选择要配置的 MCP 客户端（空格选择，回车确认）："
+    log_info "请选择要配置的 MCP 客户端："
     echo ""
     echo "  1) Claude Desktop"
-    echo "  2) VSCode (Cline)"
-    echo "  3) Cursor"
-    echo "  4) Windsurf"
-    echo "  5) 全部配置"
+    echo "  2) Claude CLI"
+    echo "  3) VSCode (Cline)"
+    echo "  4) Cursor"
+    echo "  5) Windsurf"
+    echo "  6) 全部配置"
     echo ""
-    read -p "请输入选项 (1-5): " choice
+    read -p "请输入选项 (1-6): " choice
 
     case $choice in
         1)
             configure_claude_desktop
             ;;
         2)
-            configure_vscode
+            configure_claude_cli
             ;;
         3)
-            configure_cursor
+            configure_vscode
             ;;
         4)
-            configure_windsurf
+            configure_cursor
             ;;
         5)
+            configure_windsurf
+            ;;
+        6)
             configure_claude_desktop
+            configure_claude_cli
             configure_vscode
             configure_cursor
             configure_windsurf

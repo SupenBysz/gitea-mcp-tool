@@ -164,6 +164,7 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 
 配置向导支持的客户端：
 - **Claude Desktop** - AI 助手桌面应用
+- **Claude CLI** - Claude 命令行工具
 - **VSCode (Cline)** - VSCode 中的 AI 编程助手
 - **Cursor** - AI 驱动的代码编辑器
 - **Windsurf** - Codeium 的 AI 编辑器
@@ -178,6 +179,28 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 - Linux: `~/.config/Claude/claude_desktop_config.json`
+
+添加配置：
+```json
+{
+  "mcpServers": {
+    "gitea-service": {
+      "command": "node",
+      "args": ["~/.gitea-mcp/dist/index.js"],
+      "env": {
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+        "GITEA_API_TOKEN": "your_token_here"
+      }
+    }
+  }
+}
+```
+
+#### Claude CLI
+
+配置文件位置：
+- macOS/Linux: `~/.config/claude/mcp_config.json`
+- Windows: `~/.config/claude/mcp_config.json`
 
 添加配置：
 ```json
