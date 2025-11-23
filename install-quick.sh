@@ -13,6 +13,25 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+# 检查并修复工作目录（必须在脚本最开始执行）
+fix_working_directory() {
+    local current_dir
+    # 尝试获取当前目录的真实路径
+    if ! current_dir=$(pwd -P 2>/dev/null); then
+        # 如果无法获取当前目录，切换到 HOME
+        cd "${HOME}" 2>/dev/null || cd /tmp
+        return
+    fi
+
+    # 检查目录是否真实存在（防止目录被删除但 shell 仍在其中）
+    if [ ! -d "$current_dir" ]; then
+        cd "${HOME}" 2>/dev/null || cd /tmp
+    fi
+}
+
+# 立即执行目录检查
+fix_working_directory
+
 # 默认语言（根据系统环境检测）
 LANG_DEFAULT="zh"
 if [[ "${LANG}" != *"zh"* ]] && [[ "${LANG}" != *"CN"* ]]; then
