@@ -39,116 +39,171 @@ if [[ "${LANG}" != *"zh"* ]] && [[ "${LANG}" != *"CN"* ]]; then
 fi
 INSTALL_LANG="${INSTALL_LANG:-$LANG_DEFAULT}"
 
-# 多语言文本
-declare -A TEXT_TITLE=(
-    ["zh"]="Gitea MCP Server - 快速安装"
-    ["en"]="Gitea MCP Server - Quick Installation"
-)
+# 多语言文本函数（兼容 bash 3.2+）
+get_text() {
+    local key="$1"
+    local lang="${INSTALL_LANG:-zh}"
 
-declare -A TEXT_LANG_SELECT=(
-    ["zh"]="请选择语言 / Select Language"
-    ["en"]="Please select language / 请选择语言"
-)
-
-declare -A TEXT_VERSION_INFO=(
-    ["zh"]="版本信息"
-    ["en"]="Version Information"
-)
-
-declare -A TEXT_CURRENT_VERSION=(
-    ["zh"]="当前已安装版本"
-    ["en"]="Currently Installed Version"
-)
-
-declare -A TEXT_LATEST_VERSION=(
-    ["zh"]="最新可用版本"
-    ["en"]="Latest Available Version"
-)
-
-declare -A TEXT_NOT_INSTALLED=(
-    ["zh"]="未安装"
-    ["en"]="Not installed"
-)
-
-declare -A TEXT_INSTALL_TYPE=(
-    ["zh"]="请选择安装类型"
-    ["en"]="Please select installation type"
-)
-
-declare -A TEXT_INSTALL_MCP=(
-    ["zh"]="仅安装 MCP Server（供 AI 工具使用）"
-    ["en"]="MCP Server only (for AI tools)"
-)
-
-declare -A TEXT_INSTALL_CLI=(
-    ["zh"]="仅安装 CLI 工具（keactl 命令行）"
-    ["en"]="CLI tool only (keactl command line)"
-)
-
-declare -A TEXT_INSTALL_ALL=(
-    ["zh"]="安装全部（MCP + CLI）"
-    ["en"]="Install both (MCP + CLI)"
-)
-
-declare -A TEXT_CHECKING_NODE=(
-    ["zh"]="检查 Node.js 环境"
-    ["en"]="Checking Node.js"
-)
-
-declare -A TEXT_DOWNLOADING=(
-    ["zh"]="下载发布包"
-    ["en"]="Downloading release package"
-)
-
-declare -A TEXT_INSTALLING=(
-    ["zh"]="安装软件包"
-    ["en"]="Installing package"
-)
-
-declare -A TEXT_INSTALLING_DEPS=(
-    ["zh"]="安装依赖"
-    ["en"]="Installing dependencies"
-)
-
-declare -A TEXT_CONFIGURATION=(
-    ["zh"]="配置说明"
-    ["en"]="Configuration"
-)
-
-declare -A TEXT_INSTALL_SUCCESS=(
-    ["zh"]="安装成功完成！"
-    ["en"]="Installation completed successfully!"
-)
-
-declare -A TEXT_INSTALL_PATH=(
-    ["zh"]="安装路径"
-    ["en"]="Installation path"
-)
-
-declare -A TEXT_NEXT_STEPS=(
-    ["zh"]="后续步骤"
-    ["en"]="Next steps"
-)
-
-declare -A TEXT_RUN_WIZARD=(
-    ["zh"]="运行配置向导（推荐）"
-    ["en"]="Run configuration wizard (recommended)"
-)
-
-declare -A TEXT_MANUAL_CONFIG=(
-    ["zh"]="或手动配置 MCP 客户端"
-    ["en"]="Or manually configure your MCP client"
-)
-
-declare -A TEXT_ASK_WIZARD=(
-    ["zh"]="是否现在运行配置向导来自动配置 MCP 客户端? (y/n)"
-    ["en"]="Run configuration wizard now to auto-configure MCP clients? (y/n)"
-)
-
-declare -A TEXT_SKIP_WIZARD=(
-    ["zh"]="跳过配置向导，请参考上方示例手动配置"
-    ["en"]="Skipped wizard, please configure manually using examples above"
-)
+    case "$key" in
+        TITLE)
+            if [ "$lang" = "zh" ]; then
+                echo "Gitea MCP Server - 快速安装"
+            else
+                echo "Gitea MCP Server - Quick Installation"
+            fi
+            ;;
+        LANG_SELECT)
+            if [ "$lang" = "zh" ]; then
+                echo "请选择语言 / Select Language"
+            else
+                echo "Please select language / 请选择语言"
+            fi
+            ;;
+        VERSION_INFO)
+            if [ "$lang" = "zh" ]; then
+                echo "版本信息"
+            else
+                echo "Version Information"
+            fi
+            ;;
+        CURRENT_VERSION)
+            if [ "$lang" = "zh" ]; then
+                echo "当前已安装版本"
+            else
+                echo "Currently Installed Version"
+            fi
+            ;;
+        LATEST_VERSION)
+            if [ "$lang" = "zh" ]; then
+                echo "最新可用版本"
+            else
+                echo "Latest Available Version"
+            fi
+            ;;
+        NOT_INSTALLED)
+            if [ "$lang" = "zh" ]; then
+                echo "未安装"
+            else
+                echo "Not installed"
+            fi
+            ;;
+        INSTALL_TYPE)
+            if [ "$lang" = "zh" ]; then
+                echo "请选择安装类型"
+            else
+                echo "Please select installation type"
+            fi
+            ;;
+        INSTALL_MCP)
+            if [ "$lang" = "zh" ]; then
+                echo "仅安装 MCP Server（供 AI 工具使用）"
+            else
+                echo "MCP Server only (for AI tools)"
+            fi
+            ;;
+        INSTALL_CLI)
+            if [ "$lang" = "zh" ]; then
+                echo "仅安装 CLI 工具（keactl 命令行）"
+            else
+                echo "CLI tool only (keactl command line)"
+            fi
+            ;;
+        INSTALL_ALL)
+            if [ "$lang" = "zh" ]; then
+                echo "安装全部（MCP + CLI）"
+            else
+                echo "Install both (MCP + CLI)"
+            fi
+            ;;
+        CHECKING_NODE)
+            if [ "$lang" = "zh" ]; then
+                echo "检查 Node.js 环境"
+            else
+                echo "Checking Node.js"
+            fi
+            ;;
+        DOWNLOADING)
+            if [ "$lang" = "zh" ]; then
+                echo "下载发布包"
+            else
+                echo "Downloading release package"
+            fi
+            ;;
+        INSTALLING)
+            if [ "$lang" = "zh" ]; then
+                echo "安装软件包"
+            else
+                echo "Installing package"
+            fi
+            ;;
+        INSTALLING_DEPS)
+            if [ "$lang" = "zh" ]; then
+                echo "安装依赖"
+            else
+                echo "Installing dependencies"
+            fi
+            ;;
+        CONFIGURATION)
+            if [ "$lang" = "zh" ]; then
+                echo "配置说明"
+            else
+                echo "Configuration"
+            fi
+            ;;
+        INSTALL_SUCCESS)
+            if [ "$lang" = "zh" ]; then
+                echo "安装成功完成！"
+            else
+                echo "Installation completed successfully!"
+            fi
+            ;;
+        INSTALL_PATH)
+            if [ "$lang" = "zh" ]; then
+                echo "安装路径"
+            else
+                echo "Installation path"
+            fi
+            ;;
+        NEXT_STEPS)
+            if [ "$lang" = "zh" ]; then
+                echo "后续步骤"
+            else
+                echo "Next steps"
+            fi
+            ;;
+        RUN_WIZARD)
+            if [ "$lang" = "zh" ]; then
+                echo "运行配置向导（推荐）"
+            else
+                echo "Run configuration wizard (recommended)"
+            fi
+            ;;
+        MANUAL_CONFIG)
+            if [ "$lang" = "zh" ]; then
+                echo "或手动配置 MCP 客户端"
+            else
+                echo "Or manually configure your MCP client"
+            fi
+            ;;
+        ASK_WIZARD)
+            if [ "$lang" = "zh" ]; then
+                echo "是否现在运行配置向导来自动配置 MCP 客户端? (y/n)"
+            else
+                echo "Run configuration wizard now to auto-configure MCP clients? (y/n)"
+            fi
+            ;;
+        SKIP_WIZARD)
+            if [ "$lang" = "zh" ]; then
+                echo "跳过配置向导，请参考上方示例手动配置"
+            else
+                echo "Skipped wizard, please configure manually using examples above"
+            fi
+            ;;
+        *)
+            echo "$key"
+            ;;
+    esac
+}
 
 # 日志函数
 log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
@@ -171,7 +226,7 @@ CURRENT_INSTALLED_VERSION=""
 select_language() {
     echo ""
     echo -e "${CYAN}==========================================${NC}"
-    echo -e "  ${TEXT_LANG_SELECT[$INSTALL_LANG]}"
+    echo -e "  $(get_text "LANG_SELECT")"
     echo -e "${CYAN}==========================================${NC}"
     echo ""
 
@@ -200,7 +255,7 @@ get_installed_version() {
     fi
 
     if [ -z "$CURRENT_INSTALLED_VERSION" ]; then
-        CURRENT_INSTALLED_VERSION="${TEXT_NOT_INSTALLED[$INSTALL_LANG]}"
+        CURRENT_INSTALLED_VERSION="$(get_text "NOT_INSTALLED")"
     fi
 }
 
@@ -270,14 +325,14 @@ get_latest_version() {
 show_version_info() {
     echo ""
     echo -e "${CYAN}==========================================${NC}"
-    echo -e "  ${TEXT_VERSION_INFO[$INSTALL_LANG]}"
+    echo -e "  $(get_text "VERSION_INFO")"
     echo -e "${CYAN}==========================================${NC}"
     echo ""
 
     get_installed_version
 
-    echo "📦 ${TEXT_CURRENT_VERSION[$INSTALL_LANG]}: ${CURRENT_INSTALLED_VERSION}"
-    echo "🌐 ${TEXT_LATEST_VERSION[$INSTALL_LANG]}: ${VERSION}"
+    echo "📦 $(get_text "CURRENT_VERSION"): ${CURRENT_INSTALLED_VERSION}"
+    echo "🌐 $(get_text "LATEST_VERSION"): ${VERSION}"
     echo ""
 }
 
@@ -285,14 +340,14 @@ show_version_info() {
 select_install_type() {
     echo ""
     echo -e "${CYAN}==========================================${NC}"
-    echo -e "  ${TEXT_INSTALL_TYPE[$INSTALL_LANG]}"
+    echo -e "  $(get_text "INSTALL_TYPE")"
     echo -e "${CYAN}==========================================${NC}"
     echo ""
 
     PS3=$'\n'"Please enter (1-3): "
-    select type in "${TEXT_INSTALL_MCP[$INSTALL_LANG]}" \
-                   "${TEXT_INSTALL_CLI[$INSTALL_LANG]}" \
-                   "${TEXT_INSTALL_ALL[$INSTALL_LANG]}"; do
+    select type in "$(get_text "INSTALL_MCP")" \
+                   "$(get_text "INSTALL_CLI")" \
+                   "$(get_text "INSTALL_ALL")"; do
         case $REPLY in
             1)
                 INSTALL_TYPE="mcp"
@@ -315,7 +370,7 @@ select_install_type() {
 
 # Check prerequisites
 check_node() {
-    log_step "1/5 ${TEXT_CHECKING_NODE[$INSTALL_LANG]}..."
+    log_step "1/5 $(get_text "CHECKING_NODE")..."
 
     if ! command_exists node; then
         if [ "$INSTALL_LANG" = "zh" ]; then
@@ -354,7 +409,7 @@ check_node() {
 
 # Download release
 download_release() {
-    log_step "2/5 ${TEXT_DOWNLOADING[$INSTALL_LANG]}..."
+    log_step "2/5 $(get_text "DOWNLOADING")..."
 
     local package_name="gitea-mcp-${VERSION}.tar.gz"
     local download_url="${GITEA_URL}/${REPO_OWNER}/${REPO_NAME}/releases/download/${VERSION}/${package_name}"
@@ -409,7 +464,7 @@ download_release() {
 
 # Install package
 install_package() {
-    log_step "3/5 ${TEXT_INSTALLING[$INSTALL_LANG]}..."
+    log_step "3/5 $(get_text "INSTALLING")..."
 
     # Remove old installation
     if [ -d "${INSTALL_DIR}" ]; then
@@ -434,7 +489,7 @@ install_package() {
 
 # Install dependencies
 install_dependencies() {
-    log_step "4/5 ${TEXT_INSTALLING_DEPS[$INSTALL_LANG]}..."
+    log_step "4/5 $(get_text "INSTALLING_DEPS")..."
 
     cd "${INSTALL_DIR}"
 
@@ -463,15 +518,15 @@ install_dependencies() {
 
 # Show configuration
 show_config() {
-    log_step "5/5 ${TEXT_CONFIGURATION[$INSTALL_LANG]}"
+    log_step "5/5 $(get_text "CONFIGURATION")"
 
     echo ""
     log_info "=========================================="
-    log_info "${TEXT_INSTALL_SUCCESS[$INSTALL_LANG]}"
+    log_info "$(get_text "INSTALL_SUCCESS")"
     log_info "=========================================="
     echo ""
 
-    log_info "${TEXT_INSTALL_PATH[$INSTALL_LANG]}:"
+    log_info "$(get_text "INSTALL_PATH"):"
     echo "  ${INSTALL_DIR}"
     echo ""
 
@@ -537,9 +592,9 @@ show_config() {
         echo ""
     fi
 
-    log_info "${TEXT_NEXT_STEPS[$INSTALL_LANG]}:"
-    echo "  1. ${TEXT_RUN_WIZARD[$INSTALL_LANG]}"
-    echo "  2. ${TEXT_MANUAL_CONFIG[$INSTALL_LANG]}"
+    log_info "$(get_text "NEXT_STEPS"):"
+    echo "  1. $(get_text "RUN_WIZARD")"
+    echo "  2. $(get_text "MANUAL_CONFIG")"
 
     if [ "$INSTALL_LANG" = "zh" ]; then
         echo "  3. 设置 GITEA_BASE_URL 和 GITEA_API_TOKEN"
@@ -564,7 +619,7 @@ ask_configure() {
     fi
 
     echo ""
-    read -p "$(echo -e ${BLUE}${TEXT_ASK_WIZARD[$INSTALL_LANG]}:${NC} )" -n 1 -r < /dev/tty
+    read -p "$(echo -e ${BLUE}$(get_text "ASK_WIZARD"):${NC} )" -n 1 -r < /dev/tty
     echo ""
 
     if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -610,7 +665,7 @@ ask_configure() {
             rm -f "${config_script}"
         fi
     else
-        log_info "${TEXT_SKIP_WIZARD[$INSTALL_LANG]}"
+        log_info "$(get_text "SKIP_WIZARD")"
     fi
 }
 
@@ -621,7 +676,7 @@ main() {
 
     echo ""
     log_info "=========================================="
-    log_info "${TEXT_TITLE[$INSTALL_LANG]}"
+    log_info "$(get_text "TITLE")"
     log_info "=========================================="
     echo ""
 
