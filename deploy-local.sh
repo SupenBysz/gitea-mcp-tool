@@ -22,6 +22,110 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 # 全局变量
 DEPLOY_MODE=""
 TARGET_DIR="$HOME/.gitea-mcp"
+GITEA_URL="https://gitea.ktyun.cc"
+REPO_OWNER="Kysion"
+REPO_NAME="entai-gitea-mcp"
+CURRENT_VERSION=""
+REMOTE_VERSION=""
+
+# 获取当前版本
+get_current_version() {
+    if [ -f "package.json" ]; then
+        CURRENT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
+    else
+        CURRENT_VERSION="unknown"
+    fi
+}
+
+# 获取远程最新版本
+get_remote_version() {
+    log_step "检查远程最新版本..."
+    local api_url="${GITEA_URL}/api/v1/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
+
+    # 尝试使用 curl
+    if command -v curl &> /dev/null; then
+        # 检查是否有 token
+        local auth_header=""
+        if [ -n "$GITEA_API_TOKEN" ]; then
+            auth_header="Authorization: token ${GITEA_API_TOKEN}"
+        fi
+
+        if [ -n "$auth_header" ]; then
+            REMOTE_VERSION=$(curl -s -H "${auth_header}" "${api_url}" 2>/dev/null | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        else
+            REMOTE_VERSION=$(curl -s "${api_url}" 2>/dev/null | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        fi
+    # 尝试使用 wget
+    elif command -v wget &> /dev/null; then
+        if [ -n "$GITEA_API_TOKEN" ]; then
+            REMOTE_VERSION=$(wget -q --header="Authorization: token ${GITEA_API_TOKEN}" -O - "${api_url}" 2>/dev/null | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        else
+            REMOTE_VERSION=$(wget -q -O - "${api_url}" 2>/dev/null | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+        fi
+    fi
+
+    # 移除 v 前缀（如果有）
+    REMOTE_VERSION=${REMOTE_VERSION#v}
+
+    if [ -z "$REMOTE_VERSION" ]; then
+        log_warn "无法获取远程版本信息"
+        REMOTE_VERSION="unknown"
+    else
+        log_info "远程最新版本: ${REMOTE_VERSION}"
+    fi
+}
+
+# 比较版本号
+version_greater_than() {
+    local ver1=$1
+    local ver2=$2
+
+    # 如果任一版本为 unknown，返回 false
+    if [ "$ver1" = "unknown" ] || [ "$ver2" = "unknown" ]; then
+        return 1
+    fi
+
+    # 使用 sort -V 进行版本号比较
+    if printf '%s\n%s\n' "$ver1" "$ver2" | sort -V -C 2>/dev/null; then
+        return 1  # ver1 <= ver2
+    else
+        return 0  # ver1 > ver2
+    fi
+}
+
+# 检查版本更新
+check_version_update() {
+    echo ""
+    echo -e "${CYAN}=========================================="${NC}
+    echo -e "  版本检查"
+    echo -e "${CYAN}=========================================="${NC}
+    echo ""
+
+    get_current_version
+    get_remote_version
+
+    echo "📦 当前版本: ${CURRENT_VERSION}"
+    echo "🌐 最新版本: ${REMOTE_VERSION}"
+    echo ""
+
+    if [ "$REMOTE_VERSION" != "unknown" ] && [ "$CURRENT_VERSION" != "unknown" ]; then
+        if version_greater_than "$REMOTE_VERSION" "$CURRENT_VERSION"; then
+            log_warn "发现新版本！建议更新到 ${REMOTE_VERSION}"
+            echo ""
+            log_info "更新方法："
+            echo "  1. git pull  # 拉取最新代码"
+            echo "  2. npm install  # 更新依赖"
+            echo "  3. 重新运行此脚本部署"
+        elif [ "$REMOTE_VERSION" = "$CURRENT_VERSION" ]; then
+            log_success "当前已是最新版本"
+        else
+            log_info "当前版本较新（可能是开发版本）"
+        fi
+    fi
+
+    echo ""
+    read -p "按回车键继续..." dummy
+}
 
 # 打印标题
 print_header() {
@@ -37,12 +141,16 @@ show_main_menu() {
     local choice
     while true; do
         print_header
-        echo "请选择部署模式："
+        echo "请选择操作："
         echo ""
 
-        PS3=$'\n'"请输入选项编号 (1-4): "
-        select opt in "仅部署 MCP Server" "仅部署 CLI 工具 (keactl)" "部署全部 (MCP + CLI)" "退出"; do
+        PS3=$'\n'"请输入选项编号 (1-5): "
+        select opt in "检查版本更新" "仅部署 MCP Server" "仅部署 CLI 工具 (keactl)" "部署全部 (MCP + CLI)" "退出"; do
             case $opt in
+                "检查版本更新")
+                    check_version_update
+                    break
+                    ;;
                 "仅部署 MCP Server")
                     DEPLOY_MODE="mcp"
                     confirm_deployment
