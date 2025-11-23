@@ -374,6 +374,125 @@ function registerInitTools(mcpServer: McpServer, ctx: ToolContext) {
       }
     }
   );
+
+  // gitea_mcp_upgrade - MCP 工具升级
+  mcpServer.registerTool(
+    'gitea_mcp_upgrade',
+    {
+      title: '升级 MCP 工具',
+      description:
+        'Upgrade Gitea MCP tool to the latest version. Downloads and installs from the latest release.',
+      inputSchema: z.object({
+        auto_confirm: z
+          .boolean()
+          .optional()
+          .describe('Auto confirm the upgrade without prompting (default: false)'),
+      }),
+    },
+    async (args) => {
+      logger.debug({ args }, 'gitea_mcp_upgrade called');
+
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const { execSync } = await import('child_process');
+
+        // 读取当前版本
+        const packageJsonPath = path.join(process.cwd(), 'package.json');
+        let currentVersion = '1.2.0'; // 默认版本
+
+        if (fs.existsSync(packageJsonPath)) {
+          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+          currentVersion = packageJson.version;
+        }
+
+        // 如果没有自动确认，使用 elicitation 询问用户
+        if (!args.auto_confirm) {
+          const result = await ctx.server.server.elicitInput({
+            message: `当前版本: v${currentVersion}\n\n是否要升级到最新版本？\n\n升级过程将：\n1. 下载最新版本的发布包\n2. 安装到 ~/.gitea-mcp 目录\n3. 自动安装依赖\n\n注意：升级过程中需要保证网络连接稳定。`,
+            requestedSchema: {
+              type: 'object',
+              properties: {
+                confirm: {
+                  type: 'boolean',
+                  title: '确认升级',
+                  description: '是否继续升级？',
+                  default: false,
+                },
+              },
+              required: ['confirm'],
+            },
+          });
+
+          if (result.action !== 'accept' || !result.content?.confirm) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: 'Upgrade cancelled by user',
+                },
+              ],
+            };
+          }
+        }
+
+        // 执行升级
+        const installScriptUrl =
+          'https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh';
+
+        logger.info('Downloading and executing upgrade script...');
+
+        // 下载并执行安装脚本
+        const command = `bash -c "$(curl -fsSL ${installScriptUrl})"`;
+
+        const output = execSync(command, {
+          encoding: 'utf-8',
+          stdio: 'pipe',
+          maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: true,
+                  message: 'Upgrade completed successfully',
+                  currentVersion: `v${currentVersion}`,
+                  output: output.substring(0, 1000), // 限制输出长度
+                  note: 'Please restart your MCP client to use the new version',
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error({ error: errorMessage }, 'Failed to upgrade MCP tool');
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error: errorMessage,
+                  message: 'Upgrade failed',
+                  fallback: 'You can manually upgrade by running: bash <(curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh)',
+                },
+                null,
+                2
+              ),
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
 }
 
 /**
@@ -645,7 +764,77 @@ function registerPrompts(mcpServer: McpServer, ctx: ToolContext) {
     }
   );
 
-  logger.info('Registered 3 prompts: create-issue, create-pr, review-pr');
+  // init-project-board - 初始化项目看板的提示模板
+  mcpServer.registerPrompt(
+    'init-project-board',
+    {
+      title: '初始化项目看板',
+      description: '交互式初始化 Gitea 项目看板的提示模板',
+      argsSchema: {
+        owner: z.string().optional().describe('仓库所有者'),
+        repo: z.string().optional().describe('仓库名称'),
+      },
+    },
+    async (args) => {
+      const owner = ctx.contextManager.resolveOwner(args?.owner);
+      const repo = ctx.contextManager.resolveRepo(args?.repo);
+
+      return {
+        description: `初始化 ${owner}/${repo} 的项目看板`,
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: `请帮我在 ${owner}/${repo} 仓库中初始化项目看板。
+
+我提供了以下看板类型供选择：
+
+**1. Bug追踪看板** - 集中管理和追踪软件缺陷
+**2. 部署实施看板** - 管理系统部署、上线、发布流程
+**3. 运维管理看板** - 日常运维任务、系统维护、监控告警
+**4. 文档维护看板** - 管理技术文档、用户手册、API文档
+**5. 优化改进看板** - 代码重构、性能优化、技术债务管理
+**6. 功能开发看板** - 新功能设计、开发、交付
+**7. 测试管理看板** - 测试用例编写、测试执行、缺陷跟踪
+**8. 安全与合规看板** - 安全漏洞修复、合规性审查、安全加固
+**9. 研发运营看板** - CI/CD流水线、基础设施即代码、自动化工具
+**10. 客户支持看板** - 客户反馈、支持工单、功能请求
+**11. 设计与原型看板** - UI/UX设计、原型评审、设计系统维护
+**12. 数据与分析看板** - 数据需求、报表开发、数据质量管理
+
+每种看板类型支持4种工作流方案：
+
+**极简版（3状态）** - 适合个人项目和小团队
+  待办 → 进行中 → 已完成
+
+**标准版（5状态）** - 适合小型团队和标准开发流程
+  待办事项 → 计划中 → 进行中 → 测试验证 → 已完成
+
+**全面版（8状态）** - 适合中大型团队和企业级项目
+  待办事项 → 需求分析 → 设计评审 → 开发中 → 代码审查 → 测试中 → 预发布 → 已完成
+
+**敏捷迭代版（6状态）** - 适合Scrum敏捷团队
+  待办池 → Sprint待办 → 开发中 → 代码评审 → 测试/验收 → 已完成
+
+请告诉我：
+1. 你想创建哪种类型的看板？（1-12）
+2. 你想使用哪种工作流方案？（极简版/标准版/全面版/敏捷迭代版）
+
+我会根据你的选择：
+1. 使用 gitea_project_create 创建项目看板
+2. 使用 gitea_project_column_create 创建对应的看板列
+3. 使用 gitea_label_repo_create 创建预置标签
+
+详细的看板方案说明请参考项目中的 docs/project-board-schemes.md 文档。`,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  logger.info('Registered 4 prompts: create-issue, create-pr, review-pr, init-project-board');
 }
 
 // 启动服务器

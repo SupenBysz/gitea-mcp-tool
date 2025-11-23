@@ -5,14 +5,42 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [未发布]
+## [1.3.0] - 2025-11-23
+
+### 🎉 新增
+
+#### 交互式提示模板
+- ✅ **项目看板初始化提示** (`init-project-board`)
+  - 交互式引导用户选择看板类型和工作流
+  - 支持 12 种预置看板类型（Bug追踪、部署实施、运维管理等）
+  - 支持 4 种工作流方案（极简版、标准版、全面版、敏捷迭代版）
+  - 自动创建看板、列和预置标签
+  - 详细文档：`docs/project-board-schemes.md`
+
+#### 工具管理
+- ✅ **一键升级工具** (`gitea_mcp_upgrade`)
+  - 自动检测当前版本
+  - 交互式确认升级流程
+  - 自动下载最新发布包
+  - 自动安装到 `~/.gitea-mcp` 目录
+  - 升级指南：`docs/upgrade-guide.md`
+
+#### 看板模板配置
+- ✅ **看板模板定义** (`config/board-templates.json`)
+  - 12 种看板类型的完整配置
+  - 4 种工作流方案的列定义
+  - 每种看板类型的预置标签配置
+  - 智能推荐最佳工作流方案
+
+### 📚 文档
+- ✅ 新增 `docs/project-board-schemes.md` - 项目看板方案详细说明
+- ✅ 新增 `docs/upgrade-guide.md` - 升级指南和故障排查
+- ✅ 更新 README.md - 添加新功能说明
 
 ### 计划中
-- Branch 管理工具
-- Tag 管理工具
-- Release 管理工具
-- Webhook 管理工具
 - 更多测试覆盖
+- 看板模板自动导入功能
+- 批量Issue创建功能
 
 ---
 

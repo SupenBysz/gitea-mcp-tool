@@ -1,0 +1,211 @@
+{
+  "workflows": {
+    "minimal": {
+      "name": "极简版",
+      "description": "3状态流程 - 适合个人项目和小团队",
+      "states": 3,
+      "columns": [
+        { "title": "待办", "sorting": 0 },
+        { "title": "进行中", "sorting": 1 },
+        { "title": "已完成", "sorting": 2 }
+      ]
+    },
+    "standard": {
+      "name": "标准版",
+      "description": "5状态流程 - 适合小型团队和标准开发流程",
+      "states": 5,
+      "columns": [
+        { "title": "待办事项", "sorting": 0 },
+        { "title": "计划中", "sorting": 1 },
+        { "title": "进行中", "sorting": 2 },
+        { "title": "测试验证", "sorting": 3 },
+        { "title": "已完成", "sorting": 4 }
+      ]
+    },
+    "comprehensive": {
+      "name": "全面版",
+      "description": "8状态流程 - 适合中大型团队和企业级项目",
+      "states": 8,
+      "columns": [
+        { "title": "待办事项", "sorting": 0 },
+        { "title": "需求分析", "sorting": 1 },
+        { "title": "设计评审", "sorting": 2 },
+        { "title": "开发中", "sorting": 3 },
+        { "title": "代码审查", "sorting": 4 },
+        { "title": "测试中", "sorting": 5 },
+        { "title": "预发布", "sorting": 6 },
+        { "title": "已完成", "sorting": 7 }
+      ]
+    },
+    "agile": {
+      "name": "敏捷迭代版",
+      "description": "6状态流程 - 适合Scrum敏捷团队",
+      "states": 6,
+      "columns": [
+        { "title": "待办池", "sorting": 0 },
+        { "title": "Sprint待办", "sorting": 1 },
+        { "title": "开发中", "sorting": 2 },
+        { "title": "代码评审", "sorting": 3 },
+        { "title": "测试/验收", "sorting": 4 },
+        { "title": "已完成", "sorting": 5 }
+      ]
+    }
+  },
+  "boardTypes": {
+    "bug-tracking": {
+      "name": "Bug追踪看板",
+      "description": "集中管理和追踪软件缺陷",
+      "recommendedWorkflow": "standard",
+      "labels": [
+        { "name": "type/bug", "color": "d73a4a", "description": "缺陷" },
+        { "name": "severity/critical", "color": "b60205", "description": "严重" },
+        { "name": "severity/high", "color": "d93f0b", "description": "高" },
+        { "name": "severity/medium", "color": "fbca04", "description": "中" },
+        { "name": "severity/low", "color": "0e8a16", "description": "低" },
+        { "name": "priority/P0", "color": "b60205", "description": "紧急" },
+        { "name": "priority/P1", "color": "d93f0b", "description": "高优先级" },
+        { "name": "priority/P2", "color": "fbca04", "description": "正常" },
+        { "name": "priority/P3", "color": "0e8a16", "description": "低优先级" }
+      ]
+    },
+    "deployment": {
+      "name": "部署实施看板",
+      "description": "管理系统部署、上线、发布流程",
+      "recommendedWorkflow": "comprehensive",
+      "labels": [
+        { "name": "env/dev", "color": "1d76db", "description": "开发环境" },
+        { "name": "env/test", "color": "0e8a16", "description": "测试环境" },
+        { "name": "env/staging", "color": "fbca04", "description": "预发环境" },
+        { "name": "env/production", "color": "d73a4a", "description": "生产环境" },
+        { "name": "type/deployment", "color": "5319e7", "description": "部署" },
+        { "name": "type/rollback", "color": "b60205", "description": "回滚" },
+        { "name": "type/migration", "color": "f9d0c4", "description": "数据迁移" }
+      ]
+    },
+    "operations": {
+      "name": "运维管理看板",
+      "description": "日常运维任务、系统维护、监控告警",
+      "recommendedWorkflow": "minimal",
+      "labels": [
+        { "name": "type/incident", "color": "d73a4a", "description": "故障" },
+        { "name": "type/maintenance", "color": "0075ca", "description": "维护" },
+        { "name": "type/monitoring", "color": "0e8a16", "description": "监控" },
+        { "name": "type/backup", "color": "5319e7", "description": "备份" },
+        { "name": "severity/critical", "color": "b60205", "description": "紧急故障" },
+        { "name": "severity/high", "color": "d93f0b", "description": "重要维护" },
+        { "name": "severity/normal", "color": "fbca04", "description": "常规任务" }
+      ]
+    },
+    "documentation": {
+      "name": "文档维护看板",
+      "description": "管理技术文档、用户手册、API文档的编写和更新",
+      "recommendedWorkflow": "minimal",
+      "labels": [
+        { "name": "type/doc-new", "color": "0075ca", "description": "新文档" },
+        { "name": "type/doc-update", "color": "0e8a16", "description": "更新文档" },
+        { "name": "type/doc-fix", "color": "fbca04", "description": "修正文档" },
+        { "name": "doc-type/technical", "color": "1d76db", "description": "技术文档" },
+        { "name": "doc-type/user-guide", "color": "5319e7", "description": "用户手册" },
+        { "name": "doc-type/api", "color": "f9d0c4", "description": "API文档" },
+        { "name": "doc-type/architecture", "color": "d876e3", "description": "架构文档" }
+      ]
+    },
+    "optimization": {
+      "name": "优化改进看板",
+      "description": "代码重构、性能优化、技术债务管理",
+      "recommendedWorkflow": "standard",
+      "labels": [
+        { "name": "type/refactor", "color": "0075ca", "description": "重构" },
+        { "name": "type/performance", "color": "0e8a16", "description": "性能优化" },
+        { "name": "type/tech-debt", "color": "d73a4a", "description": "技术债务" },
+        { "name": "scope/frontend", "color": "1d76db", "description": "前端" },
+        { "name": "scope/backend", "color": "5319e7", "description": "后端" },
+        { "name": "scope/database", "color": "f9d0c4", "description": "数据库" },
+        { "name": "scope/infrastructure", "color": "d876e3", "description": "基础设施" }
+      ]
+    },
+    "feature-development": {
+      "name": "功能开发看板",
+      "description": "新功能设计、开发、交付",
+      "recommendedWorkflow": "agile",
+      "labels": [
+        { "name": "type/feature", "color": "0075ca", "description": "新功能" },
+        { "name": "type/enhancement", "color": "0e8a16", "description": "功能增强" },
+        { "name": "size/S", "color": "c5def5", "description": "小型(1-3天)" },
+        { "name": "size/M", "color": "bfdadc", "description": "中型(1周)" },
+        { "name": "size/L", "color": "f9d0c4", "description": "大型(2-4周)" },
+        { "name": "size/XL", "color": "d73a4a", "description": "超大型(1月+)" }
+      ]
+    },
+    "testing": {
+      "name": "测试管理看板",
+      "description": "测试用例编写、测试执行、缺陷跟踪",
+      "recommendedWorkflow": "standard",
+      "labels": [
+        { "name": "test-type/functional", "color": "0075ca", "description": "功能测试" },
+        { "name": "test-type/performance", "color": "0e8a16", "description": "性能测试" },
+        { "name": "test-type/security", "color": "d73a4a", "description": "安全测试" },
+        { "name": "test-type/regression", "color": "fbca04", "description": "回归测试" },
+        { "name": "test-phase/unit", "color": "1d76db", "description": "单元测试" },
+        { "name": "test-phase/integration", "color": "5319e7", "description": "集成测试" },
+        { "name": "test-phase/e2e", "color": "f9d0c4", "description": "端到端测试" }
+      ]
+    },
+    "security-compliance": {
+      "name": "安全与合规看板",
+      "description": "安全漏洞修复、合规性审查、安全加固",
+      "recommendedWorkflow": "comprehensive",
+      "labels": [
+        { "name": "security/vulnerability", "color": "d73a4a", "description": "安全漏洞" },
+        { "name": "security/hardening", "color": "0e8a16", "description": "安全加固" },
+        { "name": "compliance/gdpr", "color": "0075ca", "description": "GDPR合规" },
+        { "name": "compliance/iso27001", "color": "5319e7", "description": "ISO 27001" },
+        { "name": "severity/critical", "color": "b60205", "description": "严重安全问题" }
+      ]
+    },
+    "devops": {
+      "name": "研发运营看板",
+      "description": "CI/CD流水线、基础设施即代码、自动化工具",
+      "recommendedWorkflow": "standard",
+      "labels": [
+        { "name": "devops/ci-cd", "color": "0075ca", "description": "CI/CD" },
+        { "name": "devops/infrastructure", "color": "5319e7", "description": "基础设施" },
+        { "name": "devops/monitoring", "color": "0e8a16", "description": "监控" },
+        { "name": "devops/automation", "color": "1d76db", "description": "自动化" }
+      ]
+    },
+    "customer-support": {
+      "name": "客户支持看板",
+      "description": "客户反馈、支持工单、功能请求",
+      "recommendedWorkflow": "standard",
+      "labels": [
+        { "name": "support/question", "color": "d876e3", "description": "咨询" },
+        { "name": "support/issue", "color": "d73a4a", "description": "问题" },
+        { "name": "support/feature-request", "color": "0075ca", "description": "功能请求" },
+        { "name": "priority/sla-critical", "color": "b60205", "description": "SLA紧急" }
+      ]
+    },
+    "design-prototype": {
+      "name": "设计与原型看板",
+      "description": "UI/UX设计、原型评审、设计系统维护",
+      "recommendedWorkflow": "minimal",
+      "labels": [
+        { "name": "design/ui", "color": "5319e7", "description": "UI设计" },
+        { "name": "design/ux", "color": "d876e3", "description": "UX设计" },
+        { "name": "design/prototype", "color": "f9d0c4", "description": "原型" },
+        { "name": "design-system", "color": "0075ca", "description": "设计系统" }
+      ]
+    },
+    "data-analytics": {
+      "name": "数据与分析看板",
+      "description": "数据需求、报表开发、数据质量管理",
+      "recommendedWorkflow": "standard",
+      "labels": [
+        { "name": "data/requirement", "color": "0075ca", "description": "数据需求" },
+        { "name": "data/report", "color": "0e8a16", "description": "报表" },
+        { "name": "data/dashboard", "color": "1d76db", "description": "Dashboard" },
+        { "name": "data/quality", "color": "d73a4a", "description": "数据质量" }
+      ]
+    }
+  }
+}

@@ -54,6 +54,16 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 - 特定版本内容获取
 - Wiki 页面搜索
 
+**交互式提示模板**（4个 Prompts）
+- `create-issue` - 交互式创建 Issue
+- `create-pr` - 交互式创建 Pull Request
+- `review-pr` - 交互式审查 Pull Request
+- `init-project-board` - 交互式初始化项目看板（支持12种看板类型和4种工作流）
+
+**工具管理**（2个工具）
+- `gitea_init` - 项目配置初始化（自动检测 Git 信息）
+- `gitea_mcp_upgrade` - 一键升级 MCP 工具到最新版本
+
 ### 认证方式
 
 - API Token 认证（推荐）
