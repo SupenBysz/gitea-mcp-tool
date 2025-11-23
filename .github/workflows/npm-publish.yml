@@ -28,16 +28,9 @@ jobs:
         run: npm run build
 
       - name: Publish to npm using OIDC
-        run: |
-          # Remove setup-node's .npmrc to prevent token auth interference
-          rm -f ~/.npmrc
-          # Configure npm to use the registry without auth
-          npm config delete //registry.npmjs.org/:_authToken
-          npm config set registry https://registry.npmjs.org/
-          # Publish using OIDC with provenance (npm will auto-detect OIDC tokens)
-          npm publish --provenance --access public
+        run: npm publish --provenance --access public --registry=https://registry.npmjs.org/
         env:
-          # Unset auth-related env vars from setup-node
+          # Unset auth-related env vars from setup-node to force OIDC usage
           NPM_CONFIG_USERCONFIG: ""
           NODE_AUTH_TOKEN: ""
 
