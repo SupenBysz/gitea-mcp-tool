@@ -23,6 +23,15 @@ export interface WikiToolsContext {
 }
 
 /**
+ * 清理 Wiki URL 中的异常后缀（如 ".-"）
+ */
+function cleanWikiUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  // 移除 URL 末尾的 ".-" 后缀
+  return url.replace(/\.-$/, '');
+}
+
+/**
  * 列出仓库的所有 Wiki 页面
  */
 export async function listWikiPages(
@@ -55,8 +64,8 @@ export async function listWikiPages(
     pages: pages.map(p => ({
       title: p.title,
       name: p.name,
-      html_url: p.html_url,
-      sub_url: p.sub_url,
+      html_url: cleanWikiUrl(p.html_url),
+      sub_url: cleanWikiUrl(p.sub_url),
       last_commit: {
         sha: p.last_commit.sha,
         message: p.last_commit.message,
@@ -95,8 +104,8 @@ export async function getWikiPage(
       title: page.title,
       name: page.name,
       content: page.content,
-      html_url: page.html_url,
-      sub_url: page.sub_url,
+      html_url: cleanWikiUrl(page.html_url),
+      sub_url: cleanWikiUrl(page.sub_url),
       last_commit: {
         sha: page.last_commit.sha,
         message: page.last_commit.message,
@@ -149,8 +158,8 @@ export async function createWikiPage(
     page: {
       title: page.title,
       name: page.name,
-      html_url: page.html_url,
-      sub_url: page.sub_url,
+      html_url: cleanWikiUrl(page.html_url),
+      sub_url: cleanWikiUrl(page.sub_url),
     },
   };
 }
@@ -200,12 +209,12 @@ export async function updateWikiPage(
 
   return {
     success: true,
-    message: `Wiki page "${args.pageName}" has been updated`,
+    message: `Wiki page "${page.title || page.name}" has been updated`,
     page: {
       title: page.title,
       name: page.name,
-      html_url: page.html_url,
-      sub_url: page.sub_url,
+      html_url: cleanWikiUrl(page.html_url),
+      sub_url: cleanWikiUrl(page.sub_url),
     },
   };
 }
@@ -322,7 +331,7 @@ export async function getWikiPageRevision(
       name: page.name,
       content: page.content,
       revision: args.revision,
-      html_url: page.html_url,
+      html_url: cleanWikiUrl(page.html_url),
     },
   };
 }
@@ -369,8 +378,8 @@ export async function searchWikiPages(
     pages: results.map(p => ({
       title: p.title,
       name: p.name,
-      html_url: p.html_url,
-      sub_url: p.sub_url,
+      html_url: cleanWikiUrl(p.html_url),
+      sub_url: cleanWikiUrl(p.sub_url),
       last_commit: {
         sha: p.last_commit.sha,
         message: p.last_commit.message,

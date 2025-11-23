@@ -64,7 +64,11 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
     },
     async (args) => {
       try {
-        const result = await WikiTools.getWikiPage(toolsContext, args as any);
+        const result = await WikiTools.getWikiPage(toolsContext, {
+          owner: args.owner,
+          repo: args.repo,
+          pageName: args.page,
+        });
         return {
           content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
         };
@@ -122,7 +126,14 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
     },
     async (args) => {
       try {
-        const result = await WikiTools.updateWikiPage(toolsContext, args as any);
+        const result = await WikiTools.updateWikiPage(toolsContext, {
+          owner: args.owner,
+          repo: args.repo,
+          pageName: args.page,
+          title: args.title,
+          content: args.content,
+          message: args.message,
+        });
         return {
           content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
         };
@@ -150,7 +161,11 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
     },
     async (args) => {
       try {
-        const result = await WikiTools.deleteWikiPage(toolsContext, args as any);
+        const result = await WikiTools.deleteWikiPage(toolsContext, {
+          owner: args.owner,
+          repo: args.repo,
+          pageName: args.page,
+        });
         return {
           content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
         };
@@ -178,7 +193,11 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
     },
     async (args) => {
       try {
-        const result = await WikiTools.getWikiRevisions(toolsContext, args as any);
+        const result = await WikiTools.getWikiRevisions(toolsContext, {
+          owner: args.owner,
+          repo: args.repo,
+          pageName: args.page,
+        });
         return {
           content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
         };
@@ -207,7 +226,12 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
     },
     async (args) => {
       try {
-        const result = await WikiTools.getWikiPageRevision(toolsContext, args as any);
+        const result = await WikiTools.getWikiPageRevision(toolsContext, {
+          owner: args.owner,
+          repo: args.repo,
+          pageName: args.page,
+          revision: args.revision,
+        });
         return {
           content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
         };
