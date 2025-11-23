@@ -295,6 +295,103 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 
 配置完成后，重启相应的 MCP 客户端即可使用。
 
+## CLI 工具 (命令行工具)
+
+除了通过 MCP 协议使用，本项目还提供了独立的命令行工具 `keactl`，可以直接在终端中管理 Gitea 资源。
+
+### 安装 CLI 工具
+
+CLI 工具会在安装 MCP 服务器时自动安装。如果单独安装：
+
+```bash
+# 通过 npm 全局安装
+npm install -g @kysion/gitea-mcp-tool
+
+# 或从源码构建后使用
+cd entai-gitea-mcp
+pnpm install
+pnpm build
+# CLI 可执行文件位于 dist/cli/index.js
+```
+
+### 快速开始
+
+```bash
+# 初始化配置（交互式）
+keactl config init
+
+# 查看当前配置
+keactl config show
+
+# 查看当前用户
+keactl user current
+
+# 列出仓库
+keactl repo list
+
+# 列出 Issues
+keactl issue list --state open
+
+# 创建 Issue
+keactl issue create --title "修复登录问题" --body "详细描述..."
+```
+
+### 配置方式
+
+keactl 支持多种配置方式，优先级从高到低：
+
+1. **命令行参数**
+   ```bash
+   keactl repo list --token <token> --server https://gitea.ktyun.cc --owner Kysion
+   ```
+
+2. **项目配置** (`.gitea-mcp.json` 和 `.gitea-mcp.local.json`)
+   ```bash
+   keactl config init  # 在项目目录下初始化
+   ```
+
+3. **全局配置** (`~/.gitea-mcp/config.json`)
+   ```bash
+   keactl config init --global
+   ```
+
+4. **环境变量**
+   ```bash
+   export GITEA_API_TOKEN=your_token
+   export GITEA_SERVER_URL=https://gitea.ktyun.cc
+   ```
+
+### 主要命令
+
+| 命令组 | 说明 | 示例命令 |
+|--------|------|----------|
+| `context` | 上下文管理 | `keactl context get`, `keactl context set` |
+| `user` | 用户信息 | `keactl user current`, `keactl user get <username>` |
+| `repo` | 仓库管理 | `keactl repo list`, `keactl repo create` |
+| `issue` | Issue 管理 | `keactl issue list`, `keactl issue create` |
+| `pr` | Pull Request 管理 | `keactl pr list`, `keactl pr create` |
+| `project` | 项目看板管理 | `keactl project list`, `keactl project create` |
+| `config` | 配置管理 | `keactl config init`, `keactl config show` |
+
+### 输出格式
+
+支持多种输出格式：
+
+```bash
+# 表格格式（默认）
+keactl repo list
+
+# JSON 格式
+keactl repo list --json
+
+# 无颜色输出（适合管道或日志）
+keactl repo list --no-color
+```
+
+### 详细文档
+
+完整的 CLI 使用指南请参考 [CLI 使用文档](./docs/cli-guide.md)。
+
 ## 快速开始
 
 ### 方法 1：使用配置向导（推荐）
