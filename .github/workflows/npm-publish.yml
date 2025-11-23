@@ -30,8 +30,15 @@ jobs:
       - name: Remove .npmrc to use OIDC
         run: rm -f .npmrc ~/.npmrc
 
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      - name: Debug - Check OIDC token availability
+        run: |
+          echo "Checking OIDC token environment..."
+          env | grep -i 'actions_id' || echo "No ACTIONS_ID_TOKEN vars found"
+
+      - name: Publish to npm with detailed logging
+        run: npm publish --provenance --access public --loglevel=verbose
+        env:
+          NPM_CONFIG_LOGLEVEL: verbose
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
