@@ -29,13 +29,12 @@ jobs:
 
       - name: Publish to npm using OIDC
         run: |
-          # Remove any .npmrc files
-          rm -f .npmrc ~/.npmrc
-          # Publish using OIDC (no token authentication)
+          # Create clean .npmrc with only registry, no auth
+          echo "registry=https://registry.npmjs.org/" > .npmrc
+          # Publish using OIDC authentication
           npm publish --provenance --access public
         env:
-          # Clear any npm auth-related environment variables set by setup-node
-          NPM_CONFIG_USERCONFIG: ""
+          # Clear auth token to force OIDC usage
           NODE_AUTH_TOKEN: ""
 
       - name: Create GitHub Release
