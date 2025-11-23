@@ -29,14 +29,13 @@ jobs:
 
       - name: Publish to npm using OIDC
         run: |
-          # Create clean .npmrc with only registry, no auth
-          echo "registry=https://registry.npmjs.org/" > .npmrc
-          # Publish using OIDC authentication
+          # Remove setup-node's .npmrc to prevent token auth interference
+          rm -f ~/.npmrc
+          # Configure npm to use the registry without auth
+          npm config delete //registry.npmjs.org/:_authToken
+          npm config set registry https://registry.npmjs.org/
+          # Publish using OIDC with provenance (npm will auto-detect OIDC tokens)
           npm publish --provenance --access public
-        env:
-          # Point to our clean .npmrc instead of setup-node's
-          NPM_CONFIG_USERCONFIG: .npmrc
-          NODE_AUTH_TOKEN: ""
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
