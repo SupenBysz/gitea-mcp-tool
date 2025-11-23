@@ -194,9 +194,10 @@ export async function updateWikiPage(
     ? Buffer.from(args.content, 'utf-8').toString('base64')
     : undefined;
 
+  // Only include fields that are actually provided
   const updateOptions: UpdateWikiPageOptions = {
-    title: args.title,
-    content_base64: contentBase64,
+    ...(args.title !== undefined && { title: args.title }),
+    ...(contentBase64 !== undefined && { content_base64: contentBase64 }),
     message: args.message || `Update wiki page: ${args.pageName}`,
   };
 
