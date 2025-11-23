@@ -245,7 +245,7 @@ select_language() {
                 echo "Invalid option"
                 ;;
         esac
-    done
+    done < /dev/tty
 }
 
 # 获取当前已安装版本
@@ -365,7 +365,7 @@ select_install_type() {
                 echo "Invalid option"
                 ;;
         esac
-    done
+    done < /dev/tty
 }
 
 # Check prerequisites
