@@ -34,7 +34,8 @@ jobs:
           # Publish using OIDC authentication
           npm publish --provenance --access public
         env:
-          # Clear auth token to force OIDC usage
+          # Point to our clean .npmrc instead of setup-node's
+          NPM_CONFIG_USERCONFIG: .npmrc
           NODE_AUTH_TOKEN: ""
 
       - name: Create GitHub Release
