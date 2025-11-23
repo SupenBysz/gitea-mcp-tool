@@ -23,6 +23,31 @@ import { detectGitInfo } from './utils/git-detector.js';
 import { registerRepositoryTools } from './tools-registry/repository-registry.js';
 import { registerIssueTools } from './tools-registry/issue-registry.js';
 import { registerPullRequestTools } from './tools-registry/pr-registry.js';
+import { registerMilestoneTools } from './tools-registry/milestone-registry.js';
+import { registerOrganizationTools } from './tools-registry/org-registry.js';
+import { registerUserTools as registerUserExtendedTools } from './tools-registry/user-registry.js';
+import { registerTokenTools } from './tools-registry/token-registry.js';
+import { registerProjectTools } from './tools-registry/project-registry.js';
+import { registerWikiTools } from './tools-registry/wiki-registry.js';
+import { registerTeamTools } from './tools-registry/team-registry.js';
+import { registerLabelTools } from './tools-registry/label-registry.js';
+import { registerWebhookTools } from './tools-registry/webhook-registry.js';
+import { registerReleaseTools } from './tools-registry/release-registry.js';
+import { registerBranchTools } from './tools-registry/branch-registry.js';
+import { registerContentsTools } from './tools-registry/contents-registry.js';
+import { registerCommitTools } from './tools-registry/commit-registry.js';
+import { registerTagTools } from './tools-registry/tag-registry.js';
+import { registerNotificationTools } from './tools-registry/notification-registry.js';
+import { registerCollaboratorTools } from './tools-registry/collaborator-registry.js';
+import { registerActionTools } from './tools-registry/action-registry.js';
+import { registerSSHKeyTools } from './tools-registry/ssh-key-registry.js';
+import { registerDeployKeyTools } from './tools-registry/deploy-key-registry.js';
+import { registerGPGKeyTools } from './tools-registry/gpg-key-registry.js';
+import { registerStarredTools } from './tools-registry/starred-registry.js';
+import { registerFollowingTools } from './tools-registry/following-registry.js';
+import { registerTopicsTools } from './tools-registry/topics-registry.js';
+import { registerPackageTools } from './tools-registry/package-registry.js';
+import { registerAdminTools } from './tools-registry/admin-registry.js';
 
 const logger = createLogger('mcp-server');
 
@@ -72,7 +97,7 @@ async function main() {
     const mcpServer = new McpServer(
       {
         name: 'gitea-service',
-        version: '0.9.6',
+        version: '1.0.0',
       },
       {
         capabilities: {
@@ -98,7 +123,31 @@ async function main() {
     registerRepositoryTools(mcpServer, toolContext);
     registerIssueTools(mcpServer, toolContext);
     registerPullRequestTools(mcpServer, toolContext);
-    // TODO: 注册其他工具模块 (Project, Milestone, Wiki, Team, Token, Label, Webhook 等)
+    registerMilestoneTools(mcpServer, toolContext);
+    registerUserExtendedTools(mcpServer, toolContext);
+    registerOrganizationTools(mcpServer, toolContext);
+    registerTokenTools(mcpServer, toolContext);
+    registerProjectTools(mcpServer, toolContext);
+    registerWikiTools(mcpServer, toolContext);
+    registerTeamTools(mcpServer, toolContext);
+    registerLabelTools(mcpServer, toolContext);
+    registerWebhookTools(mcpServer, toolContext);
+    registerReleaseTools(mcpServer, toolContext);
+    registerBranchTools(mcpServer, toolContext);
+    registerContentsTools(mcpServer, toolContext);
+    registerCommitTools(mcpServer, toolContext);
+    registerTagTools(mcpServer, toolContext);
+    registerNotificationTools(mcpServer, toolContext);
+    registerCollaboratorTools(mcpServer, toolContext);
+    registerActionTools(mcpServer, toolContext);
+    registerSSHKeyTools(mcpServer, toolContext);
+    registerDeployKeyTools(mcpServer, toolContext);
+    registerGPGKeyTools(mcpServer, toolContext);
+    registerStarredTools(mcpServer, toolContext);
+    registerFollowingTools(mcpServer, toolContext);
+    registerTopicsTools(mcpServer, toolContext);
+    registerPackageTools(mcpServer, toolContext);
+    registerAdminTools(mcpServer, toolContext);
 
     // 7. 注册 Prompts
     logger.info('Registering prompts...');
@@ -111,7 +160,7 @@ async function main() {
 
     logger.info('Gitea Service MCP Server is running');
     logger.info({
-      version: '0.9.6',
+      version: '1.0.0',
       api: 'McpServer',
       capabilities: ['tools', 'prompts', 'elicitation'],
     });
