@@ -8,11 +8,15 @@ set -e
 VERSION=$(node -p "require('./package.json').version")
 PACKAGE_NAME="gitea-mcp-v${VERSION}"
 TEMP_DIR="temp_${PACKAGE_NAME}"
+RELEASE_DIR="releases"
 
 echo "🎁 Packing Gitea MCP Server v${VERSION}..."
 
+# Create releases directory if it doesn't exist
+mkdir -p "${RELEASE_DIR}"
+
 # Clean previous packages
-rm -rf "${TEMP_DIR}" "${PACKAGE_NAME}.tar.gz" 2>/dev/null || true
+rm -rf "${TEMP_DIR}" "${RELEASE_DIR}/${PACKAGE_NAME}.tar.gz" 2>/dev/null || true
 
 # Create temp directory
 mkdir -p "${TEMP_DIR}"
@@ -99,11 +103,11 @@ EOF
 
 # Create archive
 echo "🗜️  Creating archive..."
-tar -czf "${PACKAGE_NAME}.tar.gz" -C "${TEMP_DIR}" .
+tar -czf "${RELEASE_DIR}/${PACKAGE_NAME}.tar.gz" -C "${TEMP_DIR}" .
 
 # Calculate size and hash
-SIZE=$(du -h "${PACKAGE_NAME}.tar.gz" | cut -f1)
-SHA256=$(shasum -a 256 "${PACKAGE_NAME}.tar.gz" | cut -d' ' -f1)
+SIZE=$(du -h "${RELEASE_DIR}/${PACKAGE_NAME}.tar.gz" | cut -f1)
+SHA256=$(shasum -a 256 "${RELEASE_DIR}/${PACKAGE_NAME}.tar.gz" | cut -d' ' -f1)
 
 # Clean up temp directory
 rm -rf "${TEMP_DIR}"
@@ -111,12 +115,12 @@ rm -rf "${TEMP_DIR}"
 echo ""
 echo "✅ Package created successfully!"
 echo ""
-echo "📄 File: ${PACKAGE_NAME}.tar.gz"
+echo "📄 File: ${RELEASE_DIR}/${PACKAGE_NAME}.tar.gz"
 echo "📊 Size: ${SIZE}"
 echo "🔐 SHA256: ${SHA256}"
 echo ""
 echo "Next steps:"
 echo "1. Upload to Gitea Releases: https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/releases"
-echo "2. Attach: ${PACKAGE_NAME}.tar.gz"
+echo "2. Attach: ${RELEASE_DIR}/${PACKAGE_NAME}.tar.gz"
 echo "3. Add SHA256 checksum to release notes"
 echo ""

@@ -43,3 +43,5 @@ coverage/
 *.tar.gz
 temp_gitea-mcp-*
 gitea-mcp-v*
+RELEASE_NOTES_*.md
+releases/
