@@ -4,7 +4,7 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 
 ## 功能特性
 
-### 当前版本：v1.5.1
+### 当前版本：v1.5.3
 
 提供 **199 个工具**，实现 **99% Gitea API 覆盖度**：
 
@@ -71,7 +71,38 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 
 ## 安装
 
-### 快速安装（推荐）
+### npm 安装（推荐）
+
+通过 npm 全局安装，这是最简单快捷的方式：
+
+```bash
+# 全局安装
+npm install -g gitea-mcp-tool
+
+# 或使用 npx 直接运行（无需安装）
+npx gitea-mcp-tool
+```
+
+**安装后使用**：
+```bash
+# 运行 MCP Server
+gitea-mcp
+
+# 使用 CLI 工具
+keactl --help
+
+# 交互式配置
+keactl config wizard
+```
+
+**优势**：
+- ✅ 一行命令完成安装
+- ✅ 支持所有平台（macOS、Linux、Windows）
+- ✅ 自动安装依赖
+- ✅ 全局可用的命令行工具
+- ✅ 方便升级：`npm update -g gitea-mcp-tool`
+
+### 快速安装脚本
 
 下载并安装预构建版本（无需编译）：
 
