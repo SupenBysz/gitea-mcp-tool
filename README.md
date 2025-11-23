@@ -4,9 +4,9 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 
 ## 功能特性
 
-### 当前版本：v1.5.3
+### 当前版本：v1.6.0
 
-提供 **199 个工具**，实现 **99% Gitea API 覆盖度**：
+提供 **199 个工具** + **12 个交互式 Prompts**，实现 **99% Gitea API 覆盖度**：
 
 **配置与初始化**（3个工具）
 - 交互式配置向导，支持 Git 仓库自动检测
@@ -54,11 +54,27 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 - 特定版本内容获取
 - Wiki 页面搜索
 
-**交互式提示模板**（4个 Prompts）
-- `create-issue` - 交互式创建 Issue
-- `create-pr` - 交互式创建 Pull Request
-- `review-pr` - 交互式审查 Pull Request
-- `init-project-board` - 交互式初始化项目看板（支持12种看板类型和4种工作流）
+**交互式 Prompts 引导模板**（12个 Prompts）✨ 新增
+
+**配置管理 Prompts**（3个）
+- `gitea-mcp-tool:配置连接` - 首次使用必需，交互式配置向导
+- `gitea-mcp-tool:检查配置` - 检查当前配置状态
+- `gitea-mcp-tool:重新配置` - 重新配置连接（覆盖现有配置）
+
+**项目看板 Prompts**（2个）
+- `gitea-mcp-tool:初始化项目看板` - 支持12种看板类型和4种工作流方案
+- `gitea-mcp-tool:管理项目看板` - 查看、更新、添加卡片
+
+**Issue 管理 Prompts**（3个）
+- `gitea-mcp-tool:创建Issue` - 交互式创建 Issue，支持多种类型（Bug/功能/文档）
+- `gitea-mcp-tool:管理Issue` - 查看、更新、关闭、评论 Issue
+- `gitea-mcp-tool:搜索Issue` - 按状态和标签搜索筛选
+
+**PR 管理 Prompts**（4个）
+- `gitea-mcp-tool:创建PR` - 交互式创建 Pull Request
+- `gitea-mcp-tool:审查PR` - 全面的代码审查流程（6个审查维度）
+- `gitea-mcp-tool:管理PR` - 合并、更新、关闭 PR（支持4种合并方式）
+- `gitea-mcp-tool:查看PR列表` - 按状态筛选和查看 PR
 
 **工具管理**（2个工具）
 - `gitea_init` - 项目配置初始化（自动检测 Git 信息）
@@ -391,6 +407,129 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 - Linux: `~/.config/Windsurf/User/settings.json`
 
 配置完成后，重启相应的 MCP 客户端即可使用。
+
+## 使用 Prompts（交互式引导模板）
+
+Prompts 是为 AI 助手设计的交互式引导模板，帮助用户快速完成常见任务。在支持 MCP Prompts 的客户端（如 Claude Desktop、Claude CLI）中，你可以直接选择这些模板开始对话。
+
+### 如何使用 Prompts
+
+1. **在客户端中查看 Prompts**
+   - Claude Desktop：在新对话界面会显示可用的 Prompts
+   - Claude CLI：使用 `/prompts` 命令查看所有可用的 Prompts
+
+2. **选择并使用 Prompt**
+   - 点击或选择想要使用的 Prompt
+   - 根据 Prompt 的引导提供必要信息
+   - AI 助手会自动调用相应的 Gitea 工具完成任务
+
+### 首次使用：配置连接
+
+**Prompt**: `gitea-mcp-tool:配置连接`
+
+首次使用必须先配置 Gitea 连接。选择此 Prompt 后，会引导你完成以下配置：
+
+1. **服务器地址** - 自动检测或手动输入 Gitea 服务器 URL
+2. **项目信息** - 仓库所有者（owner）和仓库名称（repo）
+3. **API Token** - 支持 4 种配置方式：
+   - 使用用户名密码自动创建
+   - 手动输入已有 token
+   - 引用已保存的 token
+   - 使用环境变量
+4. **保存方式** - 选择 token 保存位置（本地/引用/环境变量）
+5. **默认上下文** - 设置此项目为默认操作上下文
+
+### Prompts 使用示例
+
+#### 1. 创建 Issue
+
+**Prompt**: `gitea-mcp-tool:创建Issue`
+
+```
+选择 Prompt → 指定仓库（可选）→ 选择 Issue 类型（Bug/功能/文档）→ 提供详细信息
+```
+
+AI 助手会引导你提供：
+- **标题**：简洁明确的问题描述
+- **描述**：详细内容（包括重现步骤、期望行为等）
+- **标签**：bug、enhancement、documentation 等
+- **优先级**：低/中/高/紧急
+- **指派人员**：负责人用户名
+
+#### 2. 审查 Pull Request
+
+**Prompt**: `gitea-mcp-tool:审查PR`
+
+```
+选择 Prompt → 指定 PR 编号 → AI 自动获取 PR 信息并进行代码审查
+```
+
+AI 会检查以下方面：
+- ✅ 代码质量和规范
+- ✅ 功能正确性
+- ✅ 性能考虑
+- ✅ 安全性
+- ✅ 测试覆盖
+- ✅ 文档完整性
+
+然后提交审查意见：APPROVE（批准）、COMMENT（评论）或 REQUEST_CHANGES（请求修改）
+
+#### 3. 初始化项目看板
+
+**Prompt**: `gitea-mcp-tool:初始化项目看板`
+
+```
+选择 Prompt → 选择看板类型（1-12）→ 选择工作流方案 → 自动创建看板和列
+```
+
+**12种看板类型**：
+1. Bug追踪看板
+2. 部署实施看板
+3. 运维管理看板
+4. 文档维护看板
+5. 优化改进看板
+6. 功能开发看板
+7. 测试管理看板
+8. 安全与合规看板
+9. 研发运营看板
+10. 客户支持看板
+11. 设计与原型看板
+12. 数据与分析看板
+
+**4种工作流方案**：
+- **极简版**（3状态）：待办 → 进行中 → 已完成
+- **标准版**（5状态）：待办事项 → 计划中 → 进行中 → 测试验证 → 已完成
+- **全面版**（8状态）：包含需求分析、设计评审、代码审查等完整流程
+- **敏捷迭代版**（6状态）：Sprint 待办、开发、代码评审、测试验收
+
+### 所有可用 Prompts
+
+#### 配置管理
+- `gitea-mcp-tool:配置连接` - 交互式配置向导
+- `gitea-mcp-tool:检查配置` - 检查配置状态
+- `gitea-mcp-tool:重新配置` - 重新配置（覆盖现有）
+
+#### 项目看板
+- `gitea-mcp-tool:初始化项目看板` - 创建项目看板
+- `gitea-mcp-tool:管理项目看板` - 管理现有看板
+
+#### Issue 管理
+- `gitea-mcp-tool:创建Issue` - 创建新 Issue
+- `gitea-mcp-tool:管理Issue` - 更新、评论、关闭
+- `gitea-mcp-tool:搜索Issue` - 搜索和筛选
+
+#### Pull Request
+- `gitea-mcp-tool:创建PR` - 创建 Pull Request
+- `gitea-mcp-tool:审查PR` - 代码审查
+- `gitea-mcp-tool:管理PR` - 合并、更新、关闭
+- `gitea-mcp-tool:查看PR列表` - 查看和筛选
+
+### 注意事项
+
+- **首次使用**：必须先使用"配置连接"Prompt 完成初始配置
+- **上下文**：如果在 Git 仓库目录中，大部分信息会自动检测
+- **灵活性**：所有 Prompts 都支持使用默认上下文或手动指定参数
+- **客户端支持**：Prompts 功能需要客户端支持 MCP Prompts 规范
 
 ## CLI 工具 (命令行工具)
 
