@@ -139,13 +139,13 @@ configure_claude_desktop() {
         if [ -f "${CLAUDE_DESKTOP_CONFIG}" ]; then
             # 更新现有配置
             jq --argjson config "$mcp_config" \
-                '.mcpServers["gitea-service"] = $config' \
+                '.mcpServers["gitea-mcp-tool"] = $config' \
                 "${CLAUDE_DESKTOP_CONFIG}" > "${CLAUDE_DESKTOP_CONFIG}.tmp"
             mv "${CLAUDE_DESKTOP_CONFIG}.tmp" "${CLAUDE_DESKTOP_CONFIG}"
         else
             # 创建新配置
             jq -n --argjson config "$mcp_config" \
-                '{mcpServers: {"gitea-service": $config}}' \
+                '{mcpServers: {"gitea-mcp-tool": $config}}' \
                 > "${CLAUDE_DESKTOP_CONFIG}"
         fi
     else
@@ -153,7 +153,7 @@ configure_claude_desktop() {
         cat > "${CLAUDE_DESKTOP_CONFIG}" <<EOF
 {
   "mcpServers": {
-    "gitea-service": $(create_mcp_config)
+    "gitea-mcp-tool": $(create_mcp_config)
   }
 }
 EOF
@@ -185,19 +185,19 @@ configure_claude_cli() {
     cp "${CLAUDE_CLI_CONFIG}" "${CLAUDE_CLI_CONFIG}.backup.$(date +%s)"
     log_info "已备份现有配置"
 
-    # 更新配置（在顶层 mcpServers 字段中添加 gitea-service）
+    # 更新配置（在顶层 mcpServers 字段中添加 gitea-mcp-tool）
     local mcp_config=$(create_mcp_config_stdio)
 
     # 检查是否已有 mcpServers 字段
     if jq -e '.mcpServers' "${CLAUDE_CLI_CONFIG}" > /dev/null 2>&1; then
         # 更新现有 mcpServers
         jq --argjson config "$mcp_config" \
-            '.mcpServers["gitea-service"] = $config' \
+            '.mcpServers["gitea-mcp-tool"] = $config' \
             "${CLAUDE_CLI_CONFIG}" > "${CLAUDE_CLI_CONFIG}.tmp"
     else
         # 创建 mcpServers 字段
         jq --argjson config "$mcp_config" \
-            '. + {mcpServers: {"gitea-service": $config}}' \
+            '. + {mcpServers: {"gitea-mcp-tool": $config}}' \
             "${CLAUDE_CLI_CONFIG}" > "${CLAUDE_CLI_CONFIG}.tmp"
     fi
 
@@ -234,19 +234,19 @@ configure_vscode() {
         local mcp_config=$(create_mcp_config)
         if [ -f "${VSCODE_USER_CONFIG}" ]; then
             jq --argjson config "$mcp_config" \
-                '.["cline.mcpServers"]["gitea-service"] = $config' \
+                '.["cline.mcpServers"]["gitea-mcp-tool"] = $config' \
                 "${VSCODE_USER_CONFIG}" > "${VSCODE_USER_CONFIG}.tmp"
             mv "${VSCODE_USER_CONFIG}.tmp" "${VSCODE_USER_CONFIG}"
         else
             jq -n --argjson config "$mcp_config" \
-                '{"cline.mcpServers": {"gitea-service": $config}}' \
+                '{"cline.mcpServers": {"gitea-mcp-tool": $config}}' \
                 > "${VSCODE_USER_CONFIG}"
         fi
     else
         cat > "${VSCODE_USER_CONFIG}" <<EOF
 {
   "cline.mcpServers": {
-    "gitea-service": $(create_mcp_config)
+    "gitea-mcp-tool": $(create_mcp_config)
   }
 }
 EOF
@@ -277,19 +277,19 @@ configure_cursor() {
         local mcp_config=$(create_mcp_config)
         if [ -f "${CURSOR_USER_CONFIG}" ]; then
             jq --argjson config "$mcp_config" \
-                '.["mcpServers"]["gitea-service"] = $config' \
+                '.["mcpServers"]["gitea-mcp-tool"] = $config' \
                 "${CURSOR_USER_CONFIG}" > "${CURSOR_USER_CONFIG}.tmp"
             mv "${CURSOR_USER_CONFIG}.tmp" "${CURSOR_USER_CONFIG}"
         else
             jq -n --argjson config "$mcp_config" \
-                '{"mcpServers": {"gitea-service": $config}}' \
+                '{"mcpServers": {"gitea-mcp-tool": $config}}' \
                 > "${CURSOR_USER_CONFIG}"
         fi
     else
         cat > "${CURSOR_USER_CONFIG}" <<EOF
 {
   "mcpServers": {
-    "gitea-service": $(create_mcp_config)
+    "gitea-mcp-tool": $(create_mcp_config)
   }
 }
 EOF
@@ -320,19 +320,19 @@ configure_windsurf() {
         local mcp_config=$(create_mcp_config)
         if [ -f "${WINDSURF_USER_CONFIG}" ]; then
             jq --argjson config "$mcp_config" \
-                '.["mcpServers"]["gitea-service"] = $config' \
+                '.["mcpServers"]["gitea-mcp-tool"] = $config' \
                 "${WINDSURF_USER_CONFIG}" > "${WINDSURF_USER_CONFIG}.tmp"
             mv "${WINDSURF_USER_CONFIG}.tmp" "${WINDSURF_USER_CONFIG}"
         else
             jq -n --argjson config "$mcp_config" \
-                '{"mcpServers": {"gitea-service": $config}}' \
+                '{"mcpServers": {"gitea-mcp-tool": $config}}' \
                 > "${WINDSURF_USER_CONFIG}"
         fi
     else
         cat > "${WINDSURF_USER_CONFIG}" <<EOF
 {
   "mcpServers": {
-    "gitea-service": $(create_mcp_config)
+    "gitea-mcp-tool": $(create_mcp_config)
   }
 }
 EOF

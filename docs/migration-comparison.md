@@ -9,7 +9,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 const server = new Server({
-  name: 'gitea-service',
+  name: 'gitea-mcp-tool',
   version: '0.8.1',
 }, {
   capabilities: { tools: {} }
@@ -59,7 +59,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 const mcpServer = new McpServer({
-  name: 'gitea-service',
+  name: 'gitea-mcp-tool',
   version: '0.9.6',
 }, {
   capabilities: {
@@ -213,9 +213,9 @@ if (!args.owner || !args.repo) {
 - 使用方式：
 ```bash
 # 在 Claude CLI 中输入
-/mcp__gitea-service__create-issue
-/mcp__gitea-service__create-pr
-/mcp__gitea-service__review-pr
+/mcp__gitea-mcp-tool__create-issue
+/mcp__gitea-mcp-tool__create-pr
+/mcp__gitea-mcp-tool__review-pr
 ```
 
 ## 4. 类型安全对比

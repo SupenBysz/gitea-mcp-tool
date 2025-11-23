@@ -67,8 +67,8 @@ get_latest_version() {
     fi
 
     if [ -z "$VERSION" ]; then
-        log_warn "Could not fetch latest version from API, using default: v0.9.0"
-        VERSION="v0.9.0"
+        log_warn "Could not fetch latest version from API, using default: v1.2.0"
+        VERSION="v1.2.0"
     fi
 
     log_info "Latest version: ${VERSION}"
@@ -212,7 +212,7 @@ show_config() {
     echo "  Claude Desktop (~/.../Claude/claude_desktop_config.json):"
     echo '  {'
     echo '    "mcpServers": {'
-    echo '      "gitea-service": {'
+    echo '      "gitea-mcp-tool": {'
     echo '        "command": "node",'
     echo '        "args": ["'${INSTALL_DIR}'/dist/index.js"],'
     echo '        "env": {'
@@ -226,7 +226,7 @@ show_config() {
     echo "  VSCode Cline (.vscode/settings.json):"
     echo '  {'
     echo '    "cline.mcpServers": {'
-    echo '      "gitea-service": {'
+    echo '      "gitea-mcp-tool": {'
     echo '        "command": "node",'
     echo '        "args": ["'${INSTALL_DIR}'/dist/index.js"],'
     echo '        "env": {'

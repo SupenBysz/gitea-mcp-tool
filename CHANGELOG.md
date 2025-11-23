@@ -73,7 +73,7 @@
   - 修正配置路径示例
   - 添加"配置示例"标签和说明
 - ✅ **配置路径修正**
-  - 修复不正确的路径：`/path/to/KysionAiStack/packages/gitea-service-mcp/`
+  - 修复不正确的路径：`/path/to/KysionAiStack/packages/gitea-mcp-tool/`
   - 更新为正确路径：`/path/to/gitea-mcp/dist/index.js`
   - 明确标注为配置示例模板
 

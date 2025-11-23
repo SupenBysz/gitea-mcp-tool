@@ -111,7 +111,7 @@ show_config_instructions() {
     echo "   Claude Desktop (~/.../Claude/claude_desktop_config.json):"
     echo '   {'
     echo '     "mcpServers": {'
-    echo '       "gitea-service": {'
+    echo '       "gitea-mcp-tool": {'
     echo '         "command": "node",'
     echo '         "args": ["'${project_path}'/dist/index.js"],'
     echo '         "env": {'
@@ -125,7 +125,7 @@ show_config_instructions() {
     echo "   VSCode Cline (.vscode/settings.json):"
     echo '   {'
     echo '     "cline.mcpServers": {'
-    echo '       "gitea-service": {'
+    echo '       "gitea-mcp-tool": {'
     echo '         "command": "node",'
     echo '         "args": ["'${project_path}'/dist/index.js"],'
     echo '         "env": {'

@@ -94,10 +94,10 @@ GITEA_PASSWORD=your_password
 ```json
 {
   "mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": [
-        "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
+        "/path/to/KysionAiStack/packages/gitea-mcp-tool/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -117,10 +117,10 @@ GITEA_PASSWORD=your_password
 ```json
 {
   "mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": [
-        "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
+        "/path/to/KysionAiStack/packages/gitea-mcp-tool/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -142,10 +142,10 @@ GITEA_PASSWORD=your_password
 ```json
 {
   "cline.mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": [
-        "${workspaceFolder}/packages/gitea-service-mcp/dist/index.js"
+        "${workspaceFolder}/packages/gitea-mcp-tool/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -163,10 +163,10 @@ GITEA_PASSWORD=your_password
 ```json
 {
   "cline.mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": [
-        "/absolute/path/to/gitea-service-mcp/dist/index.js"
+        "/absolute/path/to/gitea-mcp-tool/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -186,10 +186,10 @@ GITEA_PASSWORD=your_password
 {
   "mcpServers": [
     {
-      "name": "gitea-service",
+      "name": "gitea-mcp-tool",
       "command": "node",
       "args": [
-        "/path/to/KysionAiStack/packages/gitea-service-mcp/dist/index.js"
+        "/path/to/KysionAiStack/packages/gitea-mcp-tool/dist/index.js"
       ],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
@@ -357,9 +357,9 @@ gitea_repo_get(owner="OtherOwner", repo="OtherRepo")
 ```json
 {
   "mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
-      "args": ["/path/to/gitea-service-mcp/dist/index.js"],
+      "args": ["/path/to/gitea-mcp-tool/dist/index.js"],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "${env:GITEA_API_TOKEN}",
@@ -379,9 +379,9 @@ gitea_repo_get(owner="OtherOwner", repo="OtherRepo")
 ```json
 {
   "mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
-      "args": ["${workspaceFolder}/packages/gitea-service-mcp/dist/index.js"],
+      "args": ["${workspaceFolder}/packages/gitea-mcp-tool/dist/index.js"],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_USERNAME": "dev-user",
@@ -401,7 +401,7 @@ gitea_repo_get(owner="OtherOwner", repo="OtherRepo")
 如果遇到配置问题：
 
 1. 查看 [主文档](../README.md)
-2. 查看 [设计文档](../../../docs/modules/gitea-service-mcp/DESIGN.md)
+2. 查看 [设计文档](../../../docs/modules/gitea-mcp-tool/DESIGN.md)
 3. 提交 [Issue](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues)
 
 ---

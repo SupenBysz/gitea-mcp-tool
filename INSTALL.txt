@@ -23,7 +23,7 @@ Configuration:
    Add this configuration:
    {
      "mcpServers": {
-       "gitea-service": {
+       "gitea-mcp-tool": {
          "command": "node",
          "args": ["<installation_path>/dist/index.js"],
          "env": {
@@ -38,11 +38,11 @@ Configuration:
    Edit: ~/.claude.json (all platforms)
 
    IMPORTANT: This is Claude CLI's main config file. DO NOT overwrite it!
-   Add gitea-service to the top-level "mcpServers" field:
+   Add gitea-mcp-tool to the top-level "mcpServers" field:
 
    {
      "mcpServers": {
-       "gitea-service": {
+       "gitea-mcp-tool": {
          "type": "stdio",
          "command": "node",
          "args": ["<installation_path>/dist/index.js"],
@@ -61,7 +61,7 @@ Configuration:
 
    {
      "cline.mcpServers": {
-       "gitea-service": {
+       "gitea-mcp-tool": {
          "command": "node",
          "args": ["<installation_path>/dist/index.js"],
          "env": {

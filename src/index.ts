@@ -96,7 +96,7 @@ async function main() {
     logger.info('Creating MCP Server with McpServer API...');
     const mcpServer = new McpServer(
       {
-        name: 'gitea-service',
+        name: 'gitea-mcp-tool',
         version: '1.0.0',
       },
       {

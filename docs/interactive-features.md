@@ -156,7 +156,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 const mcpServer = new McpServer({
-  name: 'gitea-service',
+  name: 'gitea-mcp-tool',
   version: '1.0.0',
 });
 
@@ -236,7 +236,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 const server = new Server({
-  name: 'gitea-service',
+  name: 'gitea-mcp-tool',
   version: '1.0.0',
 }, {
   capabilities: {
@@ -422,13 +422,13 @@ case 'gitea_init': {
 ### 场景 2：添加常用工作流 Prompts
 
 ```typescript
-// /mcp__gitea-service__create-issue
+// /mcp__gitea-mcp-tool__create-issue
 registerPrompt('create-issue', {
   title: '创建 Issue',
   description: '交互式创建 Issue 的提示模板',
 });
 
-// /mcp__gitea-service__create-pr
+// /mcp__gitea-mcp-tool__create-pr
 registerPrompt('create-pr', {
   title: '创建 Pull Request',
   description: '交互式创建 PR 的提示模板',
@@ -438,7 +438,7 @@ registerPrompt('create-pr', {
   },
 });
 
-// /mcp__gitea-service__review-pr
+// /mcp__gitea-mcp-tool__review-pr
 registerPrompt('review-pr', {
   title: '审查 Pull Request',
   description: '审查 PR 的提示模板',
@@ -556,7 +556,7 @@ case 'gitea_create_issue': {
 1. **Prompts 测试**：
    ```bash
    # 在 Claude CLI 中
-   /mcp__gitea-service__create-issue
+   /mcp__gitea-mcp-tool__create-issue
    ```
 
 2. **Elicitation 测试**：

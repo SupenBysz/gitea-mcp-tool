@@ -79,7 +79,7 @@ GITEA_DEFAULT_PROJECT=5
   "mcpServers": {
     "gitea": {
       "command": "npx",
-      "args": ["-y", "@kysion/gitea-service-mcp"],
+      "args": ["-y", "@kysion/gitea-mcp-tool"],
       "env": {
         "GITEA_BASE_URL": "https://gitea.ktyun.cc",
         "GITEA_API_TOKEN": "your_token",

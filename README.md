@@ -204,7 +204,7 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 ```json
 {
   "mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": ["~/.gitea-mcp/dist/index.js"],
       "env": {
@@ -227,7 +227,7 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 ```json
 {
   "mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "type": "stdio",
       "command": "node",
       "args": ["~/.gitea-mcp/dist/index.js"],
@@ -243,7 +243,7 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 **重要说明**：
 - Claude CLI 配置需要 `"type": "stdio"` 字段
 - `~/.claude.json` 是 Claude Code 的主配置文件，包含用户偏好设置、项目历史等信息
-- 只需在现有文件的顶层 `mcpServers` 对象中添加 `"gitea-service"` 条目
+- 只需在现有文件的顶层 `mcpServers` 对象中添加 `"gitea-mcp-tool"` 条目
 - 建议使用配置向导自动配置，或使用 `jq` 工具手动更新
 
 #### VSCode (Cline)
@@ -257,7 +257,7 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/configu
 ```json
 {
   "cline.mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": ["~/.gitea-mcp/dist/index.js"],
       "env": {
@@ -352,7 +352,7 @@ GITEA_TIMEOUT=30000
 ```json
 {
   "mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": [
         "/path/to/gitea-mcp/dist/index.js"
@@ -377,7 +377,7 @@ GITEA_TIMEOUT=30000
 ```json
 {
   "cline.mcpServers": {
-    "gitea-service": {
+    "gitea-mcp-tool": {
       "command": "node",
       "args": [
         "/path/to/gitea-mcp/dist/index.js"
@@ -401,7 +401,7 @@ GITEA_TIMEOUT=30000
 {
   "mcpServers": [
     {
-      "name": "gitea-service",
+      "name": "gitea-mcp-tool",
       "command": "node",
       "args": [
         "/path/to/gitea-mcp/dist/index.js"
@@ -803,7 +803,7 @@ pnpm lint
 ## 项目结构
 
 ```
-gitea-service-mcp/
+gitea-mcp-tool/
 ├── src/
 │   ├── index.ts              # MCP Server 入口
 │   ├── config.ts             # 配置管理

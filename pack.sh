@@ -31,7 +31,7 @@ cp -r docs "${TEMP_DIR}/" 2>/dev/null || true
 # Create minimal package.json for runtime
 cat > "${TEMP_DIR}/package.json" <<EOF
 {
-  "name": "@kysion/gitea-service-mcp",
+  "name": "@kysion/gitea-mcp-tool",
   "version": "${VERSION}",
   "type": "module",
   "main": "dist/index.js",
@@ -67,7 +67,7 @@ Installation Steps:
    For Claude Desktop (~/.../Claude/claude_desktop_config.json):
    {
      "mcpServers": {
-       "gitea-service": {
+       "gitea-mcp-tool": {
          "command": "node",
          "args": ["/absolute/path/to/${PACKAGE_NAME}/dist/index.js"],
          "env": {
@@ -81,7 +81,7 @@ Installation Steps:
    For VSCode Cline (.vscode/settings.json):
    {
      "cline.mcpServers": {
-       "gitea-service": {
+       "gitea-mcp-tool": {
          "command": "node",
          "args": ["/absolute/path/to/${PACKAGE_NAME}/dist/index.js"],
          "env": {
