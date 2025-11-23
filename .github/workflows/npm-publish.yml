@@ -36,6 +36,10 @@ jobs:
           npm config set registry https://registry.npmjs.org/
           # Publish using OIDC with provenance (npm will auto-detect OIDC tokens)
           npm publish --provenance --access public
+        env:
+          # Unset auth-related env vars from setup-node
+          NPM_CONFIG_USERCONFIG: ""
+          NODE_AUTH_TOKEN: ""
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
