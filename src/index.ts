@@ -48,6 +48,7 @@ import { registerFollowingTools } from './tools-registry/following-registry.js';
 import { registerTopicsTools } from './tools-registry/topics-registry.js';
 import { registerPackageTools } from './tools-registry/package-registry.js';
 import { registerAdminTools } from './tools-registry/admin-registry.js';
+import { registerAllPrompts } from './prompts/index.js';
 
 const logger = createLogger('mcp-server');
 
@@ -610,6 +611,11 @@ function registerUserTools(mcpServer: McpServer, ctx: ToolContext) {
  * 注册 Prompts（提示模板）
  */
 function registerPrompts(mcpServer: McpServer, ctx: ToolContext) {
+  // Register initialization prompts (Sprint 1 - Core Prompts)
+  logger.info('Registering initialization prompts...');
+  registerAllPrompts({ server: mcpServer });
+  logger.info('Initialization prompts registered successfully');
+
   // create-issue - 创建 Issue 的提示模板
   mcpServer.registerPrompt(
     'create-issue',
