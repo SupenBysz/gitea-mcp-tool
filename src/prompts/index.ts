@@ -28,11 +28,9 @@ export interface PromptContext {
  * @param context - The prompt context containing the MCP server
  */
 export function registerAllPrompts(context: PromptContext): void {
-  // Register initialization prompts (Sprint 1 - Core Prompts)
-  registerInitPrompts(context);
-
-  // Register additional prompts (Sprint 2 - Enhanced Prompts)
-  registerProjectPrompts(context);
-  registerIssuePrompts(context);
-  registerPRPrompts(context);
+  // Register only core prompts (4 total)
+  registerInitPrompts(context);    // 1 prompt: 配置连接
+  registerIssuePrompts(context);   // 1 prompt: 创建Issue
+  registerPRPrompts(context);      // 1 prompt: 创建PR
+  registerProjectPrompts(context); // 1 prompt: 初始化项目看板
 }

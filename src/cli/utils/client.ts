@@ -75,7 +75,14 @@ export async function createClient(options: ClientOptions) {
     }
 
     // 创建客户端
-    const client = new GiteaClient(serverUrl, token);
+    const client = new GiteaClient({
+      baseUrl: serverUrl,
+      apiToken: token,
+    });
+
+    // 将 serverUrl 附加到 client 上以便后续使用
+    (client as any)._serverUrl = serverUrl;
+
     return client;
   } catch (err: any) {
     error(`创建客户端失败: ${err.message}`);
@@ -87,27 +94,20 @@ export async function createClient(options: ClientOptions) {
  * 创建上下文管理器
  */
 export async function createContextManager(client: GiteaClient, options: ClientOptions) {
-  const contextManager = new ContextManager(client);
+  // 从 client 获取 serverUrl
+  const serverUrl = (client as any)._serverUrl;
 
   // 从项目配置加载默认上下文
   const projectConfig = await loadProjectConfig();
-  if (projectConfig) {
-    if (projectConfig.owner && projectConfig.repo) {
-      contextManager.setContext({
-        owner: projectConfig.owner,
-        repo: projectConfig.repo,
-      });
-    }
-  }
 
-  // 命令行参数优先级最高
-  if (options.owner || options.repo) {
-    contextManager.setContext({
-      owner: options.owner,
-      repo: options.repo,
-    });
-  }
+  // 构建完整配置
+  const config: any = {
+    baseUrl: serverUrl,
+    defaultOwner: options.owner || projectConfig?.owner,
+    defaultRepo: options.repo || projectConfig?.repo,
+  };
 
+  const contextManager = new ContextManager(config);
   return contextManager;
 }
 

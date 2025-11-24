@@ -77,16 +77,22 @@ async function main() {
     logger.info({ baseUrl: config.baseUrl }, 'Connecting to Gitea...');
     const giteaClient = new GiteaClient(config);
 
-    // 3. 测试连接
-    logger.info('Testing Gitea connection...');
-    const connected = await giteaClient.testConnection();
-    if (!connected) {
-      throw new Error('Failed to connect to Gitea server');
-    }
-
-    // 获取当前用户信息
-    const currentUser = await giteaClient.getCurrentUser();
-    logger.info({ user: currentUser.login }, 'Connected to Gitea successfully');
+    // 3. 异步测试连接（不阻塞启动）
+    logger.info('Gitea client initialized, connection will be tested on first use');
+    // 在后台测试连接，不等待结果
+    giteaClient.testConnection().then((connected) => {
+      if (connected) {
+        giteaClient.getCurrentUser().then((user) => {
+          logger.info({ user: user.login }, 'Connected to Gitea successfully');
+        }).catch((err) => {
+          logger.warn({ error: err.message }, 'Failed to get current user info');
+        });
+      } else {
+        logger.warn('Failed to connect to Gitea server, tools will fail until connection is established');
+      }
+    }).catch((err) => {
+      logger.warn({ error: err.message }, 'Failed to test Gitea connection');
+    });
 
     // 4. 初始化上下文管理器
     logger.info('Initializing context manager...');
@@ -166,7 +172,8 @@ async function main() {
       capabilities: ['tools', 'prompts', 'elicitation'],
     });
   } catch (error) {
-    logger.error({ error }, 'Failed to start server');
+    logger.error({ error, stack: error instanceof Error ? error.stack : undefined, message: error instanceof Error ? error.message : String(error) }, 'Failed to start server');
+    console.error('Detailed error:', error);
     process.exit(1);
   }
 }
@@ -611,236 +618,16 @@ function registerUserTools(mcpServer: McpServer, ctx: ToolContext) {
  * 注册 Prompts（提示模板）
  */
 function registerPrompts(mcpServer: McpServer, ctx: ToolContext) {
-  // Register initialization prompts (Sprint 1 - Core Prompts)
-  logger.info('Registering initialization prompts...');
+  // Register core prompts from prompt modules
+  logger.info('Registering prompts...');
   registerAllPrompts({ server: mcpServer });
-  logger.info('Initialization prompts registered successfully');
+  logger.info('Prompts registered successfully');
 
-  // create-issue - 创建 Issue 的提示模板
-  mcpServer.registerPrompt(
-    'create-issue',
-    {
-      title: '创建 Issue',
-      description: '交互式创建 Gitea Issue 的提示模板',
-      argsSchema: {
-        owner: z.string().optional().describe('仓库所有者（使用上下文默认值如果未提供）'),
-        repo: z.string().optional().describe('仓库名称（使用上下文默认值如果未提供）'),
-      },
-    },
-    async (args) => {
-      const owner = ctx.contextManager.resolveOwner(args?.owner);
-      const repo = ctx.contextManager.resolveRepo(args?.repo);
-
-      return {
-        description: `为 ${owner}/${repo} 创建 Issue`,
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `请帮我在 ${owner}/${repo} 仓库中创建一个新的 Issue。
-
-请按照以下格式提供信息：
-
-**标题**：[简洁明确的标题]
-
-**描述**：
-[详细描述问题或需求，包括：
-- 当前行为
-- 期望行为
-- 重现步骤（如果是 Bug）
-- 相关截图或日志（如果有）]
-
-**标签**：[可选，如 bug, enhancement, documentation 等]
-
-**优先级**：[可选，如 低/中/高]
-
-**指派给**：[可选，用户名]
-
-请根据实际情况填写上述信息，我会使用 gitea_issue_create 工具创建 Issue。`,
-            },
-          },
-        ],
-      };
-    }
-  );
-
-  // create-pr - 创建 Pull Request 的提示模板
-  mcpServer.registerPrompt(
-    'create-pr',
-    {
-      title: '创建 Pull Request',
-      description: '交互式创建 Gitea Pull Request 的提示模板',
-      argsSchema: {
-        owner: z.string().optional().describe('仓库所有者'),
-        repo: z.string().optional().describe('仓库名称'),
-        from_branch: z.string().describe('源分支名称'),
-        to_branch: z.string().optional().describe('目标分支名称（默认：main）'),
-      },
-    },
-    async (args) => {
-      const owner = ctx.contextManager.resolveOwner(args?.owner);
-      const repo = ctx.contextManager.resolveRepo(args?.repo);
-      const fromBranch = args?.from_branch || '<源分支>';
-      const toBranch = args?.to_branch || 'main';
-
-      return {
-        description: `从 ${fromBranch} 到 ${toBranch} 的 Pull Request`,
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `请帮我在 ${owner}/${repo} 仓库中创建一个 Pull Request。
-
-**仓库**：${owner}/${repo}
-**源分支**：${fromBranch}
-**目标分支**：${toBranch}
-
-请提供以下信息：
-
-**标题**：[简洁明确的 PR 标题]
-
-**描述**：
-[详细描述本次变更，包括：
-- 变更内容概述
-- 解决的问题或实现的功能
-- 技术方案说明
-- 测试情况
-- 相关 Issue（如果有）]
-
-**审查者**：[可选，指定审查者的用户名]
-
-我会先使用 gitea_repo_compare 查看代码差异，然后使用 gitea_pr_create 创建 PR。`,
-            },
-          },
-        ],
-      };
-    }
-  );
-
-  // review-pr - 审查 Pull Request 的提示模板
-  mcpServer.registerPrompt(
-    'review-pr',
-    {
-      title: '审查 Pull Request',
-      description: '交互式审查 Gitea Pull Request 的提示模板',
-      argsSchema: {
-        owner: z.string().optional().describe('仓库所有者'),
-        repo: z.string().optional().describe('仓库名称'),
-        pr_number: z.string().describe('Pull Request 编号'),
-      },
-    },
-    async (args) => {
-      const owner = ctx.contextManager.resolveOwner(args?.owner);
-      const repo = ctx.contextManager.resolveRepo(args?.repo);
-      const prNumber = args?.pr_number || '<PR编号>';
-
-      return {
-        description: `审查 PR #${prNumber}`,
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `请帮我审查 ${owner}/${repo} 仓库中的 Pull Request #${prNumber}。
-
-我需要你：
-
-1. 使用 gitea_pr_get 获取 PR 详情
-2. 分析代码变更内容
-3. 检查以下方面：
-   - 代码质量和规范
-   - 潜在的问题或 Bug
-   - 性能影响
-   - 安全性考虑
-   - 测试覆盖
-   - 文档完整性
-
-4. 提供审查意见：
-   - ✅ 批准（approve）- 代码质量好，可以合并
-   - 💬 评论（comment）- 提出建议但不阻止合并
-   - ❌ 请求修改（request_changes）- 必须修改后才能合并
-
-请使用 gitea_pr_review 工具提交你的审查意见。`,
-            },
-          },
-        ],
-      };
-    }
-  );
-
-  // init-project-board - 初始化项目看板的提示模板
-  mcpServer.registerPrompt(
-    'init-project-board',
-    {
-      title: '初始化项目看板',
-      description: '交互式初始化 Gitea 项目看板的提示模板',
-      argsSchema: {
-        owner: z.string().optional().describe('仓库所有者'),
-        repo: z.string().optional().describe('仓库名称'),
-      },
-    },
-    async (args) => {
-      const owner = ctx.contextManager.resolveOwner(args?.owner);
-      const repo = ctx.contextManager.resolveRepo(args?.repo);
-
-      return {
-        description: `初始化 ${owner}/${repo} 的项目看板`,
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `请帮我在 ${owner}/${repo} 仓库中初始化项目看板。
-
-我提供了以下看板类型供选择：
-
-**1. Bug追踪看板** - 集中管理和追踪软件缺陷
-**2. 部署实施看板** - 管理系统部署、上线、发布流程
-**3. 运维管理看板** - 日常运维任务、系统维护、监控告警
-**4. 文档维护看板** - 管理技术文档、用户手册、API文档
-**5. 优化改进看板** - 代码重构、性能优化、技术债务管理
-**6. 功能开发看板** - 新功能设计、开发、交付
-**7. 测试管理看板** - 测试用例编写、测试执行、缺陷跟踪
-**8. 安全与合规看板** - 安全漏洞修复、合规性审查、安全加固
-**9. 研发运营看板** - CI/CD流水线、基础设施即代码、自动化工具
-**10. 客户支持看板** - 客户反馈、支持工单、功能请求
-**11. 设计与原型看板** - UI/UX设计、原型评审、设计系统维护
-**12. 数据与分析看板** - 数据需求、报表开发、数据质量管理
-
-每种看板类型支持4种工作流方案：
-
-**极简版（3状态）** - 适合个人项目和小团队
-  待办 → 进行中 → 已完成
-
-**标准版（5状态）** - 适合小型团队和标准开发流程
-  待办事项 → 计划中 → 进行中 → 测试验证 → 已完成
-
-**全面版（8状态）** - 适合中大型团队和企业级项目
-  待办事项 → 需求分析 → 设计评审 → 开发中 → 代码审查 → 测试中 → 预发布 → 已完成
-
-**敏捷迭代版（6状态）** - 适合Scrum敏捷团队
-  待办池 → Sprint待办 → 开发中 → 代码评审 → 测试/验收 → 已完成
-
-请告诉我：
-1. 你想创建哪种类型的看板？（1-12）
-2. 你想使用哪种工作流方案？（极简版/标准版/全面版/敏捷迭代版）
-
-我会根据你的选择：
-1. 使用 gitea_project_create 创建项目看板
-2. 使用 gitea_project_column_create 创建对应的看板列
-3. 使用 gitea_label_repo_create 创建预置标签
-
-详细的看板方案说明请参考项目中的 docs/project-board-schemes.md 文档。`,
-            },
-          },
-        ],
-      };
-    }
-  );
-
-  logger.info('Registered 4 prompts: create-issue, create-pr, review-pr, init-project-board');
+  // Legacy prompts have been moved to src/prompts/ modules
+  // Only 3 core prompts are now registered:
+  // - gitea-mcp-tool:配置连接 (from init-prompts.ts)
+  // - gitea-mcp-tool:创建Issue (from issue-prompts.ts)
+  // - gitea-mcp-tool:创建PR (from pr-prompts.ts)
 }
 
 // 启动服务器
