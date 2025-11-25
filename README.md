@@ -4,7 +4,7 @@ Gitea API 的 MCP (Model Context Protocol) 适配器，使 AI 助手（Claude De
 
 ## 功能特性
 
-### 当前版本：v1.6.0
+### 当前版本：v1.6.2
 
 提供 **199 个工具** + **12 个交互式 Prompts**，实现 **99% Gitea API 覆盖度**：
 

@@ -287,6 +287,25 @@ get_latest_version() {
         log_info "Fetching latest release version..."
     fi
 
+    # 首先尝试从 npm registry 获取最新版本（最可靠的来源）
+    local npm_api_url="https://registry.npmjs.org/gitea-mcp-tool/latest"
+
+    if command_exists curl; then
+        VERSION=$(curl -s "${npm_api_url}" | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)
+    elif command_exists wget; then
+        VERSION=$(wget -qO- "${npm_api_url}" | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)
+    else
+        log_error "Neither curl nor wget is available"
+        exit 1
+    fi
+
+    # 如果从 npm 获取成功，添加 v 前缀
+    if [ -n "$VERSION" ]; then
+        VERSION="v${VERSION}"
+        return
+    fi
+
+    # 备选方案：尝试从 Gitea releases API 获取
     local api_url="${GITEA_URL}/api/v1/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
     local auth_header=""
 
@@ -306,18 +325,15 @@ get_latest_version() {
         else
             VERSION=$(wget -qO- "${api_url}" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
         fi
-    else
-        log_error "Neither curl nor wget is available"
-        exit 1
     fi
 
     if [ -z "$VERSION" ]; then
         if [ "$INSTALL_LANG" = "zh" ]; then
-            log_warn "无法获取最新版本，使用默认: v1.4.0"
+            log_warn "无法获取最新版本，使用默认: v1.6.2"
         else
-            log_warn "Could not fetch latest version, using default: v1.4.0"
+            log_warn "Could not fetch latest version, using default: v1.6.2"
         fi
-        VERSION="v1.4.0"
+        VERSION="v1.6.2"
     fi
 }
 
