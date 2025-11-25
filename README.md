@@ -4,6 +4,7 @@ Gitea API 的 MCP (Model Context Protocol) 服务器，让 AI 助手能够与 Gi
 
 [![npm version](https://img.shields.io/npm/v/gitea-mcp-tool.svg)](https://www.npmjs.com/package/gitea-mcp-tool)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub](https://img.shields.io/badge/GitHub-SupenBysz%2Fgitea--mcp--tool-blue?logo=github)](https://github.com/SupenBysz/gitea-mcp-tool)
 
 ## 特性
 
@@ -106,8 +107,12 @@ keactl cicd validate           # 验证配置
 
 ## 文档
 
-详细文档请参阅 [Wiki](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki):
+详细文档请参阅 Wiki:
 
+**GitHub Wiki (推荐):**
+- [Wiki 首页](https://github.com/SupenBysz/gitea-mcp-tool/wiki)
+
+**Gitea Wiki:**
 - [安装指南](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Installation)
 - [配置说明](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Configuration)
 - [工具列表](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Tools)
@@ -126,4 +131,5 @@ MIT License
 
 ## 问题反馈
 
-[提交 Issue](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues)
+- [GitHub Issues](https://github.com/SupenBysz/gitea-mcp-tool/issues) (推荐)
+- [Gitea Issues](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues)

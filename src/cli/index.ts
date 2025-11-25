@@ -35,6 +35,23 @@ program
   .option('--json', '以 JSON 格式输出结果')
   .option('--no-color', '禁用彩色输出');
 
+// 添加帮助信息头部（Logo + 版本）
+program.addHelpText('beforeAll', `
+  ${chalk.cyan('◆')} ${chalk.bold('keactl')} ${chalk.gray(`v${packageJson.version}`)}
+    ${chalk.gray('▔▔▔▔▔▔')}
+  ${chalk.white('Gitea Command Line Tool')}
+`);
+
+// 添加帮助信息尾部（链接信息）
+program.addHelpText('afterAll', `
+${chalk.bold('资源链接:')}
+  ${chalk.cyan('GitHub:')}  https://github.com/SupenBysz/gitea-mcp-tool
+  ${chalk.cyan('Wiki:')}    https://github.com/SupenBysz/gitea-mcp-tool/wiki
+  ${chalk.cyan('Issues:')}  https://github.com/SupenBysz/gitea-mcp-tool/issues
+
+${chalk.gray('遇到问题? 欢迎提交 Issue 反馈!')}
+`);
+
 // 初始化命令 (放在最前面，最常用)
 program.addCommand(createInitCommand());
 
