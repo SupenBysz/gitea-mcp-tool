@@ -1,0 +1,147 @@
+name: Publish Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "Gitea Actions"
+          git config --global user.email "actions@gitea.local"
+
+      - name: Determine version bump type
+        id: bump_type
+        run: |
+          # 获取最近的 commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+
+          # 根据 commit message 前缀确定版本类型
+          if [[ "$COMMIT_MSG" == *"breaking"* ]] || [[ "$COMMIT_MSG" == *"BREAKING"* ]]; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif [[ "$COMMIT_MSG" == feat:* ]] || [[ "$COMMIT_MSG" == feat\(* ]]; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version
+        id: version
+        run: |
+          # 获取当前版本
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+
+          # 移除 beta 后缀（如果有）
+          BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
+
+          # 解析版本号
+          MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
+          PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+
+          # 根据类型递增版本
+          BUMP_TYPE="${{ steps.bump_type.outputs.type }}"
+          case "$BUMP_TYPE" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              # 如果当前是 beta 版本，直接使用 base version
+              if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
+                : # 保持 PATCH 不变
+              else
+                PATCH=$((PATCH + 1))
+              fi
+              ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "New version: $NEW_VERSION (bump type: $BUMP_TYPE)"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          # 更新 package.json
+          npm version "$NEW_VERSION" --no-git-tag-version
+
+      - name: Update README version
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/\*\*当前版本\*\*: v[0-9.]*/**当前版本**: v${NEW_VERSION}/" README.md || true
+
+      - name: Publish to npm
+        run: npm publish --tag latest --registry https://registry.npmjs.org/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit and tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git add package.json README.md
+          git commit -m "chore: release v${VERSION} [skip ci]" || true
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          git push origin main --tags || true
+
+      - name: Create Gitea Release
+        uses: https://gitea.com/actions/release-action@main
+        with:
+          title: "v${{ steps.version.outputs.version }}"
+          body: |
+            ## 安装
+
+            ```bash
+            npm install -g gitea-mcp-tool@${{ steps.version.outputs.version }}
+            ```
+
+            ## 更新
+
+            ```bash
+            npm update -g gitea-mcp-tool
+            ```
+
+            ---
+            查看完整更新日志: [Changelog](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Changelog)
+          tag_name: "v${{ steps.version.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create summary
+        run: |
+          echo "## 正式版本发布成功 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**版本号**: \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**安装命令**:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "npm install -g gitea-mcp-tool@latest" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**npm**: https://www.npmjs.com/package/gitea-mcp-tool" >> $GITHUB_STEP_SUMMARY
