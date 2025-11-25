@@ -324,8 +324,9 @@ export async function addIssueToProjectColumn(
   args: {
     owner?: string;
     repo?: string;
-    column_id: number;
-    issue_id: number;
+    projectId: number;
+    columnId: number;
+    issueIndex: number;
   }
 ) {
   logger.debug({ args }, 'Adding issue to project column');
@@ -334,24 +335,25 @@ export async function addIssueToProjectColumn(
 
   try {
     // 尝试使用 API 添加 Issue 到项目列
+    // Gitea API: POST /repos/{owner}/{repo}/projects/{project_id}/columns/{column_id}/issues
     const result = await ctx.client.post<any>(
-      `/repos/${owner}/${repo}/projects/columns/${args.column_id}/issues`,
-      { issue_id: args.issue_id }
+      `/repos/${owner}/${repo}/projects/${args.projectId}/columns/${args.columnId}/issues`,
+      { issue_index: args.issueIndex }
     );
 
     logger.info(
-      { owner, repo, column: args.column_id, issue: args.issue_id },
+      { owner, repo, project: args.projectId, column: args.columnId, issue: args.issueIndex },
       'Issue added to project column successfully'
     );
 
     return {
       success: true,
-      message: `Issue #${args.issue_id} added to column ${args.column_id}`,
+      message: `Issue #${args.issueIndex} added to project ${args.projectId} column ${args.columnId}`,
       result,
     };
   } catch (error: any) {
     logger.error(
-      { owner, repo, column: args.column_id, issue: args.issue_id, error: error.message },
+      { owner, repo, project: args.projectId, column: args.columnId, issue: args.issueIndex, error: error.message },
       'Failed to add issue to project column'
     );
 
