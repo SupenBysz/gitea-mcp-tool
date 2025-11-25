@@ -11,6 +11,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import { createInitCommand } from './commands/init/index.js';
+import { createCICDCommand } from './commands/cicd/index.js';
 
 // 获取 package.json 的版本信息
 const __filename = fileURLToPath(import.meta.url);
@@ -35,6 +36,9 @@ program
 
 // 初始化命令 (放在最前面，最常用)
 program.addCommand(createInitCommand());
+
+// CI/CD 管理命令
+program.addCommand(createCICDCommand());
 
 // 上下文管理命令
 program
