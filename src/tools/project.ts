@@ -334,21 +334,33 @@ export async function addIssueToProjectColumn(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   try {
-    // 尝试使用 API 添加 Issue 到项目列
-    // Gitea API: POST /repos/{owner}/{repo}/projects/{project_id}/columns/{column_id}/issues
+    // 首先获取 Issue 的实际 ID（API 需要 issue_id 而不是 issue index）
+    const issue = await ctx.client.get<{ id: number }>(
+      `/repos/${owner}/${repo}/issues/${args.issueIndex}`
+    );
+
+    if (!issue || !issue.id) {
+      throw new Error(`Issue #${args.issueIndex} not found`);
+    }
+
+    logger.debug({ issueIndex: args.issueIndex, issueId: issue.id }, 'Got issue ID');
+
+    // Gitea API: POST /repos/{owner}/{repo}/projects/columns/{column_id}/issues
+    // 注意：路径中不包含 project_id，只需要 column_id
+    // 参数：issue_id（Issue 的实际 ID，不是 index）
     const result = await ctx.client.post<any>(
-      `/repos/${owner}/${repo}/projects/${args.projectId}/columns/${args.columnId}/issues`,
-      { issue_index: args.issueIndex }
+      `/repos/${owner}/${repo}/projects/columns/${args.columnId}/issues`,
+      { issue_id: issue.id }
     );
 
     logger.info(
-      { owner, repo, project: args.projectId, column: args.columnId, issue: args.issueIndex },
+      { owner, repo, project: args.projectId, column: args.columnId, issue: args.issueIndex, issueId: issue.id },
       'Issue added to project column successfully'
     );
 
     return {
       success: true,
-      message: `Issue #${args.issueIndex} added to project ${args.projectId} column ${args.columnId}`,
+      message: `Issue #${args.issueIndex} (ID: ${issue.id}) added to column ${args.columnId}`,
       result,
     };
   } catch (error: any) {
@@ -357,12 +369,10 @@ export async function addIssueToProjectColumn(
       'Failed to add issue to project column'
     );
 
-    // 返回详细错误信息，帮助判断是否需要二次开发 Gitea
     return {
       success: false,
       error: error.message,
-      message: `Failed to add issue to project column. This API may not be supported in current Gitea version.`,
-      requires_gitea_development: error.message.includes('404') || error.message.includes('not found'),
+      message: `Failed to add issue to project column: ${error.message}`,
     };
   }
 }
