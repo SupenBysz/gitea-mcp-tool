@@ -9,6 +9,7 @@ import type { ContextManager } from '../context-manager.js';
 import type {
   GiteaRepository,
   CreateRepoOptions,
+  UpdateRepoOptions,
   SearchRepoOptions,
 } from '../types/gitea.js';
 import { createLogger } from '../logger.js';
@@ -133,6 +134,130 @@ export async function getRepository(
       open_pr_counter: repository.open_pr_counter,
       default_branch: repository.default_branch,
       archived: repository.archived,
+      created_at: repository.created_at,
+      updated_at: repository.updated_at,
+      permissions: repository.permissions,
+    },
+  };
+}
+
+/**
+ * 更新仓库
+ */
+export async function updateRepository(
+  ctx: RepositoryToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    name?: string;
+    description?: string;
+    website?: string;
+    private?: boolean;
+    template?: boolean;
+    has_issues?: boolean;
+    has_wiki?: boolean;
+    has_pull_requests?: boolean;
+    has_projects?: boolean;
+    has_releases?: boolean;
+    has_packages?: boolean;
+    has_actions?: boolean;
+    default_branch?: string;
+    archived?: boolean;
+    allow_merge_commits?: boolean;
+    allow_rebase?: boolean;
+    allow_rebase_explicit?: boolean;
+    allow_squash_merge?: boolean;
+    allow_rebase_update?: boolean;
+    default_delete_branch_after_merge?: boolean;
+    default_merge_style?: 'merge' | 'rebase' | 'rebase-merge' | 'squash';
+    default_allow_maintainer_edit?: boolean;
+    ignore_whitespace_conflicts?: boolean;
+  }
+) {
+  logger.debug({ args }, 'Updating repository');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  // 构建更新选项，只包含提供的字段
+  const updateOptions: UpdateRepoOptions = {};
+
+  if (args.name !== undefined) updateOptions.name = args.name;
+  if (args.description !== undefined) updateOptions.description = args.description;
+  if (args.website !== undefined) updateOptions.website = args.website;
+  if (args.private !== undefined) updateOptions.private = args.private;
+  if (args.template !== undefined) updateOptions.template = args.template;
+  if (args.has_issues !== undefined) updateOptions.has_issues = args.has_issues;
+  if (args.has_wiki !== undefined) updateOptions.has_wiki = args.has_wiki;
+  if (args.has_pull_requests !== undefined) updateOptions.has_pull_requests = args.has_pull_requests;
+  if (args.has_projects !== undefined) updateOptions.has_projects = args.has_projects;
+  if (args.has_releases !== undefined) updateOptions.has_releases = args.has_releases;
+  if (args.has_packages !== undefined) updateOptions.has_packages = args.has_packages;
+  if (args.has_actions !== undefined) updateOptions.has_actions = args.has_actions;
+  if (args.default_branch !== undefined) updateOptions.default_branch = args.default_branch;
+  if (args.archived !== undefined) updateOptions.archived = args.archived;
+  if (args.allow_merge_commits !== undefined) updateOptions.allow_merge_commits = args.allow_merge_commits;
+  if (args.allow_rebase !== undefined) updateOptions.allow_rebase = args.allow_rebase;
+  if (args.allow_rebase_explicit !== undefined) updateOptions.allow_rebase_explicit = args.allow_rebase_explicit;
+  if (args.allow_squash_merge !== undefined) updateOptions.allow_squash_merge = args.allow_squash_merge;
+  if (args.allow_rebase_update !== undefined) updateOptions.allow_rebase_update = args.allow_rebase_update;
+  if (args.default_delete_branch_after_merge !== undefined) updateOptions.default_delete_branch_after_merge = args.default_delete_branch_after_merge;
+  if (args.default_merge_style !== undefined) updateOptions.default_merge_style = args.default_merge_style;
+  if (args.default_allow_maintainer_edit !== undefined) updateOptions.default_allow_maintainer_edit = args.default_allow_maintainer_edit;
+  if (args.ignore_whitespace_conflicts !== undefined) updateOptions.ignore_whitespace_conflicts = args.ignore_whitespace_conflicts;
+
+  const repository = await ctx.client.patch<GiteaRepository>(
+    `/repos/${owner}/${repo}`,
+    updateOptions
+  );
+
+  logger.info({ owner, repo: repository.name }, 'Repository updated successfully');
+
+  return {
+    success: true,
+    repository: {
+      id: repository.id,
+      owner: {
+        id: repository.owner.id,
+        login: repository.owner.login,
+        full_name: repository.owner.full_name,
+      },
+      name: repository.name,
+      full_name: repository.full_name,
+      description: repository.description,
+      private: repository.private,
+      fork: repository.fork,
+      template: repository.template,
+      empty: repository.empty,
+      mirror: repository.mirror,
+      size: repository.size,
+      language: repository.language,
+      html_url: repository.html_url,
+      ssh_url: repository.ssh_url,
+      clone_url: repository.clone_url,
+      website: repository.website,
+      stars_count: repository.stars_count,
+      forks_count: repository.forks_count,
+      watchers_count: repository.watchers_count,
+      open_issues_count: repository.open_issues_count,
+      open_pr_counter: repository.open_pr_counter,
+      default_branch: repository.default_branch,
+      archived: repository.archived,
+      has_issues: repository.has_issues,
+      has_wiki: repository.has_wiki,
+      has_pull_requests: repository.has_pull_requests,
+      has_projects: repository.has_projects,
+      has_releases: repository.has_releases,
+      has_packages: repository.has_packages,
+      has_actions: repository.has_actions,
+      allow_merge_commits: repository.allow_merge_commits,
+      allow_rebase: repository.allow_rebase,
+      allow_rebase_explicit: repository.allow_rebase_explicit,
+      allow_squash_merge: repository.allow_squash_merge,
+      allow_rebase_update: repository.allow_rebase_update,
+      default_delete_branch_after_merge: repository.default_delete_branch_after_merge,
+      default_merge_style: repository.default_merge_style,
+      default_allow_maintainer_edit: repository.default_allow_maintainer_edit,
+      ignore_whitespace_conflicts: repository.ignore_whitespace_conflicts,
       created_at: repository.created_at,
       updated_at: repository.updated_at,
       permissions: repository.permissions,

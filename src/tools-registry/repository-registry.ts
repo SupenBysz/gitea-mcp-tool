@@ -110,6 +110,85 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
     }
   );
 
+  // gitea_repo_update - 更新仓库
+  mcpServer.registerTool(
+    'gitea_repo_update',
+    {
+      title: '更新仓库',
+      description: 'Update repository metadata (description, website, settings, etc.)',
+      inputSchema: z.object({
+        owner: z
+          .string()
+          .optional()
+          .describe('Repository owner. Uses context if not provided'),
+        repo: z
+          .string()
+          .optional()
+          .describe('Repository name. Uses context if not provided'),
+        name: z.string().optional().describe('New repository name'),
+        description: z.string().optional().describe('Repository description'),
+        website: z.string().optional().describe('Project website URL'),
+        private: z.boolean().optional().describe('Whether repository is private'),
+        template: z.boolean().optional().describe('Whether repository is a template'),
+        has_issues: z.boolean().optional().describe('Enable issues'),
+        has_wiki: z.boolean().optional().describe('Enable wiki'),
+        has_pull_requests: z.boolean().optional().describe('Enable pull requests'),
+        has_projects: z.boolean().optional().describe('Enable projects'),
+        has_releases: z.boolean().optional().describe('Enable releases'),
+        has_packages: z.boolean().optional().describe('Enable packages'),
+        has_actions: z.boolean().optional().describe('Enable actions'),
+        default_branch: z.string().optional().describe('Default branch name'),
+        archived: z.boolean().optional().describe('Archive the repository'),
+        allow_merge_commits: z.boolean().optional().describe('Allow merge commits'),
+        allow_rebase: z.boolean().optional().describe('Allow rebase'),
+        allow_rebase_explicit: z.boolean().optional().describe('Allow rebase explicit'),
+        allow_squash_merge: z.boolean().optional().describe('Allow squash merge'),
+        allow_rebase_update: z.boolean().optional().describe('Allow rebase update'),
+        default_delete_branch_after_merge: z
+          .boolean()
+          .optional()
+          .describe('Delete branch after merge by default'),
+        default_merge_style: z
+          .enum(['merge', 'rebase', 'rebase-merge', 'squash'])
+          .optional()
+          .describe('Default merge style'),
+        default_allow_maintainer_edit: z
+          .boolean()
+          .optional()
+          .describe('Allow maintainers to edit'),
+        ignore_whitespace_conflicts: z
+          .boolean()
+          .optional()
+          .describe('Ignore whitespace conflicts'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await RepositoryTools.updateRepository(toolsContext, args as any);
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error({ error: errorMessage }, 'Failed to update repository');
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Error: ${errorMessage}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
   // gitea_repo_list - 列出仓库
   mcpServer.registerTool(
     'gitea_repo_list',
@@ -235,5 +314,5 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
     }
   );
 
-  logger.info('Registered 5 repository tools');
+  logger.info('Registered 6 repository tools');
 }

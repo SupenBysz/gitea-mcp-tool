@@ -175,6 +175,32 @@ export interface CreateRepoOptions {
   trust_model?: 'default' | 'collaborator' | 'committer' | 'collaboratorcommitter';
 }
 
+export interface UpdateRepoOptions {
+  name?: string;
+  description?: string;
+  website?: string;
+  private?: boolean;
+  template?: boolean;
+  has_issues?: boolean;
+  has_wiki?: boolean;
+  has_pull_requests?: boolean;
+  has_projects?: boolean;
+  has_releases?: boolean;
+  has_packages?: boolean;
+  has_actions?: boolean;
+  default_branch?: string;
+  archived?: boolean;
+  allow_merge_commits?: boolean;
+  allow_rebase?: boolean;
+  allow_rebase_explicit?: boolean;
+  allow_squash_merge?: boolean;
+  allow_rebase_update?: boolean;
+  default_delete_branch_after_merge?: boolean;
+  default_merge_style?: 'merge' | 'rebase' | 'rebase-merge' | 'squash';
+  default_allow_maintainer_edit?: boolean;
+  ignore_whitespace_conflicts?: boolean;
+}
+
 // ============================================================
 // Issue 相关
 // ============================================================
