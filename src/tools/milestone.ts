@@ -2,27 +2,31 @@
  * Gitea Milestone Management Tools
  */
 
-import { GiteaClient } from '../gitea-client.js';
-import { ContextManager } from '../context-manager.js';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
 import { createLogger } from '../logger.js';
 
 const logger = createLogger('tools:milestone');
+
+export interface MilestoneToolsContext {
+  client: GiteaClient;
+  contextManager: ContextManager;
+}
 
 /**
  * 创建里程碑
  */
 export async function createMilestone(
+  ctx: MilestoneToolsContext,
   args: {
     title: string;
     description?: string;
     due_on?: string;
     owner?: string;
     repo?: string;
-  },
-  client: GiteaClient,
-  context: ContextManager
+  }
 ) {
-  const { owner, repo } = context.resolveOwnerRepo(args.owner, args.repo);
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
   logger.info({ owner, repo, title: args.title }, 'Creating milestone');
 
   const requestBody: {
@@ -41,7 +45,7 @@ export async function createMilestone(
     requestBody.due_on = args.due_on;
   }
 
-  const milestone = await client.post(
+  const milestone = await ctx.client.post(
     `/repos/${owner}/${repo}/milestones`,
     requestBody
   );
@@ -65,17 +69,16 @@ export async function createMilestone(
  * 获取里程碑列表
  */
 export async function listMilestones(
+  ctx: MilestoneToolsContext,
   args: {
     owner?: string;
     repo?: string;
     state?: 'open' | 'closed' | 'all';
     page?: number;
     limit?: number;
-  },
-  client: GiteaClient,
-  context: ContextManager
+  }
 ) {
-  const { owner, repo } = context.resolveOwnerRepo(args.owner, args.repo);
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
   logger.info({ owner, repo, state: args.state }, 'Listing milestones');
 
   const query: Record<string, string | number> = {};
@@ -83,7 +86,7 @@ export async function listMilestones(
   if (args.page) query.page = args.page;
   if (args.limit) query.limit = args.limit;
 
-  const milestones = await client.get(`/repos/${owner}/${repo}/milestones`, query);
+  const milestones = await ctx.client.get(`/repos/${owner}/${repo}/milestones`, query);
 
   logger.info({ count: milestones.length }, 'Milestones retrieved');
 
@@ -107,18 +110,17 @@ export async function listMilestones(
  * 获取里程碑详情
  */
 export async function getMilestone(
+  ctx: MilestoneToolsContext,
   args: {
     id: number;
     owner?: string;
     repo?: string;
-  },
-  client: GiteaClient,
-  context: ContextManager
+  }
 ) {
-  const { owner, repo } = context.resolveOwnerRepo(args.owner, args.repo);
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
   logger.info({ owner, repo, id: args.id }, 'Getting milestone');
 
-  const milestone = await client.get(
+  const milestone = await ctx.client.get(
     `/repos/${owner}/${repo}/milestones/${args.id}`
   );
 
@@ -142,6 +144,7 @@ export async function getMilestone(
  * 更新里程碑
  */
 export async function updateMilestone(
+  ctx: MilestoneToolsContext,
   args: {
     id: number;
     title?: string;
@@ -150,11 +153,9 @@ export async function updateMilestone(
     state?: 'open' | 'closed';
     owner?: string;
     repo?: string;
-  },
-  client: GiteaClient,
-  context: ContextManager
+  }
 ) {
-  const { owner, repo } = context.resolveOwnerRepo(args.owner, args.repo);
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
   logger.info({ owner, repo, id: args.id }, 'Updating milestone');
 
   const requestBody: {
@@ -169,7 +170,7 @@ export async function updateMilestone(
   if (args.due_on !== undefined) requestBody.due_on = args.due_on;
   if (args.state !== undefined) requestBody.state = args.state;
 
-  const milestone = await client.patch(
+  const milestone = await ctx.client.patch(
     `/repos/${owner}/${repo}/milestones/${args.id}`,
     requestBody
   );
@@ -192,18 +193,17 @@ export async function updateMilestone(
  * 删除里程碑
  */
 export async function deleteMilestone(
+  ctx: MilestoneToolsContext,
   args: {
     id: number;
     owner?: string;
     repo?: string;
-  },
-  client: GiteaClient,
-  context: ContextManager
+  }
 ) {
-  const { owner, repo } = context.resolveOwnerRepo(args.owner, args.repo);
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
   logger.info({ owner, repo, id: args.id }, 'Deleting milestone');
 
-  await client.delete(`/repos/${owner}/${repo}/milestones/${args.id}`);
+  await ctx.client.delete(`/repos/${owner}/${repo}/milestones/${args.id}`);
 
   logger.info({ id: args.id }, 'Milestone deleted');
 
