@@ -554,6 +554,11 @@ export interface GiteaWikiRevision {
   };
 }
 
+export interface GiteaWikiCommitList {
+  commits: GiteaWikiRevision[];
+  count: number;
+}
+
 export interface CreateWikiPageOptions {
   title: string;
   content_base64: string;

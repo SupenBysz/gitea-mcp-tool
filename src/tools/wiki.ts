@@ -10,6 +10,7 @@ import type {
   GiteaWikiPage,
   GiteaWikiPageContent,
   GiteaWikiRevision,
+  GiteaWikiCommitList,
   CreateWikiPageOptions,
   UpdateWikiPageOptions,
 } from '../types/gitea.js';
@@ -78,6 +79,19 @@ export async function listWikiPages(
 }
 
 /**
+ * 解码 base64 内容为 UTF-8 字符串
+ */
+function decodeBase64Content(base64: string | undefined): string | undefined {
+  if (!base64) return undefined;
+  try {
+    return Buffer.from(base64, 'base64').toString('utf-8');
+  } catch (error) {
+    logger.error({ error }, 'Failed to decode base64 content');
+    return undefined;
+  }
+}
+
+/**
  * 获取 Wiki 页面的完整内容
  */
 export async function getWikiPage(
@@ -92,18 +106,26 @@ export async function getWikiPage(
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
+  // 使用 encodeURIComponent 编码页面名称，但需要特殊处理连字符等字符
+  // Gitea API 使用页面名称作为路径参数，某些特殊字符可能需要双重编码或保留
+  const encodedPageName = encodeURIComponent(args.pageName);
+
   const page = await ctx.client.get<GiteaWikiPageContent>(
-    `/repos/${owner}/${repo}/wiki/page/${encodeURIComponent(args.pageName)}`
+    `/repos/${owner}/${repo}/wiki/page/${encodedPageName}`
   );
 
   logger.info({ owner, repo, pageName: args.pageName }, 'Wiki page retrieved');
+
+  // Gitea API 返回的 content 可能是 content_base64 编码的，需要解码
+  // 优先使用已解码的 content，如果没有则从 content_base64 解码
+  const content = page.content || decodeBase64Content(page.content_base64);
 
   return {
     success: true,
     page: {
       title: page.title,
       name: page.name,
-      content: page.content,
+      content: content,
       html_url: cleanWikiUrl(page.html_url),
       sub_url: cleanWikiUrl(page.sub_url),
       last_commit: {
@@ -269,19 +291,25 @@ export async function getWikiRevisions(
     limit: args.limit,
   };
 
-  const revisions = await ctx.client.get<GiteaWikiRevision[]>(
+  // Gitea API 返回 WikiCommitList 对象，包含 commits 数组和 count
+  const response = await ctx.client.get<GiteaWikiCommitList>(
     `/repos/${owner}/${repo}/wiki/revisions/${encodeURIComponent(args.pageName)}`,
     query
   );
 
+  // 处理可能的响应格式：直接数组或 WikiCommitList 对象
+  const commits = Array.isArray(response)
+    ? response as unknown as GiteaWikiRevision[]
+    : (response.commits || []);
+
   logger.info(
-    { owner, repo, pageName: args.pageName, count: revisions.length },
+    { owner, repo, pageName: args.pageName, count: commits.length },
     'Wiki revisions retrieved'
   );
 
   return {
     success: true,
-    revisions: revisions.map(r => ({
+    revisions: commits.map(r => ({
       sha: r.sha,
       message: r.message,
       author: {
@@ -295,7 +323,7 @@ export async function getWikiRevisions(
         date: r.committer.date,
       },
     })),
-    count: revisions.length,
+    count: commits.length,
   };
 }
 
@@ -315,8 +343,10 @@ export async function getWikiPageRevision(
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
+  const encodedPageName = encodeURIComponent(args.pageName);
+
   const page = await ctx.client.get<GiteaWikiPageContent>(
-    `/repos/${owner}/${repo}/wiki/page/${encodeURIComponent(args.pageName)}`,
+    `/repos/${owner}/${repo}/wiki/page/${encodedPageName}`,
     { revision: args.revision }
   );
 
@@ -325,12 +355,15 @@ export async function getWikiPageRevision(
     'Wiki page revision retrieved'
   );
 
+  // 优先使用已解码的 content，如果没有则从 content_base64 解码
+  const content = page.content || decodeBase64Content(page.content_base64);
+
   return {
     success: true,
     page: {
       title: page.title,
       name: page.name,
-      content: page.content,
+      content: content,
       revision: args.revision,
       html_url: cleanWikiUrl(page.html_url),
     },
