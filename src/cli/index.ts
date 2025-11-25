@@ -10,6 +10,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
+import { createInitCommand } from './commands/init/index.js';
 
 // 获取 package.json 的版本信息
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +32,9 @@ program
   .option('-r, --repo <repo>', '仓库名称')
   .option('--json', '以 JSON 格式输出结果')
   .option('--no-color', '禁用彩色输出');
+
+// 初始化命令 (放在最前面，最常用)
+program.addCommand(createInitCommand());
 
 // 上下文管理命令
 program
