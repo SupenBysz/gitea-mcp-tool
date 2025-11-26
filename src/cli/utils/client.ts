@@ -194,3 +194,28 @@ export function resolveOwnerRepo(
 
   return { owner, repo };
 }
+
+/**
+ * 同步获取项目配置中的上下文信息（owner/repo）
+ * 用于不需要完整客户端的场景
+ */
+export function getContextFromConfig(): { owner?: string; repo?: string; giteaUrl?: string } {
+  try {
+    const projectRoot = cwd();
+    const projectConfigPath = join(projectRoot, '.gitea-mcp.json');
+
+    if (existsSync(projectConfigPath)) {
+      const projectConfigManager = new ProjectConfigManager(projectRoot);
+      const config = projectConfigManager.loadConfig();
+      return {
+        owner: config.owner,
+        repo: config.repo,
+        giteaUrl: config.giteaUrl,
+      };
+    }
+  } catch {
+    // 忽略错误
+  }
+
+  return {};
+}

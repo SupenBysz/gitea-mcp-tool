@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import { createInitCommand } from './commands/init/index.js';
 import { createCICDCommand } from './commands/cicd/index.js';
+import { createWorkflowCommand } from './commands/workflow/index.js';
 
 // 获取 package.json 的版本信息
 const __filename = fileURLToPath(import.meta.url);
@@ -39,6 +40,9 @@ program.addCommand(createInitCommand());
 
 // CI/CD 管理命令
 program.addCommand(createCICDCommand());
+
+// Issue 工作流管理命令
+program.addCommand(createWorkflowCommand());
 
 // 上下文管理命令
 program

@@ -49,6 +49,7 @@ import { registerTopicsTools } from './tools-registry/topics-registry.js';
 import { registerPackageTools } from './tools-registry/package-registry.js';
 import { registerAdminTools } from './tools-registry/admin-registry.js';
 import { registerCICDTools } from './tools-registry/cicd-registry.js';
+import { registerWorkflowTools } from './tools-registry/workflow-registry.js';
 import { registerAllPrompts } from './prompts/index.js';
 
 const logger = createLogger('mcp-server');
@@ -157,6 +158,7 @@ async function main() {
     registerPackageTools(mcpServer, toolContext);
     registerAdminTools(mcpServer, toolContext);
     registerCICDTools(mcpServer, toolContext);
+    registerWorkflowTools(mcpServer, toolContext);
 
     // 7. 注册 Prompts
     logger.info('Registering prompts...');
