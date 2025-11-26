@@ -9,6 +9,8 @@ import { parseConfig } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface EscalateOptions {
+  token?: string;
+  server?: string;
   owner?: string;
   repo?: string;
   dryRun?: boolean;
@@ -67,7 +69,10 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
   }
 
   // 创建客户端
-  const client = await createClientAsync({});
+  const client = await createClientAsync({
+    token: options.token,
+    server: options.server,
+  });
   if (!client) {
     console.log(chalk.red('\n❌ 无法创建 API 客户端，请检查配置'));
     return;

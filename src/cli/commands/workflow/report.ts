@@ -9,6 +9,8 @@ import { parseConfig } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface ReportOptions {
+  token?: string;
+  server?: string;
   owner?: string;
   repo?: string;
   timeRange?: 'day' | 'week' | 'month';
@@ -90,7 +92,10 @@ export async function generateReport(options: ReportOptions): Promise<void> {
   }
 
   // 创建客户端
-  const client = await createClientAsync({});
+  const client = await createClientAsync({
+    token: options.token,
+    server: options.server,
+  });
   if (!client) {
     if (options.json) {
       console.log(JSON.stringify({ error: 'Cannot create API client' }, null, 2));

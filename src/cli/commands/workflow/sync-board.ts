@@ -9,6 +9,8 @@ import { parseConfig } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface SyncBoardOptions {
+  token?: string;
+  server?: string;
   owner?: string;
   repo?: string;
   name?: string;
@@ -53,7 +55,10 @@ export async function syncBoard(options: SyncBoardOptions): Promise<void> {
   console.log(chalk.gray(`列数: ${config.board.columns.length}\n`));
 
   // 创建客户端
-  const client = await createClientAsync({});
+  const client = await createClientAsync({
+    token: options.token,
+    server: options.server,
+  });
   if (!client) {
     console.log(chalk.red('\n❌ 无法创建 API 客户端，请检查配置'));
     return;

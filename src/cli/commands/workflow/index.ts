@@ -28,20 +28,28 @@ import { generateReport, ReportOptions } from './report.js';
  */
 export function createWorkflowCommand(): Command {
   const workflowCmd = new Command('workflow')
-    .description('Issue 工作流自动化管理');
+    .description('Issue 工作流自动化管理')
+    .option('-t, --token <token>', 'Gitea API Token (优先级最高)')
+    .option('-s, --server <url>', 'Gitea Server URL (优先级最高)');
+
+  // 辅助函数：合并父命令选项
+  const mergeOptions = <T>(options: T): T & { token?: string; server?: string } => {
+    const parentOpts = workflowCmd.opts();
+    return { ...parentOpts, ...options };
+  };
 
   // 子命令: workflow init
   workflowCmd
     .command('init')
     .description('初始化 Issue 工作流配置')
-    .option('-t, --type <type>', '项目类型 (backend/frontend/fullstack/library)', 'backend')
+    .option('--type <type>', '项目类型 (backend/frontend/fullstack/library)', 'backend')
     .option('-l, --language <language>', '主要编程语言 (go/typescript/python/rust)')
     .option('-o, --owner <owner>', '仓库所有者')
     .option('-r, --repo <repo>', '仓库名称')
     .option('--no-interactive', '非交互模式')
     .option('-f, --force', '强制覆盖已有配置')
     .action(async (options: WorkflowInitOptions) => {
-      await initWorkflow(options);
+      await initWorkflow(mergeOptions(options));
     });
 
   // 子命令: workflow status
@@ -52,7 +60,7 @@ export function createWorkflowCommand(): Command {
     .option('-r, --repo <repo>', '仓库名称')
     .option('--json', '以 JSON 格式输出')
     .action(async (options: StatusOptions) => {
-      await showStatus(options);
+      await showStatus(mergeOptions(options));
     });
 
   // 子命令: workflow sync-labels
@@ -63,7 +71,7 @@ export function createWorkflowCommand(): Command {
     .option('-r, --repo <repo>', '仓库名称')
     .option('--dry-run', '预览变更但不执行')
     .action(async (options: SyncLabelsOptions) => {
-      await syncLabels(options);
+      await syncLabels(mergeOptions(options));
     });
 
   // 子命令: workflow sync-board
@@ -74,7 +82,7 @@ export function createWorkflowCommand(): Command {
     .option('-r, --repo <repo>', '仓库名称')
     .option('-n, --name <name>', '看板名称')
     .action(async (options: SyncBoardOptions) => {
-      await syncBoard(options);
+      await syncBoard(mergeOptions(options));
     });
 
   // 子命令: workflow check-issues
@@ -86,7 +94,7 @@ export function createWorkflowCommand(): Command {
     .option('-i, --issue <number>', '检查指定 Issue')
     .option('--json', '以 JSON 格式输出')
     .action(async (options: CheckIssuesOptions) => {
-      await checkIssues(options);
+      await checkIssues(mergeOptions(options));
     });
 
   // 子命令: workflow infer-labels
@@ -98,7 +106,7 @@ export function createWorkflowCommand(): Command {
     .option('-r, --repo <repo>', '仓库名称')
     .option('--auto-apply', '自动应用推断的标签')
     .action(async (options: InferLabelsOptions) => {
-      await inferLabels(options);
+      await inferLabels(mergeOptions(options));
     });
 
   // 子命令: workflow check-blocked
@@ -110,7 +118,7 @@ export function createWorkflowCommand(): Command {
     .option('--threshold <hours>', 'SLA 阈值（小时）')
     .option('--json', '以 JSON 格式输出')
     .action(async (options: CheckBlockedOptions) => {
-      await checkBlocked(options);
+      await checkBlocked(mergeOptions(options));
     });
 
   // 子命令: workflow escalate
@@ -121,7 +129,7 @@ export function createWorkflowCommand(): Command {
     .option('-r, --repo <repo>', '仓库名称')
     .option('--dry-run', '预览变更但不执行')
     .action(async (options: EscalateOptions) => {
-      await escalatePriority(options);
+      await escalatePriority(mergeOptions(options));
     });
 
   // 子命令: workflow report
@@ -130,10 +138,10 @@ export function createWorkflowCommand(): Command {
     .description('生成工作流分析报告')
     .option('-o, --owner <owner>', '仓库所有者')
     .option('-r, --repo <repo>', '仓库名称')
-    .option('-t, --time-range <range>', '时间范围 (day/week/month)', 'week')
+    .option('--time-range <range>', '时间范围 (day/week/month)', 'week')
     .option('--json', '以 JSON 格式输出')
     .action(async (options: ReportOptions) => {
-      await generateReport(options);
+      await generateReport(mergeOptions(options));
     });
 
   return workflowCmd;

@@ -10,6 +10,8 @@ import { LabelInferenceEngine } from '../../../utils/label-inference.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface InferLabelsOptions {
+  token?: string;
+  server?: string;
   issue: string;
   owner?: string;
   repo?: string;
@@ -58,7 +60,10 @@ export async function inferLabels(options: InferLabelsOptions): Promise<void> {
   console.log(chalk.bold(`\n🤖 智能标签推断 - ${owner}/${repo}#${issueNumber}\n`));
 
   // 创建客户端
-  const client = await createClientAsync({});
+  const client = await createClientAsync({
+    token: options.token,
+    server: options.server,
+  });
   if (!client) {
     console.log(chalk.red('\n❌ 无法创建 API 客户端，请检查配置'));
     return;
