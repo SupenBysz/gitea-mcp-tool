@@ -1,16 +1,21 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'following-tools' });
+const logger = createLogger('tools:following');
 
 export interface FollowingToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Base params with token
+export interface FollowingParams {
+  token?: string;
+}
+
 // List following (users that current user or specific user follows)
-export interface ListFollowingParams {
+export interface ListFollowingParams extends FollowingParams {
   username?: string;
   page?: number;
   limit?: number;
@@ -33,14 +38,15 @@ export async function listFollowing(
   const response = await ctx.client.request({
     method: 'GET',
     path,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // List followers (users that follow current user or specific user)
-export interface ListFollowersParams {
+export interface ListFollowersParams extends FollowingParams {
   username?: string;
   page?: number;
   limit?: number;
@@ -63,14 +69,15 @@ export async function listFollowers(
   const response = await ctx.client.request({
     method: 'GET',
     path,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Check if current user follows a specific user
-export interface CheckFollowingParams {
+export interface CheckFollowingParams extends FollowingParams {
   username: string;
 }
 
@@ -84,6 +91,7 @@ export async function checkFollowing(
     const response = await ctx.client.request({
       method: 'GET',
       path: `/user/following/${encodeURIComponent(params.username)}`,
+      token: params.token,
     });
     return { following: response.status === 204 || response.status === 200 };
   } catch (error: any) {
@@ -95,7 +103,7 @@ export async function checkFollowing(
 }
 
 // Follow a user
-export interface FollowUserParams {
+export interface FollowUserParams extends FollowingParams {
   username: string;
 }
 
@@ -108,13 +116,14 @@ export async function followUser(
   const response = await ctx.client.request({
     method: 'PUT',
     path: `/user/following/${encodeURIComponent(params.username)}`,
+    token: params.token,
   });
 
   return { success: true, message: `Followed ${params.username}` };
 }
 
 // Unfollow a user
-export interface UnfollowUserParams {
+export interface UnfollowUserParams extends FollowingParams {
   username: string;
 }
 
@@ -127,6 +136,7 @@ export async function unfollowUser(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/user/following/${encodeURIComponent(params.username)}`,
+    token: params.token,
   });
 
   return { success: true, message: `Unfollowed ${params.username}` };

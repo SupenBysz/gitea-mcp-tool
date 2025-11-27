@@ -41,6 +41,7 @@ export async function createPullRequest(
     milestone?: number;
     labels?: number[];
     due_date?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating pull request');
@@ -61,7 +62,8 @@ export async function createPullRequest(
 
   const pr = await ctx.client.post<GiteaPullRequest>(
     `/repos/${owner}/${repo}/pulls`,
-    createOptions
+    createOptions,
+    args.token
   );
 
   logger.info({ owner, repo, pr: pr.number }, 'Pull request created successfully');
@@ -111,6 +113,7 @@ export async function getPullRequest(
     owner?: string;
     repo?: string;
     index: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting pull request');
@@ -118,7 +121,9 @@ export async function getPullRequest(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   const pr = await ctx.client.get<GiteaPullRequest>(
-    `/repos/${owner}/${repo}/pulls/${args.index}`
+    `/repos/${owner}/${repo}/pulls/${args.index}`,
+    undefined,
+    args.token
   );
 
   logger.debug({ owner, repo, pr: pr.number }, 'Pull request retrieved');
@@ -197,6 +202,7 @@ export async function listPullRequests(
     sort?: 'oldest' | 'recentupdate' | 'leastupdate' | 'mostcomment' | 'leastcomment' | 'priority';
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing pull requests');
@@ -212,7 +218,8 @@ export async function listPullRequests(
 
   const prs = await ctx.client.get<GiteaPullRequest[]>(
     `/repos/${owner}/${repo}/pulls`,
-    listOptions as any
+    listOptions as any,
+    args.token
   );
 
   logger.debug({ count: prs.length }, 'Pull requests listed');
@@ -270,6 +277,7 @@ export async function updatePullRequest(
     state?: 'open' | 'closed';
     due_date?: string;
     unset_due_date?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating pull request');
@@ -289,7 +297,8 @@ export async function updatePullRequest(
 
   const pr = await ctx.client.patch<GiteaPullRequest>(
     `/repos/${owner}/${repo}/pulls/${args.index}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ owner, repo, pr: pr.number }, 'Pull request updated successfully');
@@ -323,6 +332,7 @@ export async function mergePullRequest(
     merge_title?: string;
     merge_message?: string;
     delete_branch_after_merge?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Merging pull request');
@@ -338,7 +348,8 @@ export async function mergePullRequest(
 
   await ctx.client.post(
     `/repos/${owner}/${repo}/pulls/${args.index}/merge`,
-    mergeOptions
+    mergeOptions,
+    args.token
   );
 
   logger.info({ owner, repo, pr: args.index }, 'Pull request merged successfully');
@@ -359,6 +370,7 @@ export async function reviewPullRequest(
     repo?: string;
     index: number;
     body: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Reviewing pull request');
@@ -371,7 +383,8 @@ export async function reviewPullRequest(
 
   const comment = await ctx.client.post<GiteaComment>(
     `/repos/${owner}/${repo}/issues/${args.index}/comments`,
-    commentOptions
+    commentOptions,
+    args.token
   );
 
   logger.info({ owner, repo, pr: args.index }, 'Review comment added successfully');

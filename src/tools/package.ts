@@ -1,16 +1,21 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'package-tools' });
+const logger = createLogger('tools:package');
 
 export interface PackageToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Base params with token
+export interface PackageParams {
+  token?: string;
+}
+
 // List packages for owner
-export interface ListPackagesParams {
+export interface ListPackagesParams extends PackageParams {
   owner?: string;
   page?: number;
   limit?: number;
@@ -35,14 +40,15 @@ export async function listPackages(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/packages/${encodeURIComponent(owner)}`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Get package details
-export interface GetPackageParams {
+export interface GetPackageParams extends PackageParams {
   owner?: string;
   type: string;
   name: string;
@@ -60,13 +66,14 @@ export async function getPackage(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/packages/${encodeURIComponent(owner)}/${encodeURIComponent(params.type)}/${encodeURIComponent(params.name)}/${encodeURIComponent(params.version)}`,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Delete package
-export interface DeletePackageParams {
+export interface DeletePackageParams extends PackageParams {
   owner?: string;
   type: string;
   name: string;
@@ -84,13 +91,14 @@ export async function deletePackage(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/packages/${encodeURIComponent(owner)}/${encodeURIComponent(params.type)}/${encodeURIComponent(params.name)}/${encodeURIComponent(params.version)}`,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // List package files
-export interface ListPackageFilesParams {
+export interface ListPackageFilesParams extends PackageParams {
   owner?: string;
   type: string;
   name: string;
@@ -108,6 +116,7 @@ export async function listPackageFiles(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/packages/${encodeURIComponent(owner)}/${encodeURIComponent(params.type)}/${encodeURIComponent(params.name)}/${encodeURIComponent(params.version)}/files`,
+    token: params.token,
   });
 
   return response.data;

@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'commit-tools' });
+const logger = createLogger('tools:commit');
 
 export interface CommitToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface CommitToolsContext {
 export interface CommitParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // List commits
@@ -52,7 +53,8 @@ export async function listCommits(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/commits`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -74,6 +76,7 @@ export async function getCommit(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/git/commits/${params.sha}`,
+    token: params.token,
   });
 
   return response.data;
@@ -96,6 +99,7 @@ export async function getCommitDiff(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/git/commits/${params.sha}.${params.diffType}`,
+    token: params.token,
   });
 
   return response.data;
@@ -123,7 +127,8 @@ export async function getCommitCombinedStatus(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/commits/${encodeURIComponent(params.ref)}/status`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -145,7 +150,8 @@ export async function listCommitStatuses(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/commits/${encodeURIComponent(params.ref)}/statuses`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -180,6 +186,7 @@ export async function createCommitStatus(
     method: 'POST',
     path: `/repos/${owner}/${repo}/statuses/${params.sha}`,
     body,
+    token: params.token,
   });
 
   return response.data;

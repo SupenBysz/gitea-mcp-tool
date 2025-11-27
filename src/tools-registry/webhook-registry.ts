@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as WebhookTools from '../tools/webhook.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -62,6 +65,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
         active: z.boolean().optional().describe('Whether webhook is active (default: true)'),
         branch_filter: z.string().optional().describe('Branch filter pattern'),
         authorization_header: z.string().optional().describe('Authorization header value'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -91,6 +95,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -119,6 +124,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Webhook ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -180,6 +186,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Webhook ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -208,6 +215,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Webhook ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -242,6 +250,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
         active: z.boolean().optional().describe('Whether webhook is active (default: true)'),
         branch_filter: z.string().optional().describe('Branch filter pattern'),
         authorization_header: z.string().optional().describe('Authorization header value'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -270,6 +279,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
         org: z.string().min(1).describe('Organization name'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -297,6 +307,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         org: z.string().min(1).describe('Organization name'),
         id: z.number().int().positive().describe('Webhook ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -356,6 +367,7 @@ export function registerWebhookTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         org: z.string().min(1).describe('Organization name'),
         id: z.number().int().positive().describe('Webhook ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

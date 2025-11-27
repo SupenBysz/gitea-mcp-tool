@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as RepositoryTools from '../tools/repository.js';
 import type { ToolContext } from '../index-new.js';
 import { createLogger } from '../logger.js';
@@ -38,6 +41,7 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
         gitignores: z.string().optional().describe('Gitignore template name'),
         license: z.string().optional().describe('License template name'),
         readme: z.string().optional().describe('README template name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -82,6 +86,7 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
           .string()
           .optional()
           .describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -160,6 +165,7 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
           .boolean()
           .optional()
           .describe('Ignore whitespace conflicts'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -202,6 +208,7 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
           .describe('Owner to list repos for. Lists current user repos if not provided'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 20, max: 50)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -245,6 +252,7 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
           .string()
           .optional()
           .describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -286,6 +294,7 @@ export function registerRepositoryTools(mcpServer: McpServer, ctx: ToolContext) 
         uid: z.number().optional().describe('User ID to filter by'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 10, max: 50)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

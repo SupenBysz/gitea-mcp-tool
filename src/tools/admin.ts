@@ -1,16 +1,21 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'admin-tools' });
+const logger = createLogger('tools:admin');
 
 export interface AdminToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Base params with token
+export interface AdminParams {
+  token?: string;
+}
+
 // Create user (admin only)
-export interface CreateUserParams {
+export interface CreateUserParams extends AdminParams {
   username: string;
   email: string;
   password: string;
@@ -45,13 +50,14 @@ export async function createUser(
     method: 'POST',
     path: '/admin/users',
     body,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Delete user (admin only)
-export interface DeleteUserParams {
+export interface DeleteUserParams extends AdminParams {
   username: string;
   purge?: boolean;
 }
@@ -68,14 +74,15 @@ export async function deleteUser(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/admin/users/${encodeURIComponent(params.username)}`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Edit user (admin only)
-export interface EditUserParams {
+export interface EditUserParams extends AdminParams {
   username: string;
   active?: boolean;
   admin?: boolean;
@@ -128,6 +135,7 @@ export async function editUser(
     method: 'PATCH',
     path: `/admin/users/${encodeURIComponent(params.username)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
