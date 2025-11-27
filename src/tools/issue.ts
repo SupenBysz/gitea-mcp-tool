@@ -434,17 +434,19 @@ export async function addIssueDependency(
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
-  // 先获取依赖 Issue 的详情以获取其 ID
-  const dependencyIssue = await ctx.client.get<GiteaIssue>(
-    `/repos/${owner}/${repo}/issues/${args.dependencyIndex}`,
-    undefined,
+  // 添加依赖关系
+  // Gitea API 要求 IssueMeta 格式: { index, owner?, repo? }
+  // index 是 Issue Number (如 #33)，不是内部 ID
+  const result = await ctx.client.post<GiteaIssue>(
+    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
+    { index: args.dependencyIndex },
     args.token
   );
 
-  // 添加依赖关系
-  const result = await ctx.client.post<GiteaIssue>(
-    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
-    { id: dependencyIssue.id },
+  // 获取依赖 Issue 的详情用于返回
+  const dependencyIssue = await ctx.client.get<GiteaIssue>(
+    `/repos/${owner}/${repo}/issues/${args.dependencyIndex}`,
+    undefined,
     args.token
   );
 
@@ -490,17 +492,12 @@ export async function removeIssueDependency(
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
-  // 先获取依赖 Issue 的详情以获取其 ID
-  const dependencyIssue = await ctx.client.get<GiteaIssue>(
-    `/repos/${owner}/${repo}/issues/${args.dependencyIndex}`,
-    undefined,
-    args.token
-  );
-
   // 移除依赖关系
+  // Gitea API 要求 IssueMeta 格式: { index, owner?, repo? }
+  // index 是 Issue Number (如 #33)，不是内部 ID
   await ctx.client.delete(
     `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
-    { id: dependencyIssue.id },
+    { index: args.dependencyIndex },
     args.token
   );
 
