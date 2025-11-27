@@ -35,6 +35,18 @@ program
   .option('--json', '以 JSON 格式输出结果')
   .option('--no-color', '禁用彩色输出');
 
+// Help 头部显示版本信息
+program.addHelpText('beforeAll', `
+◆ keactl v${packageJson.version} - Gitea Command Line Tool
+`);
+
+// Help 尾部显示仓库链接
+program.addHelpText('afterAll', `
+GitHub: https://github.com/SupenBysz/gitea-mcp-tool
+Wiki:   https://github.com/SupenBysz/gitea-mcp-tool/wiki
+Issues: https://github.com/SupenBysz/gitea-mcp-tool/issues
+`);
+
 // 初始化命令 (放在最前面，最常用)
 program.addCommand(createInitCommand());
 
