@@ -435,11 +435,12 @@ export async function addIssueDependency(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   // 添加依赖关系
-  // Gitea API 要求 IssueMeta 格式: { index, owner?, repo? }
+  // Gitea API 要求 IssueMeta 格式: { owner, repo, index } - 三个字段都是必需的
   // index 是 Issue Number (如 #33)，不是内部 ID
+  // 即使是同仓库的依赖，也必须显式指定 owner 和 repo
   const result = await ctx.client.post<GiteaIssue>(
     `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
-    { index: args.dependencyIndex },
+    { owner, repo, index: args.dependencyIndex },
     args.token
   );
 
@@ -493,11 +494,12 @@ export async function removeIssueDependency(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   // 移除依赖关系
-  // Gitea API 要求 IssueMeta 格式: { index, owner?, repo? }
+  // Gitea API 要求 IssueMeta 格式: { owner, repo, index } - 三个字段都是必需的
   // index 是 Issue Number (如 #33)，不是内部 ID
+  // 即使是同仓库的依赖，也必须显式指定 owner 和 repo
   await ctx.client.delete(
     `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
-    { index: args.dependencyIndex },
+    { owner, repo, index: args.dependencyIndex },
     args.token
   );
 
