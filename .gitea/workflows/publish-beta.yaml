@@ -37,24 +37,42 @@ jobs:
         run: |
           # 获取当前版本
           CURRENT_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
           echo "Current version: $CURRENT_VERSION"
+          echo "Package name: $PACKAGE_NAME"
 
-          # 解析版本号
+          # 获取 npm 上已发布的 beta 版本
+          NPM_BETA_VERSIONS=$(npm view "$PACKAGE_NAME" versions --json 2>/dev/null | grep -oP '\d+\.\d+\.\d+-beta\.\d+' || echo "")
+          echo "Existing beta versions on npm: $NPM_BETA_VERSIONS"
+
+          # 计算基础版本号
           if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
-            # 已经是 beta 版本，递增 beta 号
             BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
-            BETA_NUM=$(echo "$CURRENT_VERSION" | grep -oP '(?<=-beta\.)\d+')
-            NEW_BETA_NUM=$((BETA_NUM + 1))
-            NEW_VERSION="${BASE_VERSION}-beta.${NEW_BETA_NUM}"
           else
-            # 不是 beta 版本，创建新的 beta.1
-            # 先递增 patch 版本
+            # 不是 beta 版本，递增 patch 版本作为基础
             MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
             MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
             PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3 | cut -d- -f1)
             NEW_PATCH=$((PATCH + 1))
-            NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-beta.1"
+            BASE_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
           fi
+          echo "Base version: $BASE_VERSION"
+
+          # 查找该基础版本下最大的 beta 号
+          MAX_BETA=0
+          for v in $NPM_BETA_VERSIONS; do
+            if [[ "$v" == "${BASE_VERSION}-beta."* ]]; then
+              BETA_NUM=$(echo "$v" | grep -oP '(?<=-beta\.)\d+')
+              if [[ "$BETA_NUM" -gt "$MAX_BETA" ]]; then
+                MAX_BETA=$BETA_NUM
+              fi
+            fi
+          done
+          echo "Max beta number for $BASE_VERSION: $MAX_BETA"
+
+          # 生成新版本号
+          NEW_BETA_NUM=$((MAX_BETA + 1))
+          NEW_VERSION="${BASE_VERSION}-beta.${NEW_BETA_NUM}"
 
           echo "New version: $NEW_VERSION"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
