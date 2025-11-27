@@ -1,28 +1,37 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'ssh-key-tools' });
+const logger = createLogger('tools:ssh-key');
 
 export interface SSHKeyToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Base params with token
+export interface SSHKeyParams {
+  token?: string;
+}
+
 // List SSH keys
-export async function listSSHKeys(ctx: SSHKeyToolsContext): Promise<unknown> {
+export async function listSSHKeys(
+  ctx: SSHKeyToolsContext,
+  params: SSHKeyParams = {}
+): Promise<unknown> {
   logger.info('Listing SSH keys');
 
   const response = await ctx.client.request({
     method: 'GET',
     path: '/user/keys',
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Get SSH key by ID
-export interface GetSSHKeyParams {
+export interface GetSSHKeyParams extends SSHKeyParams {
   id: number;
 }
 
@@ -35,13 +44,14 @@ export async function getSSHKey(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/user/keys/${params.id}`,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Create SSH key
-export interface CreateSSHKeyParams {
+export interface CreateSSHKeyParams extends SSHKeyParams {
   title: string;
   key: string;
   read_only?: boolean;
@@ -63,13 +73,14 @@ export async function createSSHKey(
     method: 'POST',
     path: '/user/keys',
     body,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Delete SSH key
-export interface DeleteSSHKeyParams {
+export interface DeleteSSHKeyParams extends SSHKeyParams {
   id: number;
 }
 
@@ -82,6 +93,7 @@ export async function deleteSSHKey(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/user/keys/${params.id}`,
+    token: params.token,
   });
 
   return response.data;

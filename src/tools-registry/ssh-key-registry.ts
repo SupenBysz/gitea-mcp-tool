@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as SSHKeyTools from '../tools/ssh-key.js';
 import { ToolContext } from '../types.js';
 
@@ -33,6 +36,7 @@ export function registerSSHKeyTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Get a public SSH key by ID',
       inputSchema: z.object({
         id: z.number().int().positive().describe('SSH key ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -56,6 +60,7 @@ export function registerSSHKeyTools(mcpServer: McpServer, ctx: ToolContext) {
         title: z.string().min(1).describe('Title/name for this key'),
         key: z.string().min(1).describe('SSH public key content (e.g., "ssh-rsa AAAA...")'),
         read_only: z.boolean().optional().describe('Whether this key has only read access (default: false)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -77,6 +82,7 @@ export function registerSSHKeyTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Delete a public SSH key',
       inputSchema: z.object({
         id: z.number().int().positive().describe('SSH key ID to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

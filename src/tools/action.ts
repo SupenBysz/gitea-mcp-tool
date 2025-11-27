@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'action-tools' });
+const logger = createLogger('tools:action');
 
 export interface ActionToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface ActionToolsContext {
 export interface ActionParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // ==================== Workflows ====================
@@ -37,7 +38,8 @@ export async function listWorkflows(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/workflows`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -58,6 +60,7 @@ export async function getWorkflow(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(params.workflow_id)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -74,6 +77,7 @@ export async function enableWorkflow(
   const response = await ctx.client.request({
     method: 'PUT',
     path: `/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(params.workflow_id)}/enable`,
+    token: params.token,
   });
 
   return response.data;
@@ -90,6 +94,7 @@ export async function disableWorkflow(
   const response = await ctx.client.request({
     method: 'PUT',
     path: `/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(params.workflow_id)}/disable`,
+    token: params.token,
   });
 
   return response.data;
@@ -116,6 +121,7 @@ export async function dispatchWorkflow(
     method: 'POST',
     path: `/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(params.workflow_id)}/dispatches`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -153,7 +159,8 @@ export async function listRuns(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/runs`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -174,6 +181,7 @@ export async function getRun(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/runs/${encodeURIComponent(params.run)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -190,6 +198,7 @@ export async function deleteRun(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/actions/runs/${encodeURIComponent(params.run)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -216,7 +225,8 @@ export async function listRunArtifacts(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/runs/${encodeURIComponent(params.run)}/artifacts`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -243,7 +253,8 @@ export async function listRunJobs(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/runs/${encodeURIComponent(params.run)}/jobs`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -271,7 +282,8 @@ export async function listJobs(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/jobs`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -292,6 +304,7 @@ export async function getJob(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/jobs/${encodeURIComponent(params.job_id)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -308,6 +321,7 @@ export async function downloadJobLogs(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/jobs/${encodeURIComponent(params.job_id)}/logs`,
+    token: params.token,
   });
 
   return response.data;
@@ -335,7 +349,8 @@ export async function listArtifacts(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/artifacts`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -356,6 +371,7 @@ export async function getArtifact(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/artifacts/${encodeURIComponent(params.artifact_id)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -372,6 +388,7 @@ export async function downloadArtifact(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/artifacts/${encodeURIComponent(params.artifact_id)}/zip`,
+    token: params.token,
   });
 
   return response.data;
@@ -388,6 +405,7 @@ export async function deleteArtifact(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/actions/artifacts/${encodeURIComponent(params.artifact_id)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -406,6 +424,7 @@ export async function listSecrets(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/secrets`,
+    token: params.token,
   });
 
   return response.data;
@@ -430,6 +449,7 @@ export async function updateSecret(
     method: 'PUT',
     path: `/repos/${owner}/${repo}/actions/secrets/${encodeURIComponent(params.secretname)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -450,6 +470,7 @@ export async function deleteSecret(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/actions/secrets/${encodeURIComponent(params.secretname)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -468,6 +489,7 @@ export async function listVariables(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/variables`,
+    token: params.token,
   });
 
   return response.data;
@@ -488,6 +510,7 @@ export async function getVariable(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/actions/variables/${encodeURIComponent(params.variablename)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -512,6 +535,7 @@ export async function createVariable(
     method: 'POST',
     path: `/repos/${owner}/${repo}/actions/variables/${encodeURIComponent(params.variablename)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -536,6 +560,7 @@ export async function updateVariable(
     method: 'PUT',
     path: `/repos/${owner}/${repo}/actions/variables/${encodeURIComponent(params.variablename)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -556,6 +581,7 @@ export async function deleteVariable(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/actions/variables/${encodeURIComponent(params.variablename)}`,
+    token: params.token,
   });
 
   return response.data;

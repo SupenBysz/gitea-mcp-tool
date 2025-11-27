@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as FollowingTools from '../tools/following.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -30,6 +33,7 @@ export function registerFollowingTools(mcpServer: McpServer, ctx: ToolContext) {
         username: z.string().optional().describe('Username to list following for. If omitted, lists current user\'s following'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -58,6 +62,7 @@ export function registerFollowingTools(mcpServer: McpServer, ctx: ToolContext) {
         username: z.string().optional().describe('Username to list followers for. If omitted, lists current user\'s followers'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -84,6 +89,7 @@ export function registerFollowingTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Check if the current user follows a specific user',
       inputSchema: z.object({
         username: z.string().min(1).describe('Username to check'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -110,6 +116,7 @@ export function registerFollowingTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Follow a user',
       inputSchema: z.object({
         username: z.string().min(1).describe('Username to follow'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -136,6 +143,7 @@ export function registerFollowingTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Unfollow a user',
       inputSchema: z.object({
         username: z.string().min(1).describe('Username to unfollow'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

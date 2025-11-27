@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as UserTools from '../tools/user.js';
 import * as OrganizationTools from '../tools/organization.js';
 import type { ToolContext } from '../index.js';
@@ -29,6 +32,7 @@ export function registerOrganizationTools(mcpServer: McpServer, ctx: ToolContext
       description: 'Get organization details',
       inputSchema: z.object({
         org: z.string().min(1).describe('Organization name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -57,6 +61,7 @@ export function registerOrganizationTools(mcpServer: McpServer, ctx: ToolContext
         org: z.string().min(1).describe('Organization name'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -90,6 +95,7 @@ export function registerOrganizationTools(mcpServer: McpServer, ctx: ToolContext
         email: z.string().optional().describe('Organization email address'),
         visibility: z.enum(['public', 'limited', 'private']).optional().describe('Organization visibility (default: public)'),
         repo_admin_change_team_access: z.boolean().optional().describe('Whether repo admins can change team access'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -122,6 +128,7 @@ export function registerOrganizationTools(mcpServer: McpServer, ctx: ToolContext
         location: z.string().optional().describe('Organization location'),
         visibility: z.enum(['public', 'limited', 'private']).optional().describe('Organization visibility'),
         repo_admin_change_team_access: z.boolean().optional().describe('Whether repo admins can change team access'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -148,6 +155,7 @@ export function registerOrganizationTools(mcpServer: McpServer, ctx: ToolContext
       description: 'Delete an organization',
       inputSchema: z.object({
         org: z.string().min(1).describe('Organization name to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -176,6 +184,7 @@ export function registerOrganizationTools(mcpServer: McpServer, ctx: ToolContext
         org: z.string().min(1).describe('Organization name'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

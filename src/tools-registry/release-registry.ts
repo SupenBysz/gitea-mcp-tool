@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as ReleaseTools from '../tools/release.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -35,6 +38,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         draft: z.boolean().optional().describe('Create as draft (default: false)'),
         prerelease: z.boolean().optional().describe('Mark as prerelease (default: false)'),
         target_commitish: z.string().optional().describe('Target branch or commit SHA (default: default branch)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -63,6 +67,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Release ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -91,6 +96,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         tag: z.string().min(1).describe('Tag name (e.g., v1.0.0)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -122,6 +128,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         limit: z.number().optional().describe('Items per page (default: 30)'),
         draft: z.boolean().optional().describe('Filter by draft status'),
         prerelease: z.boolean().optional().describe('Filter by prerelease status'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -156,6 +163,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         draft: z.boolean().optional().describe('Update draft status'),
         prerelease: z.boolean().optional().describe('Update prerelease status'),
         target_commitish: z.string().optional().describe('New target branch or commit SHA'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -184,6 +192,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Release ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -212,6 +221,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Release ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -241,6 +251,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Release ID'),
         attachment_id: z.number().int().positive().describe('Attachment ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -270,6 +281,7 @@ export function registerReleaseTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Release ID'),
         attachment_id: z.number().int().positive().describe('Attachment ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

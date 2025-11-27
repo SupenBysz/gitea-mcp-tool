@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'deploy-key-tools' });
+const logger = createLogger('tools:deploy-key');
 
 export interface DeployKeyToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface DeployKeyToolsContext {
 export interface DeployKeyParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // List deploy keys
@@ -27,6 +28,7 @@ export async function listDeployKeys(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/keys`,
+    token: params.token,
   });
 
   return response.data;
@@ -48,6 +50,7 @@ export async function getDeployKey(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/keys/${params.id}`,
+    token: params.token,
   });
 
   return response.data;
@@ -78,6 +81,7 @@ export async function createDeployKey(
     method: 'POST',
     path: `/repos/${owner}/${repo}/keys`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -99,6 +103,7 @@ export async function deleteDeployKey(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/keys/${params.id}`,
+    token: params.token,
   });
 
   return response.data;

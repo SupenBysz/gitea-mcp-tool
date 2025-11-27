@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as GPGKeyTools from '../tools/gpg-key.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -52,6 +55,7 @@ export function registerGPGKeyTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Get a GPG key by ID',
       inputSchema: z.object({
         id: z.number().int().positive().describe('GPG key ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -79,6 +83,7 @@ export function registerGPGKeyTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         armored_public_key: z.string().min(1).describe('GPG armored public key block (e.g., "-----BEGIN PGP PUBLIC KEY BLOCK-----...")'),
         armored_signature: z.string().optional().describe('GPG armored signature (optional)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -105,6 +110,7 @@ export function registerGPGKeyTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Delete a GPG key',
       inputSchema: z.object({
         id: z.number().int().positive().describe('GPG key ID to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

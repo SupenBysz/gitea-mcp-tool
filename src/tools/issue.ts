@@ -38,6 +38,7 @@ export async function createIssue(
     milestone?: number;
     labels?: number[];
     due_date?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating issue');
@@ -56,7 +57,8 @@ export async function createIssue(
 
   const issue = await ctx.client.post<GiteaIssue>(
     `/repos/${owner}/${repo}/issues`,
-    createOptions
+    createOptions,
+    args.token
   );
 
   logger.info({ owner, repo, issue: issue.number }, 'Issue created successfully');
@@ -94,6 +96,7 @@ export async function getIssue(
     owner?: string;
     repo?: string;
     index: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting issue');
@@ -101,7 +104,9 @@ export async function getIssue(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   const issue = await ctx.client.get<GiteaIssue>(
-    `/repos/${owner}/${repo}/issues/${args.index}`
+    `/repos/${owner}/${repo}/issues/${args.index}`,
+    undefined,
+    args.token
   );
 
   logger.debug({ owner, repo, issue: issue.number }, 'Issue retrieved');
@@ -162,6 +167,7 @@ export async function listIssues(
     page?: number;
     limit?: number;
     milestones?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing issues');
@@ -180,7 +186,8 @@ export async function listIssues(
 
   const issues = await ctx.client.get<GiteaIssue[]>(
     `/repos/${owner}/${repo}/issues`,
-    listOptions as any
+    listOptions as any,
+    args.token
   );
 
   logger.debug({ count: issues.length }, 'Issues listed');
@@ -231,6 +238,7 @@ export async function updateIssue(
     state?: 'open' | 'closed';
     due_date?: string;
     unset_due_date?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating issue');
@@ -250,7 +258,8 @@ export async function updateIssue(
 
   const issue = await ctx.client.patch<GiteaIssue>(
     `/repos/${owner}/${repo}/issues/${args.index}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ owner, repo, issue: issue.number }, 'Issue updated successfully');
@@ -281,6 +290,7 @@ export async function commentIssue(
     repo?: string;
     index: number;
     body: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Adding comment to issue');
@@ -293,7 +303,8 @@ export async function commentIssue(
 
   const comment = await ctx.client.post<GiteaComment>(
     `/repos/${owner}/${repo}/issues/${args.index}/comments`,
-    commentOptions
+    commentOptions,
+    args.token
   );
 
   logger.info({ owner, repo, issue: args.index }, 'Comment added successfully');
@@ -323,6 +334,7 @@ export async function closeIssue(
     owner?: string;
     repo?: string;
     index: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Closing issue');
@@ -331,7 +343,8 @@ export async function closeIssue(
 
   const issue = await ctx.client.patch<GiteaIssue>(
     `/repos/${owner}/${repo}/issues/${args.index}`,
-    { state: 'closed' }
+    { state: 'closed' },
+    args.token
   );
 
   logger.info({ owner, repo, issue: issue.number }, 'Issue closed successfully');

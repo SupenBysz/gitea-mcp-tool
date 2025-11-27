@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'topics-tools' });
+const logger = createLogger('tools:topics');
 
 export interface TopicsToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface TopicsToolsContext {
 export interface TopicsParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // List repository topics
@@ -28,6 +29,7 @@ export async function listTopics(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/topics`,
+    token: params.token,
   });
 
   return response.data;
@@ -51,6 +53,7 @@ export async function replaceTopics(
     method: 'PUT',
     path: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/topics`,
     body: { topics: params.topics },
+    token: params.token,
   });
 
   return response.data;
@@ -73,6 +76,7 @@ export async function addTopic(
   const response = await ctx.client.request({
     method: 'PUT',
     path: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/topics/${encodeURIComponent(params.topic)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -95,6 +99,7 @@ export async function deleteTopic(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/topics/${encodeURIComponent(params.topic)}`,
+    token: params.token,
   });
 
   return response.data;

@@ -113,6 +113,7 @@ export async function listWikiPages(
     repo?: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing wiki pages');
@@ -126,7 +127,8 @@ export async function listWikiPages(
 
   const pages = await ctx.client.get<GiteaWikiPage[]>(
     `/repos/${owner}/${repo}/wiki/pages`,
-    query
+    query,
+    args.token
   );
 
   logger.info({ owner, repo, count: pages.length }, 'Wiki pages listed');
@@ -158,6 +160,7 @@ export async function getWikiPage(
     owner?: string;
     repo?: string;
     pageName: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting wiki page');
@@ -165,13 +168,13 @@ export async function getWikiPage(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   const page = await tryWithPageNameVariants(ctx, args.pageName, (encodedPageName) =>
-    ctx.client.get<GiteaWikiPageContent>(`/repos/${owner}/${repo}/wiki/page/${encodedPageName}`)
+    ctx.client.get<GiteaWikiPageContent>(`/repos/${owner}/${repo}/wiki/page/${encodedPageName}`, undefined, args.token)
   );
 
   logger.info({ owner, repo, pageName: args.pageName }, 'Wiki page retrieved');
 
-  // Gitea API 返回的 content 可能是 content_base64 编码��，需要解�
-  // 优先使用已解码�� content，如果没有则从 content_base64 解�
+  // Gitea API 返回的 content 可能是 content_base64 编码��，需要解�
+  // 优先使用已解码�� content，如果没有则从 content_base64 解�
   const content = page.content || decodeBase64Content(page.content_base64);
 
   return {
@@ -203,6 +206,7 @@ export async function createWikiPage(
     title: string;
     content: string;
     message?: string;
+    token?: string;
   }
 ) {
   logger.debug(
@@ -223,7 +227,8 @@ export async function createWikiPage(
 
   const page = await ctx.client.post<GiteaWikiPageContent>(
     `/repos/${owner}/${repo}/wiki/new`,
-    createOptions
+    createOptions,
+    args.token
   );
 
   logger.info({ owner, repo, title: args.title }, 'Wiki page created');
@@ -252,6 +257,7 @@ export async function updateWikiPage(
     title?: string;
     content?: string;
     message?: string;
+    token?: string;
   }
 ) {
   const contentPreview = args.content
@@ -280,7 +286,8 @@ export async function updateWikiPage(
   const page = await tryWithPageNameVariants(ctx, args.pageName, (encodedPageName) =>
     ctx.client.patch<GiteaWikiPageContent>(
       `/repos/${owner}/${repo}/wiki/page/${encodedPageName}`,
-      updateOptions
+      updateOptions,
+      args.token
     )
   );
 
@@ -307,6 +314,7 @@ export async function deleteWikiPage(
     owner?: string;
     repo?: string;
     pageName: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting wiki page');
@@ -314,7 +322,7 @@ export async function deleteWikiPage(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   await tryWithPageNameVariants(ctx, args.pageName, (encodedPageName) =>
-    ctx.client.delete(`/repos/${owner}/${repo}/wiki/page/${encodedPageName}`)
+    ctx.client.delete(`/repos/${owner}/${repo}/wiki/page/${encodedPageName}`, args.token)
   );
 
   logger.info({ owner, repo, pageName: args.pageName }, 'Wiki page deleted');
@@ -336,6 +344,7 @@ export async function getWikiRevisions(
     pageName: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting wiki revisions');
@@ -351,7 +360,8 @@ export async function getWikiRevisions(
   const response = await tryWithPageNameVariants(ctx, args.pageName, (encodedPageName) =>
     ctx.client.get<GiteaWikiCommitList>(
       `/repos/${owner}/${repo}/wiki/revisions/${encodedPageName}`,
-      query
+      query,
+      args.token
     )
   );
 
@@ -395,6 +405,7 @@ export async function getWikiPageRevision(
     repo?: string;
     pageName: string;
     revision: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting wiki page revision');
@@ -404,7 +415,8 @@ export async function getWikiPageRevision(
   const page = await tryWithPageNameVariants(ctx, args.pageName, (encodedPageName) =>
     ctx.client.get<GiteaWikiPageContent>(
       `/repos/${owner}/${repo}/wiki/page/${encodedPageName}`,
-      { revision: args.revision }
+      { revision: args.revision },
+      args.token
     )
   );
 
@@ -438,6 +450,7 @@ export async function searchWikiPages(
     repo?: string;
     query: string;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Searching wiki pages');
@@ -446,7 +459,9 @@ export async function searchWikiPages(
 
   // 获取所有页面
   const pages = await ctx.client.get<GiteaWikiPage[]>(
-    `/repos/${owner}/${repo}/wiki/pages`
+    `/repos/${owner}/${repo}/wiki/pages`,
+    undefined,
+    args.token
   );
 
   // 客户端过滤

@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as MilestoneTools from '../tools/milestone.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -32,6 +35,7 @@ export function registerMilestoneTools(mcpServer: McpServer, ctx: ToolContext) {
         title: z.string().min(1).describe('Milestone title'),
         description: z.string().optional().describe('Milestone description'),
         due_on: z.string().optional().describe('Due date (ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -60,6 +64,7 @@ export function registerMilestoneTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Milestone ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -93,6 +98,7 @@ export function registerMilestoneTools(mcpServer: McpServer, ctx: ToolContext) {
           .describe('Milestone state filter (default: open)'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -125,6 +131,7 @@ export function registerMilestoneTools(mcpServer: McpServer, ctx: ToolContext) {
         description: z.string().optional().describe('New milestone description'),
         due_on: z.string().optional().describe('New due date (ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ)'),
         state: z.enum(['open', 'closed']).optional().describe('Milestone state'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -153,6 +160,7 @@ export function registerMilestoneTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Milestone ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'branch-tools' });
+const logger = createLogger('tools:branch');
 
 export interface BranchToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface BranchToolsContext {
 export interface BranchParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // List branches
@@ -29,14 +30,15 @@ export async function listBranches(
   const repo = ctx.contextManager.resolveRepo(params.repo);
   logger.info({ owner, repo }, 'Listing branches');
 
-  const queryParams: Record<string, string> = {};
-  if (params.page) queryParams.page = params.page.toString();
-  if (params.limit) queryParams.limit = params.limit.toString();
+  const queryParams: Record<string, string | number | boolean | undefined> = {};
+  if (params.page) queryParams.page = params.page;
+  if (params.limit) queryParams.limit = params.limit;
 
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/branches`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -72,6 +74,7 @@ export async function createBranch(
     method: 'POST',
     path: `/repos/${owner}/${repo}/branches`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -93,6 +96,7 @@ export async function getBranch(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/branches/${encodeURIComponent(params.branch)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -114,6 +118,7 @@ export async function deleteBranch(
   await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/branches/${encodeURIComponent(params.branch)}`,
+    token: params.token,
   });
 
   return { message: 'Branch deleted successfully' };
@@ -137,6 +142,7 @@ export async function renameBranch(
     method: 'PATCH',
     path: `/repos/${owner}/${repo}/branches/${encodeURIComponent(params.branch)}`,
     body: { new_name: params.new_name },
+    token: params.token,
   });
 
   return { message: 'Branch renamed successfully' };
@@ -156,6 +162,7 @@ export async function listBranchProtections(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/branch_protections`,
+    token: params.token,
   });
 
   return response.data;
@@ -209,8 +216,8 @@ export async function createBranchProtection(
   ];
 
   for (const field of fields) {
-    if (params[field] !== undefined) {
-      body[field] = params[field];
+    if ((params as any)[field] !== undefined) {
+      body[field] = (params as any)[field];
     }
   }
 
@@ -218,6 +225,7 @@ export async function createBranchProtection(
     method: 'POST',
     path: `/repos/${owner}/${repo}/branch_protections`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -239,6 +247,7 @@ export async function getBranchProtection(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/branch_protections/${encodeURIComponent(params.name)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -271,8 +280,8 @@ export async function updateBranchProtection(
   ];
 
   for (const field of fields) {
-    if (params[field] !== undefined) {
-      body[field] = params[field];
+    if ((params as any)[field] !== undefined) {
+      body[field] = (params as any)[field];
     }
   }
 
@@ -280,6 +289,7 @@ export async function updateBranchProtection(
     method: 'PATCH',
     path: `/repos/${owner}/${repo}/branch_protections/${encodeURIComponent(params.name)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -301,6 +311,7 @@ export async function deleteBranchProtection(
   await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/branch_protections/${encodeURIComponent(params.name)}`,
+    token: params.token,
   });
 
   return { message: 'Branch protection deleted successfully' };

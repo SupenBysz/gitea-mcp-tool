@@ -1,16 +1,21 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'starred-tools' });
+const logger = createLogger('tools:starred');
 
 export interface StarredToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Base params with token
+export interface StarredParams {
+  token?: string;
+}
+
 // List starred repositories (current user or specific user)
-export interface ListStarredParams {
+export interface ListStarredParams extends StarredParams {
   username?: string;
   page?: number;
   limit?: number;
@@ -33,14 +38,15 @@ export async function listStarredRepos(
   const response = await ctx.client.request({
     method: 'GET',
     path,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Check if repository is starred
-export interface CheckStarredParams {
+export interface CheckStarredParams extends StarredParams {
   owner?: string;
   repo?: string;
 }
@@ -58,6 +64,7 @@ export async function checkStarred(
     const response = await ctx.client.request({
       method: 'GET',
       path: `/user/starred/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+      token: params.token,
     });
     return { starred: response.status === 204 || response.status === 200 };
   } catch (error: any) {
@@ -69,7 +76,7 @@ export async function checkStarred(
 }
 
 // Star a repository
-export interface StarRepoParams {
+export interface StarRepoParams extends StarredParams {
   owner?: string;
   repo?: string;
 }
@@ -83,16 +90,17 @@ export async function starRepository(
 
   logger.info({ owner, repo }, 'Starring repository');
 
-  const response = await ctx.client.request({
+  await ctx.client.request({
     method: 'PUT',
     path: `/user/starred/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+    token: params.token,
   });
 
   return { success: true, message: `Starred ${owner}/${repo}` };
 }
 
 // Unstar a repository
-export interface UnstarRepoParams {
+export interface UnstarRepoParams extends StarredParams {
   owner?: string;
   repo?: string;
 }
@@ -106,9 +114,10 @@ export async function unstarRepository(
 
   logger.info({ owner, repo }, 'Unstarring repository');
 
-  const response = await ctx.client.request({
+  await ctx.client.request({
     method: 'DELETE',
     path: `/user/starred/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+    token: params.token,
   });
 
   return { success: true, message: `Unstarred ${owner}/${repo}` };
