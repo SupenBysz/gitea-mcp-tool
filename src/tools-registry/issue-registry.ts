@@ -214,5 +214,96 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
     }
   );
 
-  logger.info('Registered 6 issue tools');
+  // gitea_issue_dependency_list - 获取 Issue 依赖列表
+  mcpServer.registerTool(
+    'gitea_issue_dependency_list',
+    {
+      title: '获取 Issue 依赖列表',
+      description: 'List all issues that this issue depends on',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        index: z.number().int().positive().describe('Issue index number'),
+        page: z.number().optional().describe('Page number (default: 1)'),
+        limit: z.number().optional().describe('Items per page (default: 30)'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.listIssueDependencies(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // gitea_issue_dependency_add - 添加 Issue 依赖关系
+  mcpServer.registerTool(
+    'gitea_issue_dependency_add',
+    {
+      title: '添加 Issue 依赖关系',
+      description: 'Add a dependency to an issue (make current issue depend on another)',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        index: z.number().int().positive().describe('Issue index number'),
+        dependencyIndex: z.number().int().positive().describe('The issue index number to depend on'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.addIssueDependency(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // gitea_issue_dependency_remove - 移除 Issue 依赖关系
+  mcpServer.registerTool(
+    'gitea_issue_dependency_remove',
+    {
+      title: '移除 Issue 依赖关系',
+      description: 'Remove a dependency from an issue',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        index: z.number().int().positive().describe('Issue index number'),
+        dependencyIndex: z.number().int().positive().describe('The dependency issue index number to remove'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.removeIssueDependency(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  logger.info('Registered 9 issue tools');
 }

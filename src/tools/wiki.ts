@@ -322,7 +322,7 @@ export async function deleteWikiPage(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   await tryWithPageNameVariants(ctx, args.pageName, (encodedPageName) =>
-    ctx.client.delete(`/repos/${owner}/${repo}/wiki/page/${encodedPageName}`, args.token)
+    ctx.client.delete(`/repos/${owner}/${repo}/wiki/page/${encodedPageName}`, undefined, args.token)
   );
 
   logger.info({ owner, repo, pageName: args.pageName }, 'Wiki page deleted');

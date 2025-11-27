@@ -234,7 +234,7 @@ export async function deleteRepoWebhook(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/hooks/${args.id}`, args.token);
+  await ctx.client.delete(`/repos/${owner}/${repo}/hooks/${args.id}`, undefined, args.token);
 
   logger.info({ owner, repo, webhook_id: args.id }, 'Repository webhook deleted successfully');
 
@@ -465,7 +465,7 @@ export async function deleteOrgWebhook(
 ) {
   logger.debug({ args }, 'Deleting organization webhook');
 
-  await ctx.client.delete(`/orgs/${args.org}/hooks/${args.id}`, args.token);
+  await ctx.client.delete(`/orgs/${args.org}/hooks/${args.id}`, undefined, args.token);
 
   logger.info({ org: args.org, webhook_id: args.id }, 'Organization webhook deleted successfully');
 

@@ -82,7 +82,7 @@ export class GiteaClient {
       signal: AbortSignal.timeout(this.timeout),
     };
 
-    if (body && (method === 'POST' || method === 'PATCH' || method === 'PUT')) {
+    if (body && (method === 'POST' || method === 'PATCH' || method === 'PUT' || method === 'DELETE')) {
       requestInit.body = JSON.stringify(body);
     }
 
@@ -187,10 +187,11 @@ export class GiteaClient {
 
   /**
    * DELETE 请求
+   * @param body - Optional request body (some DELETE endpoints require it)
    * @param token - Optional token to override default authentication
    */
-  async delete<T = unknown>(path: string, token?: string): Promise<T> {
-    const response = await this.request<T>({ method: 'DELETE', path, token });
+  async delete<T = unknown>(path: string, body?: unknown, token?: string): Promise<T> {
+    const response = await this.request<T>({ method: 'DELETE', path, body, token });
     return response.data;
   }
 
