@@ -213,7 +213,7 @@ export async function deleteMilestone(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
   logger.info({ owner, repo, id: args.id }, 'Deleting milestone');
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/milestones/${args.id}`, args.token);
+  await ctx.client.delete(`/repos/${owner}/${repo}/milestones/${args.id}`, undefined, args.token);
 
   logger.info({ id: args.id }, 'Milestone deleted');
 

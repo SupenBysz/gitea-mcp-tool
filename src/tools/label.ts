@@ -223,7 +223,7 @@ export async function deleteRepoLabel(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/labels/${args.id}`, args.token);
+  await ctx.client.delete(`/repos/${owner}/${repo}/labels/${args.id}`, undefined, args.token);
 
   logger.info({ owner, repo, label_id: args.id }, 'Repository label deleted successfully');
 
@@ -416,7 +416,7 @@ export async function deleteOrgLabel(
 ) {
   logger.debug({ args }, 'Deleting organization label');
 
-  await ctx.client.delete(`/orgs/${args.org}/labels/${args.id}`, args.token);
+  await ctx.client.delete(`/orgs/${args.org}/labels/${args.id}`, undefined, args.token);
 
   logger.info({ org: args.org, label_id: args.id }, 'Organization label deleted successfully');
 
@@ -528,7 +528,7 @@ export async function removeIssueLabel(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels/${args.id}`, args.token);
+  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels/${args.id}`, undefined, args.token);
 
   logger.info(
     { owner, repo, issue: args.index, label_id: args.id },
@@ -558,7 +558,7 @@ export async function clearIssueLabels(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels`, args.token);
+  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels`, undefined, args.token);
 
   logger.info(
     { owner, repo, issue: args.index },

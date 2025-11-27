@@ -242,7 +242,7 @@ export async function deleteProject(
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/projects/${args.id}`, args.token);
+  await ctx.client.delete(`/repos/${owner}/${repo}/projects/${args.id}`, undefined, args.token);
 
   logger.info({ owner, repo, project: args.id }, 'Project deleted successfully');
 

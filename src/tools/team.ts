@@ -204,7 +204,7 @@ export async function deleteTeam(
 ) {
   logger.debug({ args }, 'Deleting team');
 
-  await ctx.client.delete(`/teams/${args.id}`, args.token);
+  await ctx.client.delete(`/teams/${args.id}`, undefined, args.token);
 
   logger.info({ team: args.id }, 'Team deleted successfully');
 
@@ -291,7 +291,7 @@ export async function removeTeamMember(
 ) {
   logger.debug({ args }, 'Removing member from team');
 
-  await ctx.client.delete(`/teams/${args.id}/members/${args.username}`, args.token);
+  await ctx.client.delete(`/teams/${args.id}/members/${args.username}`, undefined, args.token);
 
   logger.info(
     { team: args.id, username: args.username },
@@ -388,7 +388,7 @@ export async function removeTeamRepo(
 ) {
   logger.debug({ args }, 'Removing repository from team');
 
-  await ctx.client.delete(`/teams/${args.id}/repos/${args.org}/${args.repo}`, args.token);
+  await ctx.client.delete(`/teams/${args.id}/repos/${args.org}/${args.repo}`, undefined, args.token);
 
   logger.info(
     { team: args.id, repo: `${args.org}/${args.repo}` },

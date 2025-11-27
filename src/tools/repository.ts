@@ -344,7 +344,7 @@ export async function deleteRepository(
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
-  await ctx.client.delete(`/repos/${owner}/${repo}`, args.token);
+  await ctx.client.delete(`/repos/${owner}/${repo}`, undefined, args.token);
 
   logger.info({ owner, repo }, 'Repository deleted successfully');
 
