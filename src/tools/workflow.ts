@@ -120,14 +120,22 @@ export async function workflowLoadConfig(
 
     // 解码 Base64 内容
     const yamlContent = Buffer.from(response.content, 'base64').toString('utf-8');
-    const config = parseConfig(yamlContent);
-    const validation = validateConfig(config);
+    const parseResult = parseConfig(yamlContent);
+
+    if (!parseResult.success || !parseResult.config) {
+      return {
+        success: false,
+        error: `配置解析失败: ${parseResult.errors?.join(', ') || '未知错误'}`,
+      };
+    }
+
+    const validation = validateConfig(parseResult.config);
 
     logger.info({ owner, repo, valid: validation.valid }, 'Workflow config loaded');
 
     return {
       success: true,
-      config,
+      config: parseResult.config,
       validation,
     };
   } catch (error) {
@@ -661,7 +669,7 @@ export async function workflowCheckBlocked(
           title: issue.title,
           priority,
           hours_since_update: hoursSinceUpdate,
-          sla_hours: slaHours,
+          sla_hours: slaHours ?? null,
           reason,
         });
       }

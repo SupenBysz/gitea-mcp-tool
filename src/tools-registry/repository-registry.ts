@@ -9,7 +9,7 @@ import { z } from 'zod';
 /** Token 参数 Schema - 用于所有需要鉴权的工具 */
 const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as RepositoryTools from '../tools/repository.js';
-import type { ToolContext } from '../index-new.js';
+import type { ToolContext } from '../types.js';
 import { createLogger } from '../logger.js';
 
 const logger = createLogger('registry:repository');

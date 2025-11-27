@@ -87,14 +87,14 @@ export async function checkIssues(options: CheckIssuesOptions): Promise<void> {
 
   try {
     // 获取 Issues
-    let issues: Array<{ number?: number; title?: string; labels?: Array<{ name?: string }> }>;
+    type IssueType = { number?: number; title?: string; labels?: Array<{ name?: string }> };
+    let issues: IssueType[];
 
     if (options.issue) {
-      const issueResponse = await client.repoGetIssue(owner, repo, parseInt(options.issue));
-      issues = [issueResponse.data as { number?: number; title?: string; labels?: Array<{ name?: string }> }];
+      const issue = await client.get<IssueType>(`/repos/${owner}/${repo}/issues/${options.issue}`);
+      issues = [issue];
     } else {
-      const issuesResponse = await client.repoListIssues(owner, repo, { state: 'open' });
-      issues = (issuesResponse.data || []) as Array<{ number?: number; title?: string; labels?: Array<{ name?: string }> }>;
+      issues = await client.get<IssueType[]>(`/repos/${owner}/${repo}/issues`, { state: 'open' });
     }
 
     if (!options.json) {

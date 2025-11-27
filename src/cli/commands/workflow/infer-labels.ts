@@ -65,14 +65,16 @@ export async function inferLabels(options: InferLabelsOptions): Promise<void> {
   }
 
   try {
-    // 获取 Issue 详情
-    const issueResponse = await client.repoGetIssue(owner, repo, issueNumber);
-    const issue = issueResponse.data as {
+    // 定义 Issue 类型
+    type IssueType = {
       number?: number;
       title?: string;
       body?: string;
       labels?: Array<{ id?: number; name?: string }>;
     };
+
+    // 获取 Issue 详情
+    const issue = await client.get<IssueType>(`/repos/${owner}/${repo}/issues/${issueNumber}`);
 
     console.log(chalk.gray(`标题: ${issue.title}`));
     console.log();
@@ -82,10 +84,13 @@ export async function inferLabels(options: InferLabelsOptions): Promise<void> {
 
     // 推断标签
     const inferResult = engine.inferAll({
+      id: issue.number || 0,
       number: issue.number || 0,
       title: issue.title || '',
       body: issue.body || '',
-      labels: (issue.labels || []).map((l) => l.name || ''),
+      labels: (issue.labels || []).map((l) => ({ id: l.id || 0, name: l.name || '' })),
+      created_at: '',
+      updated_at: '',
     });
 
     // 显示推断结果
@@ -104,12 +109,12 @@ export async function inferLabels(options: InferLabelsOptions): Promise<void> {
         const confidence = Math.round(inf.result.confidence * 100);
         const confidenceColor = confidence >= 80 ? chalk.green : confidence >= 60 ? chalk.yellow : chalk.gray;
 
-        console.log(`${inf.name}: ${chalk.cyan(inf.result.label)}`);
+        console.log(`${inf.name}: ${chalk.cyan(inf.result.value)}`);
         console.log(`  置信度: ${confidenceColor(confidence + '%')}`);
         console.log(`  原因: ${chalk.gray(inf.result.reason)}`);
         console.log();
 
-        labelsToAdd.push(inf.result.label);
+        labelsToAdd.push(inf.result.value);
       }
     }
 
@@ -138,8 +143,8 @@ export async function inferLabels(options: InferLabelsOptions): Promise<void> {
       console.log(chalk.gray('正在应用标签...'));
 
       // 获取仓库所有标签以找到 ID
-      const repoLabelsResponse = await client.repoListLabels(owner, repo);
-      const repoLabels = (repoLabelsResponse.data || []) as Array<{ id?: number; name?: string }>;
+      type LabelType = { id?: number; name?: string };
+      const repoLabels = await client.get<LabelType[]>(`/repos/${owner}/${repo}/labels`);
 
       const labelIds: number[] = [];
       for (const labelName of newLabels) {
@@ -157,7 +162,7 @@ export async function inferLabels(options: InferLabelsOptions): Promise<void> {
           .map((l) => l.id)
           .filter((id): id is number => id !== undefined);
 
-        await client.repoReplaceIssueLabels(owner, repo, issueNumber, {
+        await client.put(`/repos/${owner}/${repo}/issues/${issueNumber}/labels`, {
           labels: [...existingIds, ...labelIds],
         });
 

@@ -29,12 +29,12 @@ export async function projectList(options: ClientOptions & {
       state: options.state as 'open' | 'closed' | 'all',
     });
 
-    if (result.length === 0) {
+    if (result.projects.length === 0) {
       info('没有找到项目看板', options);
       return;
     }
 
-    const projects = result.map((project: any) => ({
+    const projects = result.projects.map((project: any) => ({
       id: project.id,
       title: project.title,
       state: project.state,
@@ -62,15 +62,16 @@ export async function projectGet(id: number, options: ClientOptions & {
     const { owner, repo } = resolveOwnerRepo(contextManager, options);
 
     const result = await getProject({ client, contextManager }, { owner, repo, id });
+    const project = result.project;
 
     outputDetails({
-      id: result.id,
-      title: result.title,
-      description: result.description || '(无描述)',
-      state: result.state,
-      created: result.created_at?.split('T')[0],
-      updated: result.updated_at?.split('T')[0],
-      closedAt: result.closed_at?.split('T')[0] || '-',
+      id: project.id,
+      title: project.title,
+      description: project.description || '(无描述)',
+      state: project.state,
+      created: project.created_at?.split('T')[0],
+      updated: project.updated_at?.split('T')[0],
+      closedAt: project.closed_at?.split('T')[0] || '-',
     }, options);
   } catch (err: any) {
     error(`获取项目详情失败: ${err.message}`);
@@ -99,11 +100,11 @@ export async function projectCreate(options: ClientOptions & {
       description: options.description,
     });
 
-    success(`项目看板创建成功: ${result.title}`, options);
+    success(`项目看板创建成功: ${result.project.title}`, options);
     outputDetails({
-      id: result.id,
-      title: result.title,
-      description: result.description || '(无描述)',
+      id: result.project.id,
+      title: result.project.title,
+      description: result.project.description || '(无描述)',
     }, options);
   } catch (err: any) {
     error(`创建项目看板失败: ${err.message}`);

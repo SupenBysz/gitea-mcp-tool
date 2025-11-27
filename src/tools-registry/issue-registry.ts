@@ -6,7 +6,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import * as IssueTools from '../tools/issue.js';
-import type { ToolContext } from '../index-new.js';
+import type { ToolContext } from '../types.js';
 import { createLogger } from '../logger.js';
 
 const logger = createLogger('registry:issue');

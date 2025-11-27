@@ -61,29 +61,28 @@ export async function syncBoard(options: SyncBoardOptions): Promise<void> {
 
   try {
     // 获取现有项目看板
-    const projectsResponse = await client.repoListProjects(owner, repo);
-    const projects = projectsResponse.data || [];
-    const existingProject = projects.find((p: { title?: string }) => p.title === boardName);
+    type ProjectType = { id: number; title?: string };
+    const projects = await client.get<ProjectType[]>(`/repos/${owner}/${repo}/projects`);
+    const existingProject = projects.find((p) => p.title === boardName);
 
     let projectId: number;
 
     if (existingProject) {
-      projectId = (existingProject as { id: number }).id;
+      projectId = existingProject.id;
       console.log(chalk.yellow(`⚠️  项目看板 "${boardName}" 已存在 (ID: ${projectId})`));
     } else {
       // 创建新项目看板
-      const createResponse = await client.repoCreateProject(owner, repo, {
+      const createResponse = await client.post<ProjectType>(`/repos/${owner}/${repo}/projects`, {
         title: boardName,
-        content_type: 'string',
       });
-      projectId = (createResponse.data as { id: number }).id;
+      projectId = createResponse.id;
       console.log(chalk.green(`✓ 创建项目看板 "${boardName}" (ID: ${projectId})`));
     }
 
     // 获取现有列
-    const columnsResponse = await client.repoListProjectColumns(owner, repo, projectId);
-    const existingColumns = columnsResponse.data || [];
-    const existingColumnNames = new Set(existingColumns.map((c: { title?: string }) => c.title));
+    type ColumnType = { id: number; title?: string };
+    const existingColumns = await client.get<ColumnType[]>(`/repos/${owner}/${repo}/projects/${projectId}/columns`);
+    const existingColumnNames = new Set(existingColumns.map((c) => c.title));
 
     console.log(chalk.bold('\n📊 同步看板列:\n'));
 
@@ -95,10 +94,10 @@ export async function syncBoard(options: SyncBoardOptions): Promise<void> {
         console.log(chalk.gray(`  - ${column.name} (已存在)`));
         columnsSkipped++;
       } else {
-        await client.repoCreateProjectColumn(owner, repo, projectId, {
+        await client.post(`/repos/${owner}/${repo}/projects/${projectId}/columns`, {
           title: column.name,
         });
-        console.log(chalk.green(`  + ${column.name} → ${column.mappedStatus}`));
+        console.log(chalk.green(`  + ${column.name} → ${column.maps_to}`));
         columnsCreated++;
       }
     }

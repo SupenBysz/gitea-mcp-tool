@@ -1,0 +1,210 @@
+project:
+  name: ""
+  type: backend
+  repo: /
+  language: go
+labels:
+  status:
+    backlog:
+      color: ededed
+      description: 待处理
+    in-progress:
+      color: 0e8a16
+      description: 开发中
+    review:
+      color: fbca04
+      description: 审查中
+    testing:
+      color: 1d76db
+      description: 测试中
+    done:
+      color: 0e8a16
+      description: 已完成
+  priority:
+    P0:
+      color: d93f0b
+      description: 紧急
+      sla_hours: 4
+    P1:
+      color: e99695
+      description: 高
+      sla_hours: 24
+    P2:
+      color: fbca04
+      description: 中
+      sla_hours: 168
+    P3:
+      color: c5def5
+      description: 低
+  type:
+    bug:
+      color: d73a4a
+      description: 缺陷修复
+    feature:
+      color: 0e8a16
+      description: 新功能
+    docs:
+      color: 0075ca
+      description: 文档
+    refactor:
+      color: fbca04
+      description: 重构
+    test:
+      color: 1d76db
+      description: 测试
+    security:
+      color: d93f0b
+      description: 安全问题
+  area:
+    api:
+      color: c2e0c6
+      description: API 相关
+    database:
+      color: f9d0c4
+      description: 数据库
+    auth:
+      color: fef2c0
+      description: 认证授权
+    performance:
+      color: e99695
+      description: 性能优化
+  workflow:
+    blocked:
+      color: d93f0b
+      description: 被阻塞
+    needs-info:
+      color: fbca04
+      description: 需要更多信息
+    needs-review:
+      color: 0075ca
+      description: 需要代码审查
+    duplicate:
+      color: cccccc
+      description: 重复问题
+  special:
+    good-first-issue:
+      color: 7057ff
+      description: 适合新手
+    help-wanted:
+      color: "008672"
+      description: 需要帮助
+    breaking-change:
+      color: d93f0b
+      description: 破坏性变更
+board:
+  name: Issue Workflow Board
+  columns:
+    - name: Backlog
+      maps_to: status/backlog
+    - name: In Progress
+      maps_to: status/in-progress
+    - name: Review
+      maps_to: status/review
+    - name: Testing
+      maps_to: status/testing
+    - name: Done
+      maps_to: status/done
+automation:
+  label_inference:
+    enabled: true
+    confidence_threshold: 0.7
+    type_keywords:
+      bug:
+        - bug
+        - 错误
+        - 崩溃
+        - 异常
+        - 报错
+        - error
+        - crash
+        - fix
+        - 修复
+      feature:
+        - feature
+        - 功能
+        - 新增
+        - 支持
+        - add
+        - implement
+        - 实现
+      security:
+        - 安全
+        - 漏洞
+        - XSS
+        - SQL注入
+        - 认证绕过
+        - security
+        - vulnerability
+        - CVE
+      docs:
+        - 文档
+        - documentation
+        - docs
+        - readme
+        - 说明
+      refactor:
+        - 重构
+        - refactor
+        - 优化
+        - optimize
+        - cleanup
+      test:
+        - 测试
+        - test
+        - spec
+        - 用例
+    priority_keywords:
+      P0:
+        - 紧急
+        - 线上故障
+        - 服务中断
+        - urgent
+        - critical
+        - emergency
+        - 严重
+      P1:
+        - 重要
+        - 阻塞
+        - important
+        - blocker
+        - high
+  priority_escalation:
+    enabled: true
+    rules:
+      - condition: label:type/security
+        action: force_priority:P0
+      - condition: label:priority/P3 AND age_days > 30
+        action: upgrade_to:P2
+      - condition: label:priority/P2 AND age_days > 14
+        action: upgrade_to:P1
+      - condition: label:priority/P1 AND age_days > 3
+        action: upgrade_to:P0
+  blocked_detection:
+    enabled: true
+    rules:
+      - condition: label:priority/P0 AND no_update_hours > 4
+        action: add_label:workflow/blocked
+      - condition: label:priority/P1 AND no_update_hours > 24
+        action: add_label:workflow/blocked
+      - condition: label:workflow/needs-info AND no_update_hours > 48
+        action: add_label:workflow/blocked
+  status_sync:
+    enabled: true
+    direction: both
+    conflict_resolution: board-wins
+  new_issue_defaults:
+    auto_add_to_backlog: true
+    require_type_label: true
+    require_priority_label: false
+    default_priority: P2
+notifications:
+  blocked_issues:
+    enabled: true
+    channels:
+      - issue_comment
+    template: ⚠️ 此 Issue 已超过 SLA 时间，请及时处理！
+  priority_escalation:
+    enabled: true
+    channels:
+      - issue_comment
+    template: ⬆️ 优先级已自动升级为 {new_priority}
