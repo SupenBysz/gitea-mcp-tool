@@ -298,12 +298,22 @@ export function generateDefaultConfig(
 
 // ============ 配置解析器 ============
 
+export interface ParseResult {
+  success: boolean;
+  config?: WorkflowConfig;
+  errors?: string[];
+}
+
 /**
  * 解析 YAML 配置文件内容
  */
-export function parseConfig(yamlContent: string): WorkflowConfig {
-  const config = parseYAML(yamlContent) as WorkflowConfig;
-  return config;
+export function parseConfig(yamlContent: string): ParseResult {
+  try {
+    const config = parseYAML(yamlContent) as WorkflowConfig;
+    return { success: true, config };
+  } catch (error: any) {
+    return { success: false, errors: [error.message] };
+  }
 }
 
 /**

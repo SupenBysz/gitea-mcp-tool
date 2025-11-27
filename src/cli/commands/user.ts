@@ -20,8 +20,6 @@ export async function userCurrent(options: ClientOptions) {
       fullName: result.full_name,
       email: result.email,
       avatar: result.avatar_url,
-      isAdmin: result.is_admin,
-      created: result.created,
     }, options);
   } catch (err: any) {
     error(`获取用户信息失败: ${err.message}`);

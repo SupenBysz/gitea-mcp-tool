@@ -9,6 +9,8 @@ import { parseConfig, getAllLabels } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface SyncLabelsOptions {
+  token?: string;
+  server?: string;
   owner?: string;
   repo?: string;
   dryRun?: boolean;
@@ -58,7 +60,10 @@ export async function syncLabels(options: SyncLabelsOptions): Promise<void> {
   console.log(chalk.gray(`配置中定义了 ${allLabels.length} 个标签\n`));
 
   // 创建客户端
-  const client = await createClientAsync({});
+  const client = await createClientAsync({
+    token: options.token,
+    server: options.server,
+  });
   if (!client) {
     console.log(chalk.red('\n❌ 无法创建 API 客户端，请检查配置'));
     return;
@@ -66,9 +71,9 @@ export async function syncLabels(options: SyncLabelsOptions): Promise<void> {
 
   try {
     // 获取现有标签
-    const existingLabelsResponse = await client.repoListLabels(owner, repo);
-    const existingLabels = existingLabelsResponse.data || [];
-    const existingLabelNames = new Set(existingLabels.map((l: { name?: string }) => l.name));
+    type LabelType = { id?: number; name?: string; color?: string; description?: string };
+    const existingLabels = await client.get<LabelType[]>(`/repos/${owner}/${repo}/labels`);
+    const existingLabelNames = new Set(existingLabels.map((l) => l.name));
 
     let created = 0;
     let updated = 0;
@@ -76,14 +81,16 @@ export async function syncLabels(options: SyncLabelsOptions): Promise<void> {
 
     for (const label of allLabels) {
       const fullName = label.name;
+      const labelColor = label.config.color;
+      const labelDescription = label.config.description;
       const exists = existingLabelNames.has(fullName);
 
       if (exists) {
         // 检查是否需要更新
-        const existing = existingLabels.find((l: { name?: string }) => l.name === fullName) as { name?: string; color?: string; description?: string };
+        const existing = existingLabels.find((l) => l.name === fullName);
         const needsUpdate = existing && (
-          existing.color !== label.color ||
-          existing.description !== label.description
+          existing.color !== labelColor ||
+          existing.description !== labelDescription
         );
 
         if (needsUpdate && existing) {
@@ -91,12 +98,12 @@ export async function syncLabels(options: SyncLabelsOptions): Promise<void> {
             console.log(chalk.yellow(`  ~ ${fullName} (需要更新)`));
           } else {
             // 找到标签 ID
-            const labelId = (existing as { id?: number }).id;
+            const labelId = existing.id;
             if (labelId) {
-              await client.repoEditLabel(owner, repo, labelId, {
+              await client.patch(`/repos/${owner}/${repo}/labels/${labelId}`, {
                 name: fullName,
-                color: label.color,
-                description: label.description,
+                color: labelColor,
+                description: labelDescription,
               });
               console.log(chalk.yellow(`  ~ ${fullName} (已更新)`));
             }
@@ -110,10 +117,10 @@ export async function syncLabels(options: SyncLabelsOptions): Promise<void> {
         if (options.dryRun) {
           console.log(chalk.green(`  + ${fullName} (将创建)`));
         } else {
-          await client.repoCreateLabel(owner, repo, {
+          await client.post(`/repos/${owner}/${repo}/labels`, {
             name: fullName,
-            color: label.color,
-            description: label.description,
+            color: labelColor,
+            description: labelDescription,
           });
           console.log(chalk.green(`  + ${fullName} (已创建)`));
         }

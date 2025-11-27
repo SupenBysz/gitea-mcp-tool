@@ -4,6 +4,7 @@
 
 import type { GiteaClient } from '../gitea-client.js';
 import type { ContextManager } from '../context-manager.js';
+import type { GiteaMilestone } from '../types/gitea.js';
 import { createLogger } from '../logger.js';
 
 const logger = createLogger('tools:milestone');
@@ -46,7 +47,7 @@ export async function createMilestone(
     requestBody.due_on = args.due_on;
   }
 
-  const milestone = await ctx.client.post(
+  const milestone = await ctx.client.post<GiteaMilestone>(
     `/repos/${owner}/${repo}/milestones`,
     requestBody,
     args.token
@@ -89,7 +90,7 @@ export async function listMilestones(
   if (args.page) query.page = args.page;
   if (args.limit) query.limit = args.limit;
 
-  const milestones = await ctx.client.get(`/repos/${owner}/${repo}/milestones`, query, args.token);
+  const milestones = await ctx.client.get<GiteaMilestone[]>(`/repos/${owner}/${repo}/milestones`, query, args.token);
 
   logger.info({ count: milestones.length }, 'Milestones retrieved');
 
@@ -124,7 +125,7 @@ export async function getMilestone(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
   logger.info({ owner, repo, id: args.id }, 'Getting milestone');
 
-  const milestone = await ctx.client.get(
+  const milestone = await ctx.client.get<GiteaMilestone>(
     `/repos/${owner}/${repo}/milestones/${args.id}`,
     undefined,
     args.token
@@ -177,7 +178,7 @@ export async function updateMilestone(
   if (args.due_on !== undefined) requestBody.due_on = args.due_on;
   if (args.state !== undefined) requestBody.state = args.state;
 
-  const milestone = await ctx.client.patch(
+  const milestone = await ctx.client.patch<GiteaMilestone>(
     `/repos/${owner}/${repo}/milestones/${args.id}`,
     requestBody,
     args.token

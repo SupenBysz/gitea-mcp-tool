@@ -5,10 +5,12 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseConfig } from '../../../utils/workflow-config.js';
+import { parseConfig, getSLAHours } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface ReportOptions {
+  token?: string;
+  server?: string;
   owner?: string;
   repo?: string;
   timeRange?: 'day' | 'week' | 'month';
@@ -90,7 +92,10 @@ export async function generateReport(options: ReportOptions): Promise<void> {
   }
 
   // 创建客户端
-  const client = await createClientAsync({});
+  const client = await createClientAsync({
+    token: options.token,
+    server: options.server,
+  });
   if (!client) {
     if (options.json) {
       console.log(JSON.stringify({ error: 'Cannot create API client' }, null, 2));
@@ -111,22 +116,21 @@ export async function generateReport(options: ReportOptions): Promise<void> {
   const since = new Date(now - rangeMs).toISOString();
 
   try {
-    // 获取开放的 Issues
-    const openIssuesResponse = await client.repoListIssues(owner, repo, { state: 'open' });
-    const openIssues = (openIssuesResponse.data || []) as Array<{
+    // 定义 Issue 类型
+    type IssueType = {
       number?: number;
       title?: string;
       labels?: Array<{ name?: string }>;
       created_at?: string;
       updated_at?: string;
-    }>;
+      closed_at?: string;
+    };
+
+    // 获取开放的 Issues
+    const openIssues = await client.get<IssueType[]>(`/repos/${owner}/${repo}/issues`, { state: 'open' });
 
     // 获取关闭的 Issues
-    const closedIssuesResponse = await client.repoListIssues(owner, repo, { state: 'closed' });
-    const closedIssues = (closedIssuesResponse.data || []) as Array<{
-      labels?: Array<{ name?: string }>;
-      closed_at?: string;
-    }>;
+    const closedIssues = await client.get<IssueType[]>(`/repos/${owner}/${repo}/issues`, { state: 'closed' });
 
     // 过滤时间范围内关闭的 Issues
     const recentClosed = closedIssues.filter((issue) => {
@@ -158,15 +162,15 @@ export async function generateReport(options: ReportOptions): Promise<void> {
       byType[type] = (byType[type] || 0) + 1;
     }
 
-    // 检测阻塞 Issue
-    const sla = config.automation.sla || { P0: 4, P1: 24, P2: 72, P3: 168 };
+    // 检测阻塞 Issue - 从标签配置中获取 SLA
+    const defaultSla = { P0: 4, P1: 24, P2: 72, P3: 168 };
     const blockedIssues: Array<{ number: number; title: string; ageHours: number }> = [];
 
     for (const issue of openIssues) {
       const labels = (issue.labels || []).map((l) => l.name || '');
       const priorityLabel = labels.find((l) => l.startsWith('priority/'));
       const priority = priorityLabel?.replace('priority/', '').toUpperCase() || 'P3';
-      const issueSla = sla[priority as keyof typeof sla] || sla.P3;
+      const issueSla = getSLAHours(config, priority) || defaultSla[priority as keyof typeof defaultSla] || defaultSla.P3;
 
       const updatedAt = new Date(issue.updated_at || issue.created_at || now).getTime();
       const ageHours = Math.round((now - updatedAt) / (1000 * 60 * 60));
