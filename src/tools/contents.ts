@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'contents-tools' });
+const logger = createLogger('tools:contents');
 
 export interface ContentsToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface ContentsToolsContext {
 export interface ContentsParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // Identity for author/committer
@@ -43,7 +44,8 @@ export async function getContents(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(params.filepath)}`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -86,6 +88,7 @@ export async function createFile(
     method: 'POST',
     path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(params.filepath)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -132,6 +135,7 @@ export async function updateFile(
     method: 'PUT',
     path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(params.filepath)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -174,6 +178,7 @@ export async function deleteFile(
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(params.filepath)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -201,7 +206,8 @@ export async function getRawFile(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/raw/${encodeURIComponent(params.filepath)}`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   // Raw file returns binary data, convert to string or base64 if needed
@@ -224,6 +230,7 @@ export async function downloadArchive(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/archive/${encodeURIComponent(params.archive)}`,
+    token: params.token,
   });
 
   return response.data;

@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as TeamTools from '../tools/team.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -31,6 +34,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
         name: z.string().min(1).describe('Team name'),
         description: z.string().optional().describe('Team description'),
         permission: z.enum(['read', 'write', 'admin']).optional().describe('Permission level (default: read)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -57,6 +61,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Get team details',
       inputSchema: z.object({
         id: z.number().int().positive().describe('Team ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -85,6 +90,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
         org: z.string().min(1).describe('Organization name'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -114,6 +120,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
         name: z.string().optional().describe('New team name'),
         description: z.string().optional().describe('New description'),
         permission: z.enum(['read', 'write', 'admin']).optional().describe('New permission level'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -140,6 +147,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
       description: 'Delete a team',
       inputSchema: z.object({
         id: z.number().int().positive().describe('Team ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -168,6 +176,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
         id: z.number().int().positive().describe('Team ID'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -195,6 +204,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         id: z.number().int().positive().describe('Team ID'),
         username: z.string().min(1).describe('Username to add'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -222,6 +232,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         id: z.number().int().positive().describe('Team ID'),
         username: z.string().min(1).describe('Username to remove'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -250,6 +261,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
         id: z.number().int().positive().describe('Team ID'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -278,6 +290,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
         id: z.number().int().positive().describe('Team ID'),
         owner: z.string().min(1).describe('Repository owner'),
         repo: z.string().min(1).describe('Repository name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -306,6 +319,7 @@ export function registerTeamTools(mcpServer: McpServer, ctx: ToolContext) {
         id: z.number().int().positive().describe('Team ID'),
         owner: z.string().min(1).describe('Repository owner'),
         repo: z.string().min(1).describe('Repository name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

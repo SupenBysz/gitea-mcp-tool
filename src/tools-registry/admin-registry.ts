@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as AdminTools from '../tools/admin.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -36,6 +39,7 @@ export function registerAdminTools(mcpServer: McpServer, ctx: ToolContext) {
         send_notify: z.boolean().optional().describe('Send email notification'),
         source_id: z.number().optional().describe('Authentication source ID'),
         visibility: z.string().optional().describe('User visibility (public, limited, private)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -63,6 +67,7 @@ export function registerAdminTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         username: z.string().min(1).describe('Username to delete'),
         purge: z.boolean().optional().describe('Purge user data completely'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -107,6 +112,7 @@ export function registerAdminTools(mcpServer: McpServer, ctx: ToolContext) {
         source_id: z.number().optional().describe('Authentication source ID'),
         visibility: z.string().optional().describe('User visibility (public, limited, private)'),
         website: z.string().optional().describe('User website'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

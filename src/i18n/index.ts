@@ -17,8 +17,10 @@ import { zhCN } from './locales/zh-CN';
 
 /**
  * Available language packs
+ * Note: Not all locales from SupportedLocale are implemented yet.
+ * Use Partial to allow gradual locale additions.
  */
-const locales: Record<SupportedLocale, I18nMessages> = {
+const locales: Partial<Record<SupportedLocale, I18nMessages>> = {
   'en': en,
   'zh-CN': zhCN,
   // TODO: Add more languages

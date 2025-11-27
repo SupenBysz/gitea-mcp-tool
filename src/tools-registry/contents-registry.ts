@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as ContentsTools from '../tools/contents.js';
 import { ToolContext } from '../types.js';
 
@@ -23,6 +26,7 @@ export function registerContentsTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         filepath: z.string().min(1).describe('Path of the file or directory'),
         ref: z.string().optional().describe('The name of the commit/branch/tag. Defaults to the default branch'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -54,6 +58,7 @@ export function registerContentsTools(mcpServer: McpServer, ctx: ToolContext) {
         committer: identitySchema.optional().describe('Committer identity'),
         signoff: z.boolean().optional().describe('Add Signed-off-by trailer'),
         force_push: z.boolean().optional().describe('Force-push if the new branch already exists'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -87,6 +92,7 @@ export function registerContentsTools(mcpServer: McpServer, ctx: ToolContext) {
         committer: identitySchema.optional().describe('Committer identity'),
         signoff: z.boolean().optional().describe('Add Signed-off-by trailer'),
         force_push: z.boolean().optional().describe('Force-push if the new branch already exists'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -118,6 +124,7 @@ export function registerContentsTools(mcpServer: McpServer, ctx: ToolContext) {
         committer: identitySchema.optional().describe('Committer identity'),
         signoff: z.boolean().optional().describe('Add Signed-off-by trailer'),
         force_push: z.boolean().optional().describe('Force-push if the new branch already exists'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -142,6 +149,7 @@ export function registerContentsTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         filepath: z.string().min(1).describe('Path of the file to get'),
         ref: z.string().optional().describe('The name of the commit/branch/tag. Defaults to the default branch'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

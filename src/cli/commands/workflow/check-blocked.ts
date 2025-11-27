@@ -90,26 +90,25 @@ export async function checkBlocked(options: CheckBlockedOptions): Promise<void> 
     return;
   }
 
-  // SLA 配置
-  const sla = config.automation.sla || {
-    P0: 4,
-    P1: 24,
-    P2: 72,
-    P3: 168,
+  // SLA 配置 - 从 priority labels 的 sla_hours 获取
+  const sla: Record<string, number> = {
+    P0: config.labels.priority['P0']?.sla_hours || 4,
+    P1: config.labels.priority['P1']?.sla_hours || 24,
+    P2: config.labels.priority['P2']?.sla_hours || 72,
+    P3: config.labels.priority['P3']?.sla_hours || 168,
   };
 
   const thresholdHours = options.threshold ? parseInt(options.threshold) : undefined;
 
   try {
     // 获取开放的 Issues
-    const issuesResponse = await client.repoListIssues(owner, repo, { state: 'open' });
-    const issues = (issuesResponse.data || []) as Array<{
+    const issues = await client.get<Array<{
       number?: number;
       title?: string;
       labels?: Array<{ name?: string }>;
       updated_at?: string;
       created_at?: string;
-    }>;
+    }>>(`/repos/${owner}/${repo}/issues`, { state: 'open' });
 
     const now = Date.now();
     const results: BlockedIssue[] = [];

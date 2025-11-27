@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as WikiTools from '../tools/wiki.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -32,6 +35,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
         title: z.string().min(1).describe('Page title'),
         content: z.string().describe('Page content (Markdown)'),
         message: z.string().optional().describe('Commit message'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -60,6 +64,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.string().min(1).describe('Page title'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -91,6 +96,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -122,6 +128,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
         title: z.string().optional().describe('New page title'),
         content: z.string().describe('New page content (Markdown)'),
         message: z.string().optional().describe('Commit message'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -157,6 +164,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.string().min(1).describe('Page title'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -189,6 +197,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.string().min(1).describe('Page title'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -222,6 +231,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.string().min(1).describe('Page title'),
         revision: z.string().min(1).describe('Revision SHA'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -255,6 +265,7 @@ export function registerWikiTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         query: z.string().min(1).describe('Search query'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

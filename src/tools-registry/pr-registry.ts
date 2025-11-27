@@ -5,8 +5,11 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as PullRequestTools from '../tools/pull-request.js';
-import type { ToolContext } from '../index-new.js';
+import type { ToolContext } from '../types.js';
 import { createLogger } from '../logger.js';
 
 const logger = createLogger('registry:pr');
@@ -36,6 +39,7 @@ export function registerPullRequestTools(mcpServer: McpServer, ctx: ToolContext)
         assignees: z.array(z.string()).optional().describe('Usernames to assign'),
         labels: z.array(z.number()).optional().describe('Label IDs to attach'),
         milestone: z.number().optional().describe('Milestone ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -64,6 +68,7 @@ export function registerPullRequestTools(mcpServer: McpServer, ctx: ToolContext)
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('PR index number'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -97,6 +102,7 @@ export function registerPullRequestTools(mcpServer: McpServer, ctx: ToolContext)
           .describe('PR state filter (default: open)'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 20, max: 50)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -131,6 +137,7 @@ export function registerPullRequestTools(mcpServer: McpServer, ctx: ToolContext)
         labels: z.array(z.number()).optional().describe('Label IDs'),
         milestone: z.number().optional().describe('Milestone ID'),
         state: z.enum(['open', 'closed']).optional().describe('PR state'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -166,6 +173,7 @@ export function registerPullRequestTools(mcpServer: McpServer, ctx: ToolContext)
         MergeCommitID: z.string().optional().describe('Optional merge commit ID'),
         MergeMessageField: z.string().optional().describe('Custom merge message'),
         MergeTitleField: z.string().optional().describe('Custom merge title'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

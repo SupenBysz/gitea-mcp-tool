@@ -254,7 +254,7 @@ export async function initWorkflow(options: WorkflowInitOptions): Promise<void> 
   // 生成配置
   console.log(chalk.bold('\n📝 生成工作流配置...\n'));
 
-  const config = generateDefaultConfig(projectType, language);
+  const config = generateDefaultConfig(repo, projectType, `${owner}/${repo}`, language);
   const configContent = serializeConfig(config);
 
   // 确保目录存在
@@ -273,15 +273,15 @@ export async function initWorkflow(options: WorkflowInitOptions): Promise<void> 
   console.log(chalk.bold('📋 配置摘要:\n'));
 
   console.log(chalk.cyan('  标签分类:'));
-  console.log(chalk.gray(`    - status/*   : ${config.labels.status.length} 个状态标签`));
-  console.log(chalk.gray(`    - priority/* : ${config.labels.priority.length} 个优先级标签`));
-  console.log(chalk.gray(`    - type/*     : ${config.labels.type.length} 个类型标签`));
-  console.log(chalk.gray(`    - area/*     : ${config.labels.area.length} 个领域标签`));
-  console.log(chalk.gray(`    - workflow/* : ${config.labels.workflow.length} 个工作流标签`));
+  console.log(chalk.gray(`    - status/*   : ${Object.keys(config.labels.status).length} 个状态标签`));
+  console.log(chalk.gray(`    - priority/* : ${Object.keys(config.labels.priority).length} 个优先级标签`));
+  console.log(chalk.gray(`    - type/*     : ${Object.keys(config.labels.type).length} 个类型标签`));
+  console.log(chalk.gray(`    - area/*     : ${Object.keys(config.labels.area || {}).length} 个领域标签`));
+  console.log(chalk.gray(`    - workflow/* : ${Object.keys(config.labels.workflow || {}).length} 个工作流标签`));
 
   console.log(chalk.cyan('\n  看板列:'));
   for (const column of config.board.columns) {
-    console.log(chalk.gray(`    - ${column.name} (${column.mappedStatus})`));
+    console.log(chalk.gray(`    - ${column.name} (${column.maps_to})`));
   }
 
   console.log(chalk.bold('\n📋 后续步骤:\n'));

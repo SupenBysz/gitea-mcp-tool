@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as TopicsTools from '../tools/topics.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -29,6 +32,7 @@ export function registerTopicsTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -57,6 +61,7 @@ export function registerTopicsTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         topics: z.array(z.string()).describe('Array of topic names to set (replaces all existing topics)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -85,6 +90,7 @@ export function registerTopicsTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         topic: z.string().min(1).describe('Topic name to add'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -113,6 +119,7 @@ export function registerTopicsTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         topic: z.string().min(1).describe('Topic name to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseConfig, validateConfig, getAllLabels } from '../../../utils/workflow-config.js';
+import { parseConfig, validateConfig, getAllLabels, getSLAHours } from '../../../utils/workflow-config.js';
 
 export interface StatusOptions {
   owner?: string;
@@ -35,10 +35,10 @@ export async function showStatus(options: StatusOptions): Promise<void> {
 
   if (!parseResult.success || !parseResult.config) {
     if (options.json) {
-      console.log(JSON.stringify({ error: 'Config parse error', details: parseResult.errors }, null, 2));
+      console.log(JSON.stringify({ error: 'Config parse error', details: parseResult.errors || [] }, null, 2));
     } else {
       console.log(chalk.red('\n❌ 配置文件解析失败:'));
-      for (const error of parseResult.errors) {
+      for (const error of parseResult.errors || []) {
         console.log(chalk.red(`  - ${error}`));
       }
     }
@@ -53,6 +53,13 @@ export async function showStatus(options: StatusOptions): Promise<void> {
   // 获取所有标签
   const allLabels = getAllLabels(config);
 
+  // 计算各类标签数量
+  const statusCount = Object.keys(config.labels.status).length;
+  const priorityCount = Object.keys(config.labels.priority).length;
+  const typeCount = Object.keys(config.labels.type).length;
+  const areaCount = Object.keys(config.labels.area || {}).length;
+  const workflowCount = Object.keys(config.labels.workflow || {}).length;
+
   if (options.json) {
     const result = {
       configPath,
@@ -63,11 +70,11 @@ export async function showStatus(options: StatusOptions): Promise<void> {
       labels: {
         total: allLabels.length,
         byCategory: {
-          status: config.labels.status.length,
-          priority: config.labels.priority.length,
-          type: config.labels.type.length,
-          area: config.labels.area.length,
-          workflow: config.labels.workflow.length,
+          status: statusCount,
+          priority: priorityCount,
+          type: typeCount,
+          area: areaCount,
+          workflow: workflowCount,
         },
       },
       board: {
@@ -75,9 +82,9 @@ export async function showStatus(options: StatusOptions): Promise<void> {
         columns: config.board.columns.length,
       },
       automation: {
-        autoLabeling: config.automation.autoLabeling,
-        priorityEscalation: config.automation.priorityEscalation,
-        blockingDetection: config.automation.blockingDetection,
+        labelInference: config.automation.label_inference.enabled,
+        priorityEscalation: config.automation.priority_escalation.enabled,
+        blockedDetection: config.automation.blocked_detection.enabled,
       },
     };
     console.log(JSON.stringify(result, null, 2));
@@ -108,38 +115,42 @@ export async function showStatus(options: StatusOptions): Promise<void> {
   // 项目信息
   console.log(chalk.bold('\n📦 项目信息'));
   console.log(chalk.gray(`  类型: ${config.project.type}`));
-  console.log(chalk.gray(`  语言: ${config.project.language}`));
+  console.log(chalk.gray(`  语言: ${config.project.language || '未指定'}`));
 
   // 标签统计
   console.log(chalk.bold('\n🏷️  标签配置'));
   console.log(chalk.gray(`  总计: ${allLabels.length} 个标签`));
-  console.log(chalk.gray(`  - status/*   : ${config.labels.status.length} 个`));
-  console.log(chalk.gray(`  - priority/* : ${config.labels.priority.length} 个`));
-  console.log(chalk.gray(`  - type/*     : ${config.labels.type.length} 个`));
-  console.log(chalk.gray(`  - area/*     : ${config.labels.area.length} 个`));
-  console.log(chalk.gray(`  - workflow/* : ${config.labels.workflow.length} 个`));
+  console.log(chalk.gray(`  - status/*   : ${statusCount} 个`));
+  console.log(chalk.gray(`  - priority/* : ${priorityCount} 个`));
+  console.log(chalk.gray(`  - type/*     : ${typeCount} 个`));
+  console.log(chalk.gray(`  - area/*     : ${areaCount} 个`));
+  console.log(chalk.gray(`  - workflow/* : ${workflowCount} 个`));
 
   // 看板配置
   console.log(chalk.bold('\n📋 看板配置'));
   console.log(chalk.gray(`  名称: ${config.board.name}`));
   console.log(chalk.gray(`  列数: ${config.board.columns.length}`));
   for (const column of config.board.columns) {
-    console.log(chalk.gray(`    - ${column.name} → ${column.mappedStatus}`));
+    console.log(chalk.gray(`    - ${column.name} → ${column.maps_to}`));
   }
 
   // 自动化配置
   console.log(chalk.bold('\n🤖 自动化配置'));
-  console.log(chalk.gray(`  智能标签推断: ${config.automation.autoLabeling ? chalk.green('已启用') : chalk.gray('已禁用')}`));
-  console.log(chalk.gray(`  优先级自动升级: ${config.automation.priorityEscalation ? chalk.green('已启用') : chalk.gray('已禁用')}`));
-  console.log(chalk.gray(`  阻塞检测: ${config.automation.blockingDetection ? chalk.green('已启用') : chalk.gray('已禁用')}`));
+  console.log(chalk.gray(`  智能标签推断: ${config.automation.label_inference.enabled ? chalk.green('已启用') : chalk.gray('已禁用')}`));
+  console.log(chalk.gray(`  优先级自动升级: ${config.automation.priority_escalation.enabled ? chalk.green('已启用') : chalk.gray('已禁用')}`));
+  console.log(chalk.gray(`  阻塞检测: ${config.automation.blocked_detection.enabled ? chalk.green('已启用') : chalk.gray('已禁用')}`));
 
-  // SLA 配置
-  if (config.automation.sla) {
+  // SLA 配置 - 从优先级标签配置中获取
+  const slaP0 = getSLAHours(config, 'P0');
+  const slaP1 = getSLAHours(config, 'P1');
+  const slaP2 = getSLAHours(config, 'P2');
+  const slaP3 = getSLAHours(config, 'P3');
+  if (slaP0 || slaP1 || slaP2 || slaP3) {
     console.log(chalk.bold('\n⏰ SLA 配置'));
-    console.log(chalk.gray(`  P0 紧急: ${config.automation.sla.P0}h`));
-    console.log(chalk.gray(`  P1 高: ${config.automation.sla.P1}h`));
-    console.log(chalk.gray(`  P2 中: ${config.automation.sla.P2}h`));
-    console.log(chalk.gray(`  P3 低: ${config.automation.sla.P3}h`));
+    if (slaP0) console.log(chalk.gray(`  P0 紧急: ${slaP0}h`));
+    if (slaP1) console.log(chalk.gray(`  P1 高: ${slaP1}h`));
+    if (slaP2) console.log(chalk.gray(`  P2 中: ${slaP2}h`));
+    if (slaP3) console.log(chalk.gray(`  P3 低: ${slaP3}h`));
   }
 
   console.log();

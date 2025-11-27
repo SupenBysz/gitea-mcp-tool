@@ -6,10 +6,13 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import * as IssueTools from '../tools/issue.js';
-import type { ToolContext } from '../index-new.js';
+import type { ToolContext } from '../types.js';
 import { createLogger } from '../logger.js';
 
 const logger = createLogger('registry:issue');
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 
 /**
  * 注册所有 Issue 管理工具
@@ -34,6 +37,7 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
         assignees: z.array(z.string()).optional().describe('Usernames to assign'),
         labels: z.array(z.number()).optional().describe('Label IDs to attach'),
         milestone: z.number().optional().describe('Milestone ID'),
+        token: tokenSchema,
       }),
     },
     async (args) => {
@@ -62,6 +66,7 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('Issue index number'),
+        token: tokenSchema,
       }),
     },
     async (args) => {
@@ -96,6 +101,7 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
         labels: z.string().optional().describe('Comma-separated label names'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 20, max: 50)'),
+        token: tokenSchema,
       }),
     },
     async (args) => {
@@ -130,6 +136,7 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
         labels: z.array(z.number()).optional().describe('Label IDs'),
         milestone: z.number().optional().describe('Milestone ID'),
         state: z.enum(['open', 'closed']).optional().describe('Issue state'),
+        token: tokenSchema,
       }),
     },
     async (args) => {
@@ -159,6 +166,7 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('Issue index number'),
         body: z.string().min(1).describe('Comment body'),
+        token: tokenSchema,
       }),
     },
     async (args) => {
@@ -187,6 +195,7 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('Issue index number'),
+        token: tokenSchema,
       }),
     },
     async (args) => {

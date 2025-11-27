@@ -1,16 +1,21 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'notification-tools' });
+const logger = createLogger('tools:notification');
 
 export interface NotificationToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Common parameters
+export interface NotificationParams {
+  token?: string;
+}
+
 // List notifications
-export interface ListNotificationsParams {
+export interface ListNotificationsParams extends NotificationParams {
   all?: boolean;
   status_types?: string[];
   subject_type?: string[];
@@ -38,14 +43,15 @@ export async function listNotifications(
   const response = await ctx.client.request({
     method: 'GET',
     path: '/notifications',
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Mark notifications as read
-export interface MarkNotificationsParams {
+export interface MarkNotificationsParams extends NotificationParams {
   last_read_at?: string;
   all?: boolean;
   status_types?: string[];
@@ -67,28 +73,33 @@ export async function markNotifications(
   const response = await ctx.client.request({
     method: 'PUT',
     path: '/notifications',
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Check new notifications
+export interface CheckNewNotificationsParams extends NotificationParams {}
+
 export async function checkNewNotifications(
-  ctx: NotificationToolsContext
+  ctx: NotificationToolsContext,
+  params: CheckNewNotificationsParams = {}
 ): Promise<unknown> {
   logger.info('Checking new notifications');
 
   const response = await ctx.client.request({
     method: 'GET',
     path: '/notifications/new',
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Get notification thread
-export interface GetNotificationThreadParams {
+export interface GetNotificationThreadParams extends NotificationParams {
   id: string;
 }
 
@@ -101,6 +112,7 @@ export async function getNotificationThread(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/notifications/threads/${params.id}`,
+    token: params.token,
   });
 
   return response.data;
@@ -116,13 +128,14 @@ export async function markNotificationThread(
   const response = await ctx.client.request({
     method: 'PATCH',
     path: `/notifications/threads/${params.id}`,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // List repository notifications
-export interface ListRepoNotificationsParams {
+export interface ListRepoNotificationsParams extends NotificationParams {
   owner?: string;
   repo?: string;
   all?: boolean;
@@ -154,14 +167,15 @@ export async function listRepoNotifications(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/notifications`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Mark repository notifications
-export interface MarkRepoNotificationsParams {
+export interface MarkRepoNotificationsParams extends NotificationParams {
   owner?: string;
   repo?: string;
   last_read_at?: string;
@@ -187,7 +201,8 @@ export async function markRepoNotifications(
   const response = await ctx.client.request({
     method: 'PUT',
     path: `/repos/${owner}/${repo}/notifications`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;

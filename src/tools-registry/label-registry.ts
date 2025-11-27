@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as LabelTools from '../tools/label.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -36,6 +39,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         description: z.string().optional().describe('Label description'),
         exclusive: z.boolean().optional().describe('Whether this label is exclusive'),
         is_archived: z.boolean().optional().describe('Whether this label is archived'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -65,6 +69,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -93,6 +98,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Label ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -126,6 +132,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         description: z.string().optional().describe('New label description'),
         exclusive: z.boolean().optional().describe('Whether this label is exclusive'),
         is_archived: z.boolean().optional().describe('Whether this label is archived'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -154,6 +161,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Label ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -187,6 +195,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         description: z.string().optional().describe('Label description'),
         exclusive: z.boolean().optional().describe('Whether this label is exclusive'),
         is_archived: z.boolean().optional().describe('Whether this label is archived'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -215,6 +224,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         org: z.string().min(1).describe('Organization name'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -242,6 +252,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         org: z.string().min(1).describe('Organization name'),
         id: z.number().int().positive().describe('Label ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -274,6 +285,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         description: z.string().optional().describe('New label description'),
         exclusive: z.boolean().optional().describe('Whether this label is exclusive'),
         is_archived: z.boolean().optional().describe('Whether this label is archived'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -301,6 +313,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         org: z.string().min(1).describe('Organization name'),
         id: z.number().int().positive().describe('Label ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -332,6 +345,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('Issue number'),
         labels: z.array(z.number().int().positive()).describe('Array of label IDs to add'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -361,6 +375,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('Issue number'),
         labels: z.array(z.number().int().positive()).describe('Array of label IDs to set (replaces all existing labels)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -390,6 +405,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('Issue number'),
         id: z.number().int().positive().describe('Label ID to remove'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -418,6 +434,7 @@ export function registerLabelTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         index: z.number().int().positive().describe('Issue number'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

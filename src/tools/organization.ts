@@ -1,16 +1,21 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'organization-tools' });
+const logger = createLogger('tools:organization');
 
 export interface OrganizationToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Base params with token
+export interface OrganizationParams {
+  token?: string;
+}
+
 // Create organization
-export interface CreateOrganizationParams {
+export interface CreateOrganizationParams extends OrganizationParams {
   username: string;
   full_name?: string;
   description?: string;
@@ -42,13 +47,14 @@ export async function createOrganization(
     method: 'POST',
     path: '/orgs',
     body,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Update organization
-export interface UpdateOrganizationParams {
+export interface UpdateOrganizationParams extends OrganizationParams {
   org: string;
   full_name?: string;
   description?: string;
@@ -78,13 +84,14 @@ export async function updateOrganization(
     method: 'PATCH',
     path: `/orgs/${encodeURIComponent(params.org)}`,
     body,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // Delete organization
-export interface DeleteOrganizationParams {
+export interface DeleteOrganizationParams extends OrganizationParams {
   org: string;
 }
 
@@ -97,13 +104,14 @@ export async function deleteOrganization(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/orgs/${encodeURIComponent(params.org)}`,
+    token: params.token,
   });
 
   return response.data;
 }
 
 // List organization repositories
-export interface ListOrgReposParams {
+export interface ListOrgReposParams extends OrganizationParams {
   org: string;
   page?: number;
   limit?: number;
@@ -122,7 +130,8 @@ export async function listOrganizationRepos(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/orgs/${encodeURIComponent(params.org)}/repos`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;

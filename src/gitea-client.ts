@@ -16,6 +16,8 @@ export interface GiteaRequestOptions {
   path: string;
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined>;
+  /** Optional token to override the default authentication for this request */
+  token?: string;
 }
 
 export interface GiteaResponse<T = unknown> {
@@ -50,7 +52,7 @@ export class GiteaClient {
    * 发送 HTTP 请求到 Gitea API
    */
   async request<T = unknown>(options: GiteaRequestOptions): Promise<GiteaResponse<T>> {
-    const { method, path, body, query } = options;
+    const { method, path, body, query, token } = options;
 
     // 构建完整 URL
     const url = new URL(`${this.baseUrl}/api/v1${path}`);
@@ -62,11 +64,15 @@ export class GiteaClient {
       });
     }
 
-    // 构建请求头
+    // 构建请求头，支持请求级别的 token 覆盖
+    const authHeaders = token
+      ? { 'Authorization': `token ${token}` }
+      : this.authHeaders;
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      ...this.authHeaders,
+      ...authHeaders,
     };
 
     // 构建请求配置
@@ -150,44 +156,50 @@ export class GiteaClient {
 
   /**
    * GET 请求
+   * @param token - Optional token to override default authentication
    */
   async get<T = unknown>(
     path: string,
-    query?: Record<string, string | number | boolean | undefined>
+    query?: Record<string, string | number | boolean | undefined>,
+    token?: string
   ): Promise<T> {
-    const response = await this.request<T>({ method: 'GET', path, query });
+    const response = await this.request<T>({ method: 'GET', path, query, token });
     return response.data;
   }
 
   /**
    * POST 请求
+   * @param token - Optional token to override default authentication
    */
-  async post<T = unknown>(path: string, body?: unknown): Promise<T> {
-    const response = await this.request<T>({ method: 'POST', path, body });
+  async post<T = unknown>(path: string, body?: unknown, token?: string): Promise<T> {
+    const response = await this.request<T>({ method: 'POST', path, body, token });
     return response.data;
   }
 
   /**
    * PATCH 请求
+   * @param token - Optional token to override default authentication
    */
-  async patch<T = unknown>(path: string, body?: unknown): Promise<T> {
-    const response = await this.request<T>({ method: 'PATCH', path, body });
+  async patch<T = unknown>(path: string, body?: unknown, token?: string): Promise<T> {
+    const response = await this.request<T>({ method: 'PATCH', path, body, token });
     return response.data;
   }
 
   /**
    * DELETE 请求
+   * @param token - Optional token to override default authentication
    */
-  async delete<T = unknown>(path: string): Promise<T> {
-    const response = await this.request<T>({ method: 'DELETE', path });
+  async delete<T = unknown>(path: string, token?: string): Promise<T> {
+    const response = await this.request<T>({ method: 'DELETE', path, token });
     return response.data;
   }
 
   /**
    * PUT 请求
+   * @param token - Optional token to override default authentication
    */
-  async put<T = unknown>(path: string, body?: unknown): Promise<T> {
-    const response = await this.request<T>({ method: 'PUT', path, body });
+  async put<T = unknown>(path: string, body?: unknown, token?: string): Promise<T> {
+    const response = await this.request<T>({ method: 'PUT', path, body, token });
     return response.data;
   }
 

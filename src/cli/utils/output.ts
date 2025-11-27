@@ -9,23 +9,34 @@ export interface OutputOptions {
   noColor?: boolean;
 }
 
+// Helper to extract output flags from any options object
+function getFlags(options?: object): OutputOptions {
+  if (!options) return {};
+  const opt = options as Record<string, unknown>;
+  return {
+    json: Boolean(opt.json),
+    noColor: Boolean(opt.noColor),
+  };
+}
+
 /**
  * 格式化并输出结果
  */
-export function output(data: any, options: OutputOptions = {}) {
-  if (options.json) {
+export function output(data: any, options?: object) {
+  const flags = getFlags(options);
+  if (flags.json) {
     console.log(JSON.stringify(data, null, 2));
   } else {
-    // 默认格式化输出
-    console.log(formatData(data, options));
+    console.log(formatData(data, flags));
   }
 }
 
 /**
  * 输出成功消息
  */
-export function success(message: string, options: OutputOptions = {}) {
-  if (options.noColor) {
+export function success(message: string, options?: object) {
+  const flags = getFlags(options);
+  if (flags.noColor) {
     console.log(`✓ ${message}`);
   } else {
     console.log(chalk.green(`✓ ${message}`));
@@ -35,8 +46,9 @@ export function success(message: string, options: OutputOptions = {}) {
 /**
  * 输出错误消息
  */
-export function error(message: string, options: OutputOptions = {}) {
-  if (options.noColor) {
+export function error(message: string, options?: object) {
+  const flags = getFlags(options);
+  if (flags.noColor) {
     console.error(`✗ ${message}`);
   } else {
     console.error(chalk.red(`✗ ${message}`));
@@ -46,8 +58,9 @@ export function error(message: string, options: OutputOptions = {}) {
 /**
  * 输出警告消息
  */
-export function warning(message: string, options: OutputOptions = {}) {
-  if (options.noColor) {
+export function warning(message: string, options?: object) {
+  const flags = getFlags(options);
+  if (flags.noColor) {
     console.warn(`⚠ ${message}`);
   } else {
     console.warn(chalk.yellow(`⚠ ${message}`));
@@ -57,8 +70,9 @@ export function warning(message: string, options: OutputOptions = {}) {
 /**
  * 输出信息消息
  */
-export function info(message: string, options: OutputOptions = {}) {
-  if (options.noColor) {
+export function info(message: string, options?: object) {
+  const flags = getFlags(options);
+  if (flags.noColor) {
     console.log(`ℹ ${message}`);
   } else {
     console.log(chalk.blue(`ℹ ${message}`));
@@ -68,7 +82,7 @@ export function info(message: string, options: OutputOptions = {}) {
 /**
  * 格式化数据为易读格式
  */
-function formatData(data: any, options: OutputOptions = {}): string {
+function formatData(data: any, flags: OutputOptions): string {
   if (data === null || data === undefined) {
     return '';
   }
@@ -82,11 +96,11 @@ function formatData(data: any, options: OutputOptions = {}): string {
   }
 
   if (Array.isArray(data)) {
-    return formatArray(data, options);
+    return formatArray(data, flags);
   }
 
   if (typeof data === 'object') {
-    return formatObject(data, options);
+    return formatObject(data, flags);
   }
 
   return String(data);
@@ -95,14 +109,14 @@ function formatData(data: any, options: OutputOptions = {}): string {
 /**
  * 格式化数组
  */
-function formatArray(arr: any[], options: OutputOptions): string {
+function formatArray(arr: any[], flags: OutputOptions): string {
   if (arr.length === 0) {
     return '(空列表)';
   }
 
   // 如果数组元素是对象，尝试表格化输出
   if (typeof arr[0] === 'object' && arr[0] !== null) {
-    return formatTable(arr, options);
+    return formatTable(arr, flags);
   }
 
   // 简单列表
@@ -112,18 +126,18 @@ function formatArray(arr: any[], options: OutputOptions): string {
 /**
  * 格式化对象
  */
-function formatObject(obj: any, options: OutputOptions, indent = 0): string {
+function formatObject(obj: any, flags: OutputOptions, indent = 0): string {
   const indentStr = '  '.repeat(indent);
   const lines: string[] = [];
 
   for (const [key, value] of Object.entries(obj)) {
-    const coloredKey = options.noColor ? key : chalk.cyan(key);
+    const coloredKey = flags.noColor ? key : chalk.cyan(key);
 
     if (value === null || value === undefined) {
       lines.push(`${indentStr}${coloredKey}: (空)`);
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       lines.push(`${indentStr}${coloredKey}:`);
-      lines.push(formatObject(value, options, indent + 1));
+      lines.push(formatObject(value, flags, indent + 1));
     } else if (Array.isArray(value)) {
       lines.push(`${indentStr}${coloredKey}: [${value.length} 项]`);
     } else {
@@ -137,7 +151,7 @@ function formatObject(obj: any, options: OutputOptions, indent = 0): string {
 /**
  * 格式化为表格（简单实现）
  */
-function formatTable(data: any[], options: OutputOptions): string {
+function formatTable(data: any[], flags: OutputOptions): string {
   if (data.length === 0) return '';
 
   // 获取所有键
@@ -156,7 +170,7 @@ function formatTable(data: any[], options: OutputOptions): string {
 
   // 构建表头
   const header = keys.map(key => {
-    const coloredKey = options.noColor ? key : chalk.cyan(key);
+    const coloredKey = flags.noColor ? key : chalk.cyan(key);
     return coloredKey.padEnd(columnWidths[key]);
   }).join('  ');
 
@@ -187,31 +201,33 @@ function formatTable(data: any[], options: OutputOptions): string {
 /**
  * 输出列表（带编号）
  */
-export function outputList(items: any[], options: OutputOptions = {}) {
+export function outputList(items: any[], options?: object) {
+  const flags = getFlags(options);
   if (!items || items.length === 0) {
     info('没有找到数据', options);
     return;
   }
 
-  if (options.json) {
+  if (flags.json) {
     console.log(JSON.stringify(items, null, 2));
   } else {
-    console.log(formatArray(items, options));
+    console.log(formatArray(items, flags));
   }
 }
 
 /**
  * 输出对象详情
  */
-export function outputDetails(obj: any, options: OutputOptions = {}) {
+export function outputDetails(obj: any, options?: object) {
+  const flags = getFlags(options);
   if (!obj) {
     info('没有找到数据', options);
     return;
   }
 
-  if (options.json) {
+  if (flags.json) {
     console.log(JSON.stringify(obj, null, 2));
   } else {
-    console.log(formatObject(obj, options));
+    console.log(formatObject(obj, flags));
   }
 }

@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as NotificationTools from '../tools/notification.js';
 import { ToolContext } from '../types.js';
 
@@ -20,6 +23,7 @@ export function registerNotificationTools(mcpServer: McpServer, ctx: ToolContext
         before: z.string().optional().describe('Only show notifications updated before this time (RFC 3339)'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -44,6 +48,7 @@ export function registerNotificationTools(mcpServer: McpServer, ctx: ToolContext
         all: z.boolean().optional().describe('Mark all notifications'),
         status_types: z.array(z.enum(['unread', 'read', 'pinned'])).optional().describe('Filter notifications by status'),
         to_status: z.enum(['read', 'unread', 'pinned']).optional().describe('Target status to set'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -84,6 +89,7 @@ export function registerNotificationTools(mcpServer: McpServer, ctx: ToolContext
       description: 'Get notification thread by ID',
       inputSchema: z.object({
         id: z.string().min(1).describe('Notification thread ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -105,6 +111,7 @@ export function registerNotificationTools(mcpServer: McpServer, ctx: ToolContext
       description: 'Mark notification thread as read by ID',
       inputSchema: z.object({
         id: z.string().min(1).describe('Notification thread ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -134,6 +141,7 @@ export function registerNotificationTools(mcpServer: McpServer, ctx: ToolContext
         before: z.string().optional().describe('Only show notifications updated before this time (RFC 3339)'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -160,6 +168,7 @@ export function registerNotificationTools(mcpServer: McpServer, ctx: ToolContext
         all: z.boolean().optional().describe('Mark all notifications'),
         status_types: z.array(z.enum(['unread', 'read', 'pinned'])).optional().describe('Filter notifications by status'),
         to_status: z.enum(['read', 'unread', 'pinned']).optional().describe('Target status to set'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

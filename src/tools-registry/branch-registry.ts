@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as BranchTools from '../tools/branch.js';
 import { ToolContext } from '../types.js';
 
@@ -17,6 +20,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().int().min(1).optional().describe('Page number (default: 1)'),
         limit: z.number().int().min(1).max(100).optional().describe('Page size (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -42,6 +46,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         new_branch_name: z.string().min(1).describe('Name of the new branch'),
         old_branch_name: z.string().optional().describe('Name of the old branch to branch from'),
         old_ref_name: z.string().optional().describe('Name of the old ref (branch/tag/commit SHA) to branch from'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -65,6 +70,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         branch: z.string().min(1).describe('Branch name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -88,6 +94,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         branch: z.string().min(1).describe('Branch name to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -112,6 +119,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         branch: z.string().min(1).describe('Current branch name'),
         new_name: z.string().min(1).describe('New branch name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -134,6 +142,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -178,6 +187,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         require_signed_commits: z.boolean().optional().describe('Require signed commits'),
         protected_file_patterns: z.string().optional().describe('Protected file patterns'),
         unprotected_file_patterns: z.string().optional().describe('Unprotected file patterns'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -201,6 +211,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         name: z.string().min(1).describe('Name of the branch protection rule'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -246,6 +257,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         require_signed_commits: z.boolean().optional().describe('Require signed commits'),
         protected_file_patterns: z.string().optional().describe('Protected file patterns'),
         unprotected_file_patterns: z.string().optional().describe('Unprotected file patterns'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -269,6 +281,7 @@ export function registerBranchTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         name: z.string().min(1).describe('Name of the branch protection rule to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

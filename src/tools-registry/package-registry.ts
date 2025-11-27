@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as PackageTools from '../tools/package.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -32,6 +35,7 @@ export function registerPackageTools(mcpServer: McpServer, ctx: ToolContext) {
         limit: z.number().optional().describe('Page size'),
         type: z.string().optional().describe('Package type filter (e.g., npm, maven, docker, composer, nuget, pypi, rubygems, generic)'),
         q: z.string().optional().describe('Search query'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -61,6 +65,7 @@ export function registerPackageTools(mcpServer: McpServer, ctx: ToolContext) {
         type: z.string().min(1).describe('Package type (e.g., npm, maven, docker, composer, nuget, pypi, rubygems, generic)'),
         name: z.string().min(1).describe('Package name'),
         version: z.string().min(1).describe('Package version'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -90,6 +95,7 @@ export function registerPackageTools(mcpServer: McpServer, ctx: ToolContext) {
         type: z.string().min(1).describe('Package type (e.g., npm, maven, docker, composer, nuget, pypi, rubygems, generic)'),
         name: z.string().min(1).describe('Package name'),
         version: z.string().min(1).describe('Package version'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -119,6 +125,7 @@ export function registerPackageTools(mcpServer: McpServer, ctx: ToolContext) {
         type: z.string().min(1).describe('Package type (e.g., npm, maven, docker, composer, nuget, pypi, rubygems, generic)'),
         name: z.string().min(1).describe('Package name'),
         version: z.string().min(1).describe('Package version'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

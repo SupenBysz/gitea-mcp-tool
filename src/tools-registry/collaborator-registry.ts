@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as CollaboratorTools from '../tools/collaborator.js';
 import { ToolContext } from '../types.js';
 
@@ -17,6 +20,7 @@ export function registerCollaboratorTools(mcpServer: McpServer, ctx: ToolContext
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -40,6 +44,7 @@ export function registerCollaboratorTools(mcpServer: McpServer, ctx: ToolContext
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         collaborator: z.string().min(1).describe('Username to check'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -64,6 +69,7 @@ export function registerCollaboratorTools(mcpServer: McpServer, ctx: ToolContext
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         collaborator: z.string().min(1).describe('Username to add as collaborator'),
         permission: z.enum(['read', 'write', 'admin']).optional().describe('Permission level (default: write)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -87,6 +93,7 @@ export function registerCollaboratorTools(mcpServer: McpServer, ctx: ToolContext
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         collaborator: z.string().min(1).describe('Username to remove as collaborator'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -110,6 +117,7 @@ export function registerCollaboratorTools(mcpServer: McpServer, ctx: ToolContext
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         collaborator: z.string().min(1).describe('Username to check permissions for'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

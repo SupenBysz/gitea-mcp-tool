@@ -35,6 +35,7 @@ export async function createTeam(
     can_create_org_repo?: boolean;
     includes_all_repositories?: boolean;
     units?: string[];
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating team');
@@ -50,7 +51,8 @@ export async function createTeam(
 
   const team = await ctx.client.post<GiteaTeam>(
     `/orgs/${args.org}/teams`,
-    createOptions
+    createOptions,
+    args.token
   );
 
   logger.info({ org: args.org, team: team.name }, 'Team created successfully');
@@ -77,6 +79,7 @@ export async function listTeams(
     org: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing teams');
@@ -84,7 +87,7 @@ export async function listTeams(
   const teams = await ctx.client.get<GiteaTeam[]>(`/orgs/${args.org}/teams`, {
     page: args.page || 1,
     limit: args.limit || 30,
-  });
+  }, args.token);
 
   logger.debug({ count: teams.length }, 'Teams listed');
 
@@ -113,11 +116,12 @@ export async function getTeam(
   ctx: TeamToolsContext,
   args: {
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting team');
 
-  const team = await ctx.client.get<GiteaTeam>(`/teams/${args.id}`);
+  const team = await ctx.client.get<GiteaTeam>(`/teams/${args.id}`, undefined, args.token);
 
   logger.debug({ team: team.name }, 'Team retrieved');
 
@@ -153,6 +157,7 @@ export async function updateTeam(
     can_create_org_repo?: boolean;
     includes_all_repositories?: boolean;
     units?: string[];
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating team');
@@ -168,7 +173,8 @@ export async function updateTeam(
 
   const team = await ctx.client.patch<GiteaTeam>(
     `/teams/${args.id}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ team: team.name }, 'Team updated successfully');
@@ -193,11 +199,12 @@ export async function deleteTeam(
   ctx: TeamToolsContext,
   args: {
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting team');
 
-  await ctx.client.delete(`/teams/${args.id}`);
+  await ctx.client.delete(`/teams/${args.id}`, args.token);
 
   logger.info({ team: args.id }, 'Team deleted successfully');
 
@@ -216,6 +223,7 @@ export async function listTeamMembers(
     id: number;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing team members');
@@ -223,7 +231,7 @@ export async function listTeamMembers(
   const members = await ctx.client.get<GiteaUser[]>(`/teams/${args.id}/members`, {
     page: args.page || 1,
     limit: args.limit || 30,
-  });
+  }, args.token);
 
   logger.debug({ count: members.length }, 'Team members listed');
 
@@ -252,11 +260,12 @@ export async function addTeamMember(
   args: {
     id: number;
     username: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Adding member to team');
 
-  await ctx.client.put(`/teams/${args.id}/members/${args.username}`);
+  await ctx.client.put(`/teams/${args.id}/members/${args.username}`, undefined, args.token);
 
   logger.info(
     { team: args.id, username: args.username },
@@ -277,11 +286,12 @@ export async function removeTeamMember(
   args: {
     id: number;
     username: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Removing member from team');
 
-  await ctx.client.delete(`/teams/${args.id}/members/${args.username}`);
+  await ctx.client.delete(`/teams/${args.id}/members/${args.username}`, args.token);
 
   logger.info(
     { team: args.id, username: args.username },
@@ -303,6 +313,7 @@ export async function listTeamRepos(
     id: number;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing team repositories');
@@ -312,7 +323,8 @@ export async function listTeamRepos(
     {
       page: args.page || 1,
       limit: args.limit || 30,
-    }
+    },
+    args.token
   );
 
   logger.debug({ count: repos.length }, 'Team repositories listed');
@@ -344,11 +356,12 @@ export async function addTeamRepo(
     id: number;
     org: string;
     repo: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Adding repository to team');
 
-  await ctx.client.put(`/teams/${args.id}/repos/${args.org}/${args.repo}`);
+  await ctx.client.put(`/teams/${args.id}/repos/${args.org}/${args.repo}`, undefined, args.token);
 
   logger.info(
     { team: args.id, repo: `${args.org}/${args.repo}` },
@@ -370,11 +383,12 @@ export async function removeTeamRepo(
     id: number;
     org: string;
     repo: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Removing repository from team');
 
-  await ctx.client.delete(`/teams/${args.id}/repos/${args.org}/${args.repo}`);
+  await ctx.client.delete(`/teams/${args.id}/repos/${args.org}/${args.repo}`, args.token);
 
   logger.info(
     { team: args.id, repo: `${args.org}/${args.repo}` },

@@ -1,26 +1,35 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'gpg-key-tools' });
+const logger = createLogger('tools:gpg-key');
 
 export interface GPGKeyToolsContext {
   client: GiteaClient;
   contextManager: ContextManager;
 }
 
+// Base params with token
+export interface GPGKeyParams {
+  token?: string;
+}
+
 // List GPG keys
-export async function listGPGKeys(ctx: GPGKeyToolsContext): Promise<unknown> {
+export async function listGPGKeys(
+  ctx: GPGKeyToolsContext,
+  params: GPGKeyParams = {}
+): Promise<unknown> {
   logger.info('Listing GPG keys');
   const response = await ctx.client.request({
     method: 'GET',
     path: '/user/gpg_keys',
+    token: params.token,
   });
   return response.data;
 }
 
 // Get GPG key by ID
-export interface GetGPGKeyParams {
+export interface GetGPGKeyParams extends GPGKeyParams {
   id: number;
 }
 
@@ -32,12 +41,13 @@ export async function getGPGKey(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/user/gpg_keys/${params.id}`,
+    token: params.token,
   });
   return response.data;
 }
 
 // Create GPG key
-export interface CreateGPGKeyParams {
+export interface CreateGPGKeyParams extends GPGKeyParams {
   armored_public_key: string;
   armored_signature?: string;
 }
@@ -57,12 +67,13 @@ export async function createGPGKey(
     method: 'POST',
     path: '/user/gpg_keys',
     body,
+    token: params.token,
   });
   return response.data;
 }
 
 // Delete GPG key
-export interface DeleteGPGKeyParams {
+export interface DeleteGPGKeyParams extends GPGKeyParams {
   id: number;
 }
 
@@ -74,6 +85,7 @@ export async function deleteGPGKey(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/user/gpg_keys/${params.id}`,
+    token: params.token,
   });
   return response.data;
 }

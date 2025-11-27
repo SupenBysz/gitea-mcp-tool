@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as CommitTools from '../tools/commit.js';
 import { ToolContext } from '../types.js';
 
@@ -25,6 +28,7 @@ export function registerCommitTools(mcpServer: McpServer, ctx: ToolContext) {
         page: z.number().optional().describe('Page number of results (1-based)'),
         limit: z.number().optional().describe('Page size of results'),
         not: z.string().optional().describe('Commits matching this specifier will not be listed'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -48,6 +52,7 @@ export function registerCommitTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         sha: z.string().min(1).describe('Commit SHA'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -72,6 +77,7 @@ export function registerCommitTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         sha: z.string().min(1).describe('Commit SHA'),
         diffType: z.enum(['diff', 'patch']).describe('Type of diff to get: "diff" or "patch"'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -97,6 +103,7 @@ export function registerCommitTools(mcpServer: McpServer, ctx: ToolContext) {
         ref: z.string().min(1).describe('Branch name, tag name, or commit SHA'),
         page: z.number().optional().describe('Page number of results (1-based)'),
         limit: z.number().optional().describe('Page size of results'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -122,6 +129,7 @@ export function registerCommitTools(mcpServer: McpServer, ctx: ToolContext) {
         ref: z.string().min(1).describe('Branch name, tag name, or commit SHA'),
         page: z.number().optional().describe('Page number of results (1-based)'),
         limit: z.number().optional().describe('Page size of results'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -149,6 +157,7 @@ export function registerCommitTools(mcpServer: McpServer, ctx: ToolContext) {
         context: z.string().optional().describe('Unique context identifier (e.g., "ci/jenkins", "test/unit")'),
         description: z.string().optional().describe('Brief description of the status'),
         target_url: z.string().optional().describe('URL to link to for more details'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

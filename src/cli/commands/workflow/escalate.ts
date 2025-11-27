@@ -80,18 +80,18 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
 
   try {
     // 获取开放的 Issues
-    const issuesResponse = await client.repoListIssues(owner, repo, { state: 'open' });
-    const issues = (issuesResponse.data || []) as Array<{
+    type IssueType = {
       number?: number;
       title?: string;
       body?: string;
       labels?: Array<{ id?: number; name?: string }>;
       created_at?: string;
-    }>;
+    };
+    const issues = await client.get<IssueType[]>(`/repos/${owner}/${repo}/issues`, { state: 'open' });
 
     // 获取仓库所有标签
-    const labelsResponse = await client.repoListLabels(owner, repo);
-    const repoLabels = (labelsResponse.data || []) as Array<{ id?: number; name?: string }>;
+    type LabelType = { id?: number; name?: string };
+    const repoLabels = await client.get<LabelType[]>(`/repos/${owner}/${repo}/labels`);
 
     const now = Date.now();
     const results: EscalationResult[] = [];
@@ -183,7 +183,7 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
  * 更新 Issue 优先级
  */
 async function updatePriority(
-  client: ReturnType<typeof createClient>,
+  client: Awaited<ReturnType<typeof createClientAsync>>,
   owner: string,
   repo: string,
   issue: { number?: number; labels?: Array<{ id?: number; name?: string }> },
@@ -204,7 +204,7 @@ async function updatePriority(
     existingLabels.push(newLabel.id);
   }
 
-  await client.repoReplaceIssueLabels(owner, repo, issue.number || 0, {
+  await client.put(`/repos/${owner}/${repo}/issues/${issue.number || 0}/labels`, {
     labels: existingLabels,
   });
 }

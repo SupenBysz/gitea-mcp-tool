@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'collaborator-tools' });
+const logger = createLogger('tools:collaborator');
 
 export interface CollaboratorToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface CollaboratorToolsContext {
 export interface CollaboratorParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // List collaborators
@@ -36,7 +37,8 @@ export async function listCollaborators(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/collaborators`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -58,6 +60,7 @@ export async function checkCollaborator(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/collaborators/${params.collaborator}`,
+    token: params.token,
   });
 
   return response.data;
@@ -84,6 +87,7 @@ export async function addCollaborator(
     method: 'PUT',
     path: `/repos/${owner}/${repo}/collaborators/${params.collaborator}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -101,6 +105,7 @@ export async function deleteCollaborator(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/collaborators/${params.collaborator}`,
+    token: params.token,
   });
 
   return response.data;
@@ -118,6 +123,7 @@ export async function getCollaboratorPermission(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/collaborators/${params.collaborator}/permission`,
+    token: params.token,
   });
 
   return response.data;

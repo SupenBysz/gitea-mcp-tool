@@ -34,12 +34,12 @@ export async function prList(options: ClientOptions & {
       page: parseInt(options.page || '1'),
     });
 
-    if (result.length === 0) {
+    if (result.pull_requests.length === 0) {
       info('没有找到 Pull Requests', options);
       return;
     }
 
-    const prs = result.map((pr: any) => ({
+    const prs = result.pull_requests.map((pr: any) => ({
       '#': pr.number,
       title: pr.title,
       state: pr.state,
@@ -70,28 +70,29 @@ export async function prGet(index: number, options: ClientOptions & {
     const { owner, repo } = resolveOwnerRepo(contextManager, options);
 
     const result = await getPullRequest({ client, contextManager }, { owner, repo, index });
+    const pr = result.pull_request;
 
     outputDetails({
-      number: result.number,
-      title: result.title,
-      state: result.state,
-      author: result.user?.login || '-',
-      assignees: result.assignees?.map((a: any) => a.login).join(', ') || '-',
-      labels: result.labels?.map((l: any) => l.name).join(', ') || '-',
-      milestone: result.milestone?.title || '-',
-      headBranch: result.head?.ref || '-',
-      baseBranch: result.base?.ref || '-',
-      mergeable: result.mergeable,
-      merged: result.merged,
-      draft: result.draft,
-      comments: result.comments,
-      additions: result.additions,
-      deletions: result.deletions,
-      changedFiles: result.changed_files,
-      created: result.created_at?.split('T')[0],
-      updated: result.updated_at?.split('T')[0],
-      body: result.body || '(无内容)',
-      url: result.html_url,
+      number: pr.number,
+      title: pr.title,
+      state: pr.state,
+      author: pr.user?.login || '-',
+      assignees: pr.assignees?.map((a: any) => a.login).join(', ') || '-',
+      labels: pr.labels?.map((l: any) => l.name).join(', ') || '-',
+      milestone: pr.milestone?.title || '-',
+      headBranch: pr.head?.ref || '-',
+      baseBranch: pr.base?.ref || '-',
+      mergeable: pr.mergeable,
+      merged: pr.merged,
+      draft: (pr as any).draft,
+      comments: pr.comments,
+      additions: (pr as any).additions,
+      deletions: (pr as any).deletions,
+      changedFiles: (pr as any).changed_files,
+      created: pr.created_at?.split('T')[0],
+      updated: pr.updated_at?.split('T')[0],
+      body: pr.body || '(无内容)',
+      url: pr.html_url,
     }, options);
   } catch (err: any) {
     error(`获取 PR 详情失败: ${err.message}`);
@@ -124,13 +125,13 @@ export async function prCreate(options: ClientOptions & {
       body: options.body,
     });
 
-    success(`Pull Request 创建成功: #${result.number}`, options);
+    success(`Pull Request 创建成功: #${result.pull_request.number}`, options);
     outputDetails({
-      number: result.number,
-      title: result.title,
-      head: result.head?.ref,
-      base: result.base?.ref,
-      url: result.html_url,
+      number: result.pull_request.number,
+      title: result.pull_request.title,
+      head: result.pull_request.head?.ref,
+      base: result.pull_request.base?.ref,
+      url: result.pull_request.html_url,
     }, options);
   } catch (err: any) {
     error(`创建 Pull Request 失败: ${err.message}`);
@@ -155,7 +156,7 @@ export async function prMerge(index: number, options: ClientOptions & {
       owner,
       repo,
       index,
-      Do: options.method as 'merge' | 'rebase' | 'squash',
+      merge_method: options.method as 'merge' | 'rebase' | 'rebase-merge' | 'squash',
     });
 
     success(`Pull Request #${index} 已合并`, options);
