@@ -24,8 +24,8 @@ export async function configInit(options: ClientOptions & {
     const projectConfigManager = new ProjectConfigManager(projectRoot);
 
     // 检查是否已有配置
-    const existingConfig = projectConfigManager.loadConfig();
-    if (existingConfig.giteaUrl && !options.force) {
+    const existingConfig = projectConfigManager.loadProjectConfig();
+    if (existingConfig?.gitea?.url && !options.force) {
       error('配置文件已存在');
       error('使用 --force 选项强制覆盖');
       process.exit(1);
@@ -78,19 +78,23 @@ export async function configInit(options: ClientOptions & {
       repo = repo || response.repo;
     }
 
-    // 创建配置
-    const config = {
-      giteaUrl,
-      owner,
-      repo,
-      defaultBranch: 'main',
-    };
+    // 使用正确的 API 创建配置
+    projectConfigManager.createProjectConfig(
+      { url: giteaUrl! },
+      { owner: owner!, repo: repo! }
+    );
 
-    projectConfigManager.saveConfig(config);
+    // 添加 .gitea-mcp.local.json 到 .gitignore
+    projectConfigManager.addLocalConfigToGitignore();
+
     success('配置文件已创建: .gitea-mcp.json', options);
 
     info('\n提示: Token 应保存在 .gitea-mcp.local.json 中（此文件会被 Git 忽略）', options);
-    outputDetails(config, options);
+    outputDetails({
+      giteaUrl,
+      owner,
+      repo,
+    }, options);
   } catch (err: any) {
     error(`初始化配置失败: ${err.message}`);
     process.exit(1);
@@ -104,35 +108,40 @@ export async function configShow(options: ClientOptions) {
   try {
     const projectRoot = cwd();
     const projectConfigManager = new ProjectConfigManager(projectRoot);
-    const projectConfig = projectConfigManager.loadConfig();
+    const mergedConfig = projectConfigManager.getMergedConfig();
 
     const globalConfigManager = new GlobalConfigManager();
-    const globalConfig = globalConfigManager.loadConfig();
+    const globalConfig = globalConfigManager.getConfig();
 
     info('=== 项目配置 ===', options);
-    if (projectConfig.giteaUrl) {
+    if (mergedConfig.url) {
       outputDetails({
-        giteaUrl: projectConfig.giteaUrl,
-        owner: projectConfig.owner || '(未设置)',
-        repo: projectConfig.repo || '(未设置)',
-        token: projectConfig.token ? '***已配置***' : '(未设置)',
+        giteaUrl: mergedConfig.url,
+        owner: mergedConfig.owner || '(未设置)',
+        repo: mergedConfig.repo || '(未设置)',
+        org: mergedConfig.org || '(未设置)',
+        token: mergedConfig.apiToken ? '***已配置***' : '(未设置)',
       }, options);
     } else {
       info('未找到项目配置文件', options);
     }
 
     info('\n=== 全局配置 ===', options);
-    if (globalConfig.servers && globalConfig.servers.length > 0) {
-      const servers = globalConfig.servers.map(s => ({
+    if (globalConfig.giteaServers && globalConfig.giteaServers.length > 0) {
+      const servers = globalConfig.giteaServers.map(s => ({
         url: s.url,
         name: s.name || '-',
         isDefault: s.isDefault ? 'Yes' : 'No',
-        token: s.token ? '***已配置***' : '(未设置)',
+        tokens: s.tokens.length > 0 ? `${s.tokens.length} 个` : '(未设置)',
       }));
 
+      info(`服务器数量: ${servers.length}`, options);
+      for (const server of servers) {
+        outputDetails(server, options);
+      }
+
       outputDetails({
-        servers: servers.length,
-        language: globalConfig.language || 'zh-CN',
+        language: globalConfig.settings?.language || 'en',
       }, options);
     } else {
       info('未找到全局配置', options);
