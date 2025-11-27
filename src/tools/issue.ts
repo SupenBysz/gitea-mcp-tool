@@ -362,3 +362,155 @@ export async function closeIssue(
     },
   };
 }
+
+/**
+ * 获取 Issue 依赖列表
+ */
+export async function listIssueDependencies(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    page?: number;
+    limit?: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Listing issue dependencies');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  const params: Record<string, any> = {};
+  if (args.page) params.page = args.page;
+  if (args.limit) params.limit = args.limit;
+
+  const dependencies = await ctx.client.get<GiteaIssue[]>(
+    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
+    Object.keys(params).length > 0 ? params : undefined,
+    args.token
+  );
+
+  logger.debug({ count: dependencies.length }, 'Issue dependencies listed');
+
+  return {
+    success: true,
+    dependencies: dependencies.map((issue) => ({
+      id: issue.id,
+      number: issue.number,
+      title: issue.title,
+      state: issue.state,
+      user: {
+        id: issue.user.id,
+        login: issue.user.login,
+      },
+      html_url: issue.html_url,
+      created_at: issue.created_at,
+      updated_at: issue.updated_at,
+    })),
+    pagination: {
+      page: args.page || 1,
+      limit: args.limit || 30,
+      total: dependencies.length,
+    },
+  };
+}
+
+/**
+ * 添加 Issue 依赖关系
+ * 使当前 Issue 依赖于指定的 Issue
+ */
+export async function addIssueDependency(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    dependencyIndex: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Adding issue dependency');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  // 先获取依赖 Issue 的详情以获取其 ID
+  const dependencyIssue = await ctx.client.get<GiteaIssue>(
+    `/repos/${owner}/${repo}/issues/${args.dependencyIndex}`,
+    undefined,
+    args.token
+  );
+
+  // 添加依赖关系
+  const result = await ctx.client.post<GiteaIssue>(
+    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
+    { id: dependencyIssue.id },
+    args.token
+  );
+
+  logger.info(
+    { owner, repo, issue: args.index, dependency: args.dependencyIndex },
+    'Issue dependency added successfully'
+  );
+
+  return {
+    success: true,
+    message: `Issue #${args.index} now depends on #${args.dependencyIndex}`,
+    issue: {
+      id: result.id,
+      number: result.number,
+      title: result.title,
+      state: result.state,
+      html_url: result.html_url,
+    },
+    dependency: {
+      id: dependencyIssue.id,
+      number: dependencyIssue.number,
+      title: dependencyIssue.title,
+      state: dependencyIssue.state,
+      html_url: dependencyIssue.html_url,
+    },
+  };
+}
+
+/**
+ * 移除 Issue 依赖关系
+ */
+export async function removeIssueDependency(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    dependencyIndex: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Removing issue dependency');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  // 先获取依赖 Issue 的详情以获取其 ID
+  const dependencyIssue = await ctx.client.get<GiteaIssue>(
+    `/repos/${owner}/${repo}/issues/${args.dependencyIndex}`,
+    undefined,
+    args.token
+  );
+
+  // 移除依赖关系
+  await ctx.client.delete(
+    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
+    { id: dependencyIssue.id },
+    args.token
+  );
+
+  logger.info(
+    { owner, repo, issue: args.index, dependency: args.dependencyIndex },
+    'Issue dependency removed successfully'
+  );
+
+  return {
+    success: true,
+    message: `Dependency on #${args.dependencyIndex} removed from Issue #${args.index}`,
+  };
+}
