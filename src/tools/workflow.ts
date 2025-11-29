@@ -647,7 +647,9 @@ export async function workflowCheckBlocked(
       const slaHours = priority ? getSLAHours(config, priority) : null;
 
       // 检查是否已有阻塞标签
-      const alreadyBlocked = hasLabel(issue, 'workflow/blocked');
+      const prefixes = getLabelPrefixes(config);
+      const blockedLabel = buildLabel(prefixes.workflow, 'blocked');
+      const alreadyBlocked = hasLabel(issue, blockedLabel);
 
       // 检查是否超过 SLA
       let isBlocked = false;
@@ -1004,15 +1006,17 @@ export async function workflowGenerateReport(
       byPriority[priority] = (byPriority[priority] || 0) + 1;
 
       // 类型统计
-      const typeLabel = issue.labels.find((l) => l.name.startsWith('type/'));
-      const type = typeLabel ? typeLabel.name.replace('type/', '') : 'unknown';
+      const prefixes = getLabelPrefixes(config);
+      const typeLabel = issue.labels.find((l) => matchLabel(prefixes.type, l.name) !== null);
+      const type = typeLabel ? (matchLabel(prefixes.type, typeLabel.name) || 'unknown') : 'unknown';
       byType[type] = (byType[type] || 0) + 1;
 
       // 年龄统计
       totalAgeDays += calculateIssueAgeDays(issue);
 
       // 阻塞统计
-      if (hasLabel(issue, 'workflow/blocked')) {
+      const blockedLabel = buildLabel(prefixes.workflow, 'blocked');
+      if (hasLabel(issue, blockedLabel)) {
         blockedCount++;
       }
     }

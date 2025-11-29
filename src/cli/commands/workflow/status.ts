@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseConfig, validateConfig, getAllLabels, getSLAHours } from '../../../utils/workflow-config.js';
+import { parseConfig, validateConfig, getAllLabels, getSLAHours, getLabelPrefixes } from '../../../utils/workflow-config.js';
 
 export interface StatusOptions {
   owner?: string;
@@ -59,6 +59,7 @@ export async function showStatus(options: StatusOptions): Promise<void> {
   const typeCount = Object.keys(config.labels.type).length;
   const areaCount = Object.keys(config.labels.area || {}).length;
   const workflowCount = Object.keys(config.labels.workflow || {}).length;
+  const prefixes = getLabelPrefixes(config);
 
   if (options.json) {
     const result = {
@@ -120,11 +121,13 @@ export async function showStatus(options: StatusOptions): Promise<void> {
   // 标签统计
   console.log(chalk.bold('\n🏷️  标签配置'));
   console.log(chalk.gray(`  总计: ${allLabels.length} 个标签`));
-  console.log(chalk.gray(`  - status/*   : ${statusCount} 个`));
-  console.log(chalk.gray(`  - priority/* : ${priorityCount} 个`));
-  console.log(chalk.gray(`  - type/*     : ${typeCount} 个`));
-  console.log(chalk.gray(`  - area/*     : ${areaCount} 个`));
-  console.log(chalk.gray(`  - workflow/* : ${workflowCount} 个`));
+  console.log(chalk.gray(`  前缀: status='${prefixes.status}', priority='${prefixes.priority}', type='${prefixes.type}', area='${prefixes.area}', workflow='${prefixes.workflow}'`));
+  console.log(chalk.gray(`  - status (${prefixes.status or '无前缀'})   : ${statusCount} 个`));
+  console.log(chalk.gray(`  - priority (${prefixes.priority or '无前缀'}) : ${priorityCount} 个`));
+  console.log(chalk.gray(`  - type (${prefixes.type or '无前缀'})     : ${typeCount} 个`));
+  console.log(chalk.gray(`  - area (${prefixes.area or '无前缀'})     : ${areaCount} 个`));
+  console.log(chalk.gray(`  - workflow (${prefixes.workflow or '无前缀'}) : ${workflowCount} 个`));
+  console.log(chalk.gray(`  总计: ${allLabels.length} 个标签`));
 
   // 看板配置
   console.log(chalk.bold('\n📋 看板配置'));
