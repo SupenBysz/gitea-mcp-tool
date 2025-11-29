@@ -661,10 +661,10 @@ export async function workflowCheckBlocked(
       } else if (slaHours && hoursSinceUpdate > slaHours) {
         isBlocked = true;
         reason = `超过 SLA 时间 (${slaHours} 小时)`;
-      } else if (hasLabel(issue, 'workflow/needs-info') && hoursSinceUpdate > 48) {
+      } else if (hasLabel(issue, buildLabel(prefixes.workflow, 'needs-info')) && hoursSinceUpdate > 48) {
         isBlocked = true;
         reason = '标记为需要信息但超过 48 小时未响应';
-      } else if (hasLabel(issue, 'workflow/needs-review') && hoursSinceUpdate > 72) {
+      } else if (hasLabel(issue, buildLabel(prefixes.workflow, 'needs-review')) && hoursSinceUpdate > 72) {
         isBlocked = true;
         reason = '标记为需要审查但超过 72 小时未处理';
       }
