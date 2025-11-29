@@ -4,6 +4,7 @@
  */
 
 import type { WorkflowConfig } from './workflow-config.js';
+import { DEFAULT_LABEL_PREFIXES, getLabelPrefixes, matchLabel } from './workflow-config.js';
 
 // ============ 类型定义 ============
 
@@ -54,9 +55,11 @@ export class LabelInferenceEngine {
     // 收集所有推断结果
     const all: Array<{ label: string; confidence: number; reason: string }> = [];
 
+    const prefixes = getLabelPrefixes(this.config);
+
     if (typeResult && typeResult.confidence >= this.getConfidenceThreshold()) {
       all.push({
-        label: `type/${typeResult.value}`,
+        label: `${prefixes.type}${typeResult.value}`,
         confidence: typeResult.confidence,
         reason: typeResult.reason,
       });
@@ -64,7 +67,7 @@ export class LabelInferenceEngine {
 
     if (priorityResult && priorityResult.confidence >= this.getConfidenceThreshold()) {
       all.push({
-        label: `priority/${priorityResult.value}`,
+        label: `${prefixes.priority}${priorityResult.value}`,
         confidence: priorityResult.confidence,
         reason: priorityResult.reason,
       });
@@ -73,7 +76,7 @@ export class LabelInferenceEngine {
     for (const area of areaResults) {
       if (area.confidence >= this.getConfidenceThreshold()) {
         all.push({
-          label: `area/${area.value}`,
+          label: `${prefixes.area}${area.value}`,
           confidence: area.confidence,
           reason: area.reason,
         });
@@ -219,21 +222,22 @@ export class LabelInferenceEngine {
   checkMissingLabels(issue: Issue): string[] {
     const missing: string[] = [];
     const existingLabels = issue.labels.map((l) => l.name);
+    const prefixes = getLabelPrefixes(this.config);
 
     // 检查类型标签
-    const hasTypeLabel = existingLabels.some((l) => l.startsWith('type/'));
+    const hasTypeLabel = existingLabels.some((l) => matchLabel(prefixes.type, l) !== null);
     if (this.config.automation.new_issue_defaults.require_type_label && !hasTypeLabel) {
       missing.push('type');
     }
 
     // 检查优先级标签
-    const hasPriorityLabel = existingLabels.some((l) => l.startsWith('priority/'));
+    const hasPriorityLabel = existingLabels.some((l) => matchLabel(prefixes.priority, l) !== null);
     if (this.config.automation.new_issue_defaults.require_priority_label && !hasPriorityLabel) {
       missing.push('priority');
     }
 
     // 检查状态标签
-    const hasStatusLabel = existingLabels.some((l) => l.startsWith('status/'));
+    const hasStatusLabel = existingLabels.some((l) => matchLabel(prefixes.status, l) !== null);
     if (!hasStatusLabel) {
       missing.push('status');
     }
@@ -342,25 +346,25 @@ export function calculateHoursSinceUpdate(issue: Issue): number {
 /**
  * 获取 Issue 的优先级标签
  */
-export function getIssuePriority(issue: Issue): string | null {
-  const priorityLabel = issue.labels.find((l) => l.name.startsWith('priority/'));
-  return priorityLabel ? priorityLabel.name.replace('priority/', '') : null;
+export function getIssuePriority(issue: Issue, prefixes = DEFAULT_LABEL_PREFIXES): string | null {
+  const priorityLabel = issue.labels.find((l) => matchLabel(prefixes.priority, l.name) !== null);
+  return priorityLabel ? matchLabel(prefixes.priority, priorityLabel.name) : null;
 }
 
 /**
  * 获取 Issue 的类型标签
  */
-export function getIssueType(issue: Issue): string | null {
-  const typeLabel = issue.labels.find((l) => l.name.startsWith('type/'));
-  return typeLabel ? typeLabel.name.replace('type/', '') : null;
+export function getIssueType(issue: Issue, prefixes = DEFAULT_LABEL_PREFIXES): string | null {
+  const typeLabel = issue.labels.find((l) => matchLabel(prefixes.type, l.name) !== null);
+  return typeLabel ? matchLabel(prefixes.type, typeLabel.name) : null;
 }
 
 /**
  * 获取 Issue 的状态标签
  */
-export function getIssueStatus(issue: Issue): string | null {
-  const statusLabel = issue.labels.find((l) => l.name.startsWith('status/'));
-  return statusLabel ? statusLabel.name.replace('status/', '') : null;
+export function getIssueStatus(issue: Issue, prefixes = DEFAULT_LABEL_PREFIXES): string | null {
+  const statusLabel = issue.labels.find((l) => matchLabel(prefixes.status, l.name) !== null);
+  return statusLabel ? matchLabel(prefixes.status, statusLabel.name) : null;
 }
 
 /**

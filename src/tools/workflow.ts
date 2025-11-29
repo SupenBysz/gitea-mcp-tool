@@ -27,6 +27,9 @@ import {
   validateConfig,
   getAllLabels,
   getSLAHours,
+  getLabelPrefixes,
+  buildLabel,
+  resolveRulePlaceholders,
 } from '../utils/workflow-config.js';
 import {
   LabelInferenceEngine,
@@ -447,7 +450,8 @@ export async function workflowCheckIssues(
 
       // 检查是否需要添加到 Backlog
       if (boardSyncManager.shouldAddToBacklog(issue)) {
-        suggestions.push('建议添加 status/backlog 标签');
+        const prefixes = getLabelPrefixes(ctx.config);
+        suggestions.push(`建议添加 ${buildLabel(prefixes.status, 'backlog')} 标签`);
       }
 
       if (problems.length > 0 || suggestions.length > 0) {
@@ -736,6 +740,8 @@ export async function workflowEscalatePriority(
     config = loadResult.config;
   }
 
+  const prefixes = getLabelPrefixes(config);
+
   const escalated: Array<{
     number: number;
     title: string;
@@ -763,15 +769,16 @@ export async function workflowEscalatePriority(
     };
 
     for (const issue of issues) {
-      const currentPriority = getIssuePriority(issue);
-      const issueType = issue.labels.find((l) => l.name.startsWith('type/'))?.name;
+      const currentPriority = getIssuePriority(issue, prefixes);
+      const issueTypeLabel = issue.labels.find((l) => matchLabel(prefixes.type, l.name) !== null);
+      const issueType = issueTypeLabel ? matchLabel(prefixes.type, issueTypeLabel.name) : null;
       const ageDays = calculateIssueAgeDays(issue);
 
       let newPriority: string | null = null;
       let reason = '';
 
       // 安全问题强制 P0
-      if (issueType === 'type/security' && currentPriority !== 'P0') {
+      if (issueType === 'security' && currentPriority !== 'P0') {
         newPriority = 'P0';
         reason = '安全问题自动升级为紧急';
       } else if (currentPriority && upgradeMap[currentPriority]) {
@@ -785,7 +792,7 @@ export async function workflowEscalatePriority(
       if (newPriority && currentPriority) {
         if (!dryRun) {
           // 移除旧优先级标签
-          const oldLabelId = labelIdMap.get(`priority/${currentPriority}`);
+          const oldLabelId = labelIdMap.get(buildLabel(prefixes.priority, currentPriority));
           if (oldLabelId) {
             try {
               await ctx.client.delete(
@@ -797,7 +804,7 @@ export async function workflowEscalatePriority(
           }
 
           // 添加新优先级标签
-          const newLabelId = labelIdMap.get(`priority/${newPriority}`);
+          const newLabelId = labelIdMap.get(buildLabel(prefixes.priority, newPriority));
           if (newLabelId) {
             await ctx.client.post(`/repos/${owner}/${repo}/issues/${issue.number}/labels`, {
               labels: [newLabelId],
