@@ -77,6 +77,7 @@ export async function showStatus(options: StatusOptions): Promise<void> {
           area: areaCount,
           workflow: workflowCount,
         },
+        prefixes,
       },
       board: {
         name: config.board.name,
@@ -120,14 +121,14 @@ export async function showStatus(options: StatusOptions): Promise<void> {
 
   // 标签统计
   console.log(chalk.bold('\n🏷️  标签配置'));
+  const fmt = (p?: string) => (p && p.length > 0 ? p : '');
   console.log(chalk.gray(`  总计: ${allLabels.length} 个标签`));
   console.log(chalk.gray(`  前缀: status='${prefixes.status}', priority='${prefixes.priority}', type='${prefixes.type}', area='${prefixes.area}', workflow='${prefixes.workflow}'`));
-  console.log(chalk.gray(`  - status (${prefixes.status or '无前缀'})   : ${statusCount} 个`));
-  console.log(chalk.gray(`  - priority (${prefixes.priority or '无前缀'}) : ${priorityCount} 个`));
-  console.log(chalk.gray(`  - type (${prefixes.type or '无前缀'})     : ${typeCount} 个`));
-  console.log(chalk.gray(`  - area (${prefixes.area or '无前缀'})     : ${areaCount} 个`));
-  console.log(chalk.gray(`  - workflow (${prefixes.workflow or '无前缀'}) : ${workflowCount} 个`));
-  console.log(chalk.gray(`  总计: ${allLabels.length} 个标签`));
+  console.log(chalk.gray(`  - status (${fmt(prefixes.status)})   : ${statusCount} 个状态标签`));
+  console.log(chalk.gray(`  - priority (${fmt(prefixes.priority)}) : ${priorityCount} 个优先级标签`));
+  console.log(chalk.gray(`  - type (${fmt(prefixes.type)})     : ${typeCount} 个类型标签`));
+  console.log(chalk.gray(`  - area (${fmt(prefixes.area)})     : ${areaCount} 个领域标签`));
+  console.log(chalk.gray(`  - workflow (${fmt(prefixes.workflow)}) : ${workflowCount} 个工作流标签`));
 
   // 看板配置
   console.log(chalk.bold('\n📋 看板配置'));
