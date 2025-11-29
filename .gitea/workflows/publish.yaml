@@ -48,6 +48,14 @@ jobs:
             echo "type=patch" >> $GITHUB_OUTPUT
           fi
 
+      - name: Get npm latest version
+        id: npm_latest
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          NPM_LATEST=$(npm view "$PACKAGE_NAME" version --registry https://registry.npmjs.org 2>/dev/null || true)
+          echo "npm latest version: ${NPM_LATEST:-none}"
+          echo "npm_latest=$NPM_LATEST" >> $GITHUB_OUTPUT
+
       - name: Bump version
         id: version
         run: |
@@ -62,6 +70,17 @@ jobs:
           MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
           MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
           PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+
+          # 与 npm 最新正式版对齐，避免版本冲突
+          NPM_LATEST="${{ steps.npm_latest.outputs.npm_latest }}"
+          if [ -n "$NPM_LATEST" ]; then
+            COMPARE_BASE=$(printf "%s\n%s\n" "$BASE_VERSION" "$NPM_LATEST" | sort -V | tail -1)
+            echo "Compare base vs npm latest: base=$BASE_VERSION, npm=$NPM_LATEST, chosen=$COMPARE_BASE"
+            BASE_VERSION="$COMPARE_BASE"
+            MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
+            MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
+            PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+          fi
 
           # 根据类型递增版本
           BUMP_TYPE="${{ steps.bump_type.outputs.type }}"

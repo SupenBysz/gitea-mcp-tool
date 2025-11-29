@@ -26,6 +26,7 @@ echo "📦 Copying files..."
 cp -r dist "${TEMP_DIR}/"
 cp package.json "${TEMP_DIR}/"
 cp README.md "${TEMP_DIR}/"
+cp .mcp.json "${TEMP_DIR}/"
 cp -r docs "${TEMP_DIR}/" 2>/dev/null || true
 
 # Create minimal package.json for runtime

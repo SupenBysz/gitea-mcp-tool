@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "gitea-mcp-tool": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/Volumes/KysionSpace/AiWorkSpace/kysion.com/entai/gitea-ecosystem/gitea-mcp-tool/dist/index.js"
+      ],
+      "env": {
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+        "GITEA_DEFAULT_OWNER": "Kysion",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
+      }
+    }
+  }
+}

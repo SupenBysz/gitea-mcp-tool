@@ -15,7 +15,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { createLogger } from './logger.js';
-import { loadConfigFromEnv, validateConfig } from './config.js';
+import { loadConfig, validateConfig } from './config.js';
 import { GiteaClient } from './gitea-client.js';
 import { ContextManager } from './context-manager.js';
 import { getProjectConfig } from './config/project.js';
@@ -72,7 +72,7 @@ async function main() {
 
     // 1. 加载并验证配置
     logger.info('Loading configuration...');
-    const config = loadConfigFromEnv();
+    const config = loadConfig();
     validateConfig(config);
 
     // 2. 创建 Gitea Client
