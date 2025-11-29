@@ -634,5 +634,13 @@ function registerPrompts(mcpServer: McpServer, ctx: ToolContext) {
   // - gitea-mcp-tool:创建PR (from pr-prompts.ts)
 }
 
+// 全局错误兜底，防止未捕获异常导致 MCP 连接被关闭（Transport closed）
+process.on('uncaughtException', (err) => {
+  logger.error({ err }, 'Uncaught exception');
+});
+process.on('unhandledRejection', (reason) => {
+  logger.error({ reason }, 'Unhandled rejection');
+});
+
 // 启动服务器
 main();

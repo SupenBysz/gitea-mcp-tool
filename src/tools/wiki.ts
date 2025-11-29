@@ -78,6 +78,10 @@ async function tryWithPageNameVariants<T>(
   pageName: string,
   apiCall: (encodedPageName: string) => Promise<T>
 ): Promise<T> {
+  if (!pageName) {
+    throw new Error('Wiki page name is required');
+  }
+
   const variants = getPageNameVariants(pageName);
 
   let lastError: Error | null = null;
