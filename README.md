@@ -60,6 +60,26 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install
 }
 ```
 
+**通用 (.mcp.json，适用于 Codex/LM Studio 等遵循 MCP 的客户端)** (`.mcp.json` 放在项目根目录):
+
+```json
+{
+  "mcpServers": {
+    "gitea-mcp-tool": {
+      "type": "stdio",
+      "command": "gitea-mcp",
+      "env": {
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+        "GITEA_DEFAULT_OWNER": "Kysion",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
+      }
+    }
+  }
+}
+```
+
+> 在运行前，请在环境变量中提供 `GITEA_API_TOKEN`（或直接在 `.mcp.json` 中填写），否则服务器会因缺少认证而启动失败。
+
 ### 2. 获取 API Token
 
 1. 登录 Gitea → 设置 → 应用
@@ -119,7 +139,7 @@ keactl cicd validate           # 验证配置
 
 ## 版本
 
-**当前版本**: v1.7.0 | **工具数**: 203 | **API 覆盖**: 99%
+**当前版本**: v1.7.5-beta.2.1 | **工具数**: 203 | **API 覆盖**: 99%
 
 ## 许可证
 

@@ -11,6 +11,8 @@
  */
 
 import { createLogger } from './logger.js';
+import { ProjectConfigManager } from './config/project.js';
+import { GlobalConfigManager } from './config/global.js';
 
 const logger = createLogger('config');
 
@@ -43,7 +45,7 @@ export function loadConfigFromEnv(): GiteaConfig {
     baseUrl: process.env.GITEA_BASE_URL || '',
 
     // 认证配置
-    apiToken: process.env.GITEA_API_TOKEN,
+    apiToken: process.env.GITEA_API_TOKEN || process.env.GITEA_TOKEN,
     username: process.env.GITEA_USERNAME,
     password: process.env.GITEA_PASSWORD,
 
@@ -59,6 +61,78 @@ export function loadConfigFromEnv(): GiteaConfig {
     logLevel: process.env.LOG_LEVEL || 'info',
     timeout: process.env.GITEA_TIMEOUT ? parseInt(process.env.GITEA_TIMEOUT, 10) : 30000,
   };
+
+  return config;
+}
+
+/**
+ * 从环境变量、项目配置和全局配置加载完整配置
+ */
+export function loadConfig(): GiteaConfig {
+  const envConfig = loadConfigFromEnv();
+
+  // 尝试从项目配置获取默认值
+  const projectConfig = new ProjectConfigManager().getMergedConfig();
+
+  // 尝试从全局配置获取默认服务器/Token
+  const globalConfig = new GlobalConfigManager();
+  const defaultServer = globalConfig.getDefaultServer();
+  const serverFromRef = projectConfig.serverRef
+    ? globalConfig.getServer(projectConfig.serverRef)
+    : undefined;
+  const serverFromUrl = !serverFromRef && projectConfig.url
+    ? globalConfig.getServerByUrl(projectConfig.url)
+    : undefined;
+  const preferredServer = serverFromRef || serverFromUrl || defaultServer;
+
+  const resolveEnvValue = (value?: string) => {
+    if (!value) return undefined;
+    const match = value.match(/^\$\{(.+)\}$/);
+    const varName = match ? match[1] : value;
+    return process.env[varName];
+  };
+
+  const resolveTokenFromGlobalRef = (tokenId?: string): string | undefined => {
+    if (!tokenId) return undefined;
+    const servers = preferredServer
+      ? [preferredServer, ...globalConfig.getServers().filter(s => s.id !== preferredServer.id)]
+      : globalConfig.getServers();
+
+    for (const server of servers) {
+      const token = server.tokens.find(t => t.id === tokenId);
+      if (token) {
+        return token.token;
+      }
+    }
+    return undefined;
+  };
+
+  const config: GiteaConfig = {
+    baseUrl: envConfig.baseUrl || projectConfig.url || preferredServer?.url || '',
+    apiToken: envConfig.apiToken,
+    username: envConfig.username,
+    password: envConfig.password,
+    defaultOwner: envConfig.defaultOwner || projectConfig.owner,
+    defaultRepo: envConfig.defaultRepo || projectConfig.repo,
+    defaultOrg: envConfig.defaultOrg || projectConfig.org,
+    defaultProject: envConfig.defaultProject || projectConfig.projectId,
+    logLevel: envConfig.logLevel,
+    timeout: envConfig.timeout,
+  };
+
+  if (!config.apiToken && !config.username) {
+    config.apiToken =
+      projectConfig.apiToken ||
+      resolveEnvValue(projectConfig.apiTokenEnv) ||
+      resolveTokenFromGlobalRef(projectConfig.tokenRef) ||
+      (preferredServer
+        ? (preferredServer.tokens.find(t => t.isDefault)?.token || preferredServer.tokens[0]?.token)
+        : undefined);
+  }
+
+  if (!config.baseUrl && preferredServer?.url) {
+    config.baseUrl = preferredServer.url;
+  }
 
   return config;
 }
