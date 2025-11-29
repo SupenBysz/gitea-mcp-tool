@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "gitea-mcp-tool": {
+      "type": "stdio",
+      "command": "gitea-mcp",
+      "env": {
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+        "GITEA_DEFAULT_OWNER": "Kysion",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
+      }
+    }
+  }
+}

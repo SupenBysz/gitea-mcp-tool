@@ -3,7 +3,7 @@ name: Publish Release
 on:
   push:
     branches:
-      - main
+      - release
 
 jobs:
   publish:
@@ -32,6 +32,26 @@ jobs:
           git config --global user.name "Gitea Actions"
           git config --global user.email "actions@gitea.local"
 
+      - name: Validate release merge source
+        run: |
+          # 确保 release 分支最新提交是从 dev 合并而来
+          git fetch origin dev
+          DEV_HEAD=$(git rev-parse origin/dev)
+          P1=$(git rev-parse HEAD^1 2>/dev/null || true)
+          P2=$(git rev-parse HEAD^2 2>/dev/null || true)
+
+          if [ -z "$P2" ]; then
+            echo "::error::release 分支发布必须由 dev 分支的合并提交触发（需要 merge commit）"
+            exit 1
+          fi
+
+          if [ "$P1" != "$DEV_HEAD" ] && [ "$P2" != "$DEV_HEAD" ]; then
+            echo "::error::当前 release 提交未包含最新 dev（HEAD 父提交不匹配 dev），请先手动将 dev 合并到 release 再推送"
+            exit 1
+          fi
+
+          echo "✓ release merge 来源校验通过：包含 dev@${DEV_HEAD}"
+
       - name: Determine version bump type
         id: bump_type
         run: |
@@ -48,6 +68,14 @@ jobs:
             echo "type=patch" >> $GITHUB_OUTPUT
           fi
 
+      - name: Get npm latest version
+        id: npm_latest
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          NPM_LATEST=$(npm view "$PACKAGE_NAME" version --registry https://registry.npmjs.org 2>/dev/null || true)
+          echo "npm latest version: ${NPM_LATEST:-none}"
+          echo "npm_latest=$NPM_LATEST" >> $GITHUB_OUTPUT
+
       - name: Bump version
         id: version
         run: |
@@ -62,6 +90,17 @@ jobs:
           MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
           MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
           PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+
+          # 与 npm 最新正式版对齐，避免版本冲突
+          NPM_LATEST="${{ steps.npm_latest.outputs.npm_latest }}"
+          if [ -n "$NPM_LATEST" ]; then
+            COMPARE_BASE=$(printf "%s\n%s\n" "$BASE_VERSION" "$NPM_LATEST" | sort -V | tail -1)
+            echo "Compare base vs npm latest: base=$BASE_VERSION, npm=$NPM_LATEST, chosen=$COMPARE_BASE"
+            BASE_VERSION="$COMPARE_BASE"
+            MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
+            MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
+            PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+          fi
 
           # 根据类型递增版本
           BUMP_TYPE="${{ steps.bump_type.outputs.type }}"
