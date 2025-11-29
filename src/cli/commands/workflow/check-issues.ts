@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseConfig } from '../../../utils/workflow-config.js';
+import { parseConfig, getLabelPrefixes, matchLabel } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface CheckIssuesOptions {
@@ -109,9 +109,10 @@ export async function checkIssues(options: CheckIssuesOptions): Promise<void> {
     const results: IssueCheckResult[] = [];
 
     // 定义标签前缀
-    const statusPrefix = 'status/';
-    const priorityPrefix = 'priority/';
-    const typePrefix = 'type/';
+  const prefixes = getLabelPrefixes(config);
+  const statusPrefix = prefixes.status;
+  const priorityPrefix = prefixes.priority;
+  const typePrefix = prefixes.type;
 
     for (const issue of issues) {
       const labels = (issue.labels || []).map((l) => l.name || '');
@@ -123,11 +124,11 @@ export async function checkIssues(options: CheckIssuesOptions): Promise<void> {
       };
 
       // 检查状态标签
-      const statusLabels = labels.filter((l) => l.startsWith(statusPrefix));
+      const statusLabels = labels.filter((l) => matchLabel(statusPrefix, l) !== null);
       if (statusLabels.length === 0) {
         checkResult.issues.push({
           type: 'warning',
-          message: '缺少状态标签 (status/*)',
+          message: `缺少状态标签 (${statusPrefix || '状态标签'})`,
         });
         checkResult.score -= 15;
       } else if (statusLabels.length > 1) {
@@ -139,11 +140,11 @@ export async function checkIssues(options: CheckIssuesOptions): Promise<void> {
       }
 
       // 检查优先级标签
-      const priorityLabels = labels.filter((l) => l.startsWith(priorityPrefix));
+      const priorityLabels = labels.filter((l) => matchLabel(priorityPrefix, l) !== null);
       if (priorityLabels.length === 0) {
         checkResult.issues.push({
           type: 'warning',
-          message: '缺少优先级标签 (priority/*)',
+          message: `缺少优先级标签 (${priorityPrefix || '优先级标签'})`,
         });
         checkResult.score -= 10;
       } else if (priorityLabels.length > 1) {
@@ -155,11 +156,11 @@ export async function checkIssues(options: CheckIssuesOptions): Promise<void> {
       }
 
       // 检查类型标签
-      const typeLabels = labels.filter((l) => l.startsWith(typePrefix));
+      const typeLabels = labels.filter((l) => matchLabel(typePrefix, l) !== null);
       if (typeLabels.length === 0) {
         checkResult.issues.push({
           type: 'info',
-          message: '缺少类型标签 (type/*)',
+          message: `缺少类型标签 (${typePrefix || '类型标签'})`,
         });
         checkResult.score -= 5;
       }

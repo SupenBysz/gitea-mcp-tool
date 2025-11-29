@@ -4,6 +4,12 @@ project:
   repo: /
   language: go
 labels:
+  prefixes:
+    status: status/
+    priority: priority/
+    type: type/
+    area: area/
+    workflow: workflow/
   status:
     backlog:
       color: ededed

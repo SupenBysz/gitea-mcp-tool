@@ -27,6 +27,9 @@ import {
   validateConfig,
   getAllLabels,
   getSLAHours,
+  getLabelPrefixes,
+  buildLabel,
+  resolveRulePlaceholders,
 } from '../utils/workflow-config.js';
 import {
   LabelInferenceEngine,
@@ -447,7 +450,8 @@ export async function workflowCheckIssues(
 
       // 检查是否需要添加到 Backlog
       if (boardSyncManager.shouldAddToBacklog(issue)) {
-        suggestions.push('建议添加 status/backlog 标签');
+        const prefixes = getLabelPrefixes(ctx.config);
+        suggestions.push(`建议添加 ${buildLabel(prefixes.status, 'backlog')} 标签`);
       }
 
       if (problems.length > 0 || suggestions.length > 0) {
@@ -643,7 +647,9 @@ export async function workflowCheckBlocked(
       const slaHours = priority ? getSLAHours(config, priority) : null;
 
       // 检查是否已有阻塞标签
-      const alreadyBlocked = hasLabel(issue, 'workflow/blocked');
+      const prefixes = getLabelPrefixes(config);
+      const blockedLabel = buildLabel(prefixes.workflow, 'blocked');
+      const alreadyBlocked = hasLabel(issue, blockedLabel);
 
       // 检查是否超过 SLA
       let isBlocked = false;
@@ -655,10 +661,10 @@ export async function workflowCheckBlocked(
       } else if (slaHours && hoursSinceUpdate > slaHours) {
         isBlocked = true;
         reason = `超过 SLA 时间 (${slaHours} 小时)`;
-      } else if (hasLabel(issue, 'workflow/needs-info') && hoursSinceUpdate > 48) {
+      } else if (hasLabel(issue, buildLabel(prefixes.workflow, 'needs-info')) && hoursSinceUpdate > 48) {
         isBlocked = true;
         reason = '标记为需要信息但超过 48 小时未响应';
-      } else if (hasLabel(issue, 'workflow/needs-review') && hoursSinceUpdate > 72) {
+      } else if (hasLabel(issue, buildLabel(prefixes.workflow, 'needs-review')) && hoursSinceUpdate > 72) {
         isBlocked = true;
         reason = '标记为需要审查但超过 72 小时未处理';
       }
@@ -736,6 +742,8 @@ export async function workflowEscalatePriority(
     config = loadResult.config;
   }
 
+  const prefixes = getLabelPrefixes(config);
+
   const escalated: Array<{
     number: number;
     title: string;
@@ -763,15 +771,16 @@ export async function workflowEscalatePriority(
     };
 
     for (const issue of issues) {
-      const currentPriority = getIssuePriority(issue);
-      const issueType = issue.labels.find((l) => l.name.startsWith('type/'))?.name;
+      const currentPriority = getIssuePriority(issue, prefixes);
+      const issueTypeLabel = issue.labels.find((l) => matchLabel(prefixes.type, l.name) !== null);
+      const issueType = issueTypeLabel ? matchLabel(prefixes.type, issueTypeLabel.name) : null;
       const ageDays = calculateIssueAgeDays(issue);
 
       let newPriority: string | null = null;
       let reason = '';
 
       // 安全问题强制 P0
-      if (issueType === 'type/security' && currentPriority !== 'P0') {
+      if (issueType === 'security' && currentPriority !== 'P0') {
         newPriority = 'P0';
         reason = '安全问题自动升级为紧急';
       } else if (currentPriority && upgradeMap[currentPriority]) {
@@ -785,7 +794,7 @@ export async function workflowEscalatePriority(
       if (newPriority && currentPriority) {
         if (!dryRun) {
           // 移除旧优先级标签
-          const oldLabelId = labelIdMap.get(`priority/${currentPriority}`);
+          const oldLabelId = labelIdMap.get(buildLabel(prefixes.priority, currentPriority));
           if (oldLabelId) {
             try {
               await ctx.client.delete(
@@ -797,7 +806,7 @@ export async function workflowEscalatePriority(
           }
 
           // 添加新优先级标签
-          const newLabelId = labelIdMap.get(`priority/${newPriority}`);
+          const newLabelId = labelIdMap.get(buildLabel(prefixes.priority, newPriority));
           if (newLabelId) {
             await ctx.client.post(`/repos/${owner}/${repo}/issues/${issue.number}/labels`, {
               labels: [newLabelId],
@@ -997,15 +1006,17 @@ export async function workflowGenerateReport(
       byPriority[priority] = (byPriority[priority] || 0) + 1;
 
       // 类型统计
-      const typeLabel = issue.labels.find((l) => l.name.startsWith('type/'));
-      const type = typeLabel ? typeLabel.name.replace('type/', '') : 'unknown';
+      const prefixes = getLabelPrefixes(config);
+      const typeLabel = issue.labels.find((l) => matchLabel(prefixes.type, l.name) !== null);
+      const type = typeLabel ? (matchLabel(prefixes.type, typeLabel.name) || 'unknown') : 'unknown';
       byType[type] = (byType[type] || 0) + 1;
 
       // 年龄统计
       totalAgeDays += calculateIssueAgeDays(issue);
 
       // 阻塞统计
-      if (hasLabel(issue, 'workflow/blocked')) {
+      const blockedLabel = buildLabel(prefixes.workflow, 'blocked');
+      if (hasLabel(issue, blockedLabel)) {
         blockedCount++;
       }
     }

@@ -10,6 +10,7 @@ import {
   ProjectType,
   generateDefaultConfig,
   serializeConfig,
+  getLabelPrefixes,
 } from '../../../utils/workflow-config.js';
 
 export interface WorkflowInitOptions {
@@ -272,12 +273,14 @@ export async function initWorkflow(options: WorkflowInitOptions): Promise<void> 
   // 显示配置摘要
   console.log(chalk.bold('📋 配置摘要:\n'));
 
+  const prefixes = getLabelPrefixes(config);
   console.log(chalk.cyan('  标签分类:'));
-  console.log(chalk.gray(`    - status/*   : ${Object.keys(config.labels.status).length} 个状态标签`));
-  console.log(chalk.gray(`    - priority/* : ${Object.keys(config.labels.priority).length} 个优先级标签`));
-  console.log(chalk.gray(`    - type/*     : ${Object.keys(config.labels.type).length} 个类型标签`));
-  console.log(chalk.gray(`    - area/*     : ${Object.keys(config.labels.area || {}).length} 个领域标签`));
-  console.log(chalk.gray(`    - workflow/* : ${Object.keys(config.labels.workflow || {}).length} 个工作流标签`));
+  console.log(chalk.gray(`    前缀: status='${prefixes.status}', priority='${prefixes.priority}', type='${prefixes.type}', area='${prefixes.area}', workflow='${prefixes.workflow}'`));
+  console.log(chalk.gray(`    - status (${prefixes.status || '无前缀'})   : ${Object.keys(config.labels.status).length} 个状态标签`));
+  console.log(chalk.gray(`    - priority (${prefixes.priority || '无前缀'}) : ${Object.keys(config.labels.priority).length} 个优先级标签`));
+  console.log(chalk.gray(`    - type (${prefixes.type || '无前缀'})     : ${Object.keys(config.labels.type).length} 个类型标签`));
+  console.log(chalk.gray(`    - area (${prefixes.area || '无前缀'})     : ${Object.keys(config.labels.area || {}).length} 个领域标签`));
+  console.log(chalk.gray(`    - workflow (${prefixes.workflow || '无前缀'}) : ${Object.keys(config.labels.workflow || {}).length} 个工作流标签`));
 
   console.log(chalk.cyan('\n  看板列:'));
   for (const column of config.board.columns) {
