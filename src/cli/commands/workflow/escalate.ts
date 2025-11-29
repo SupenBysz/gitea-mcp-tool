@@ -195,8 +195,9 @@ async function updatePriority(
   if (!client) return;
 
   // 移除旧的优先级标签，添加新的
+  const prefixes = getLabelPrefixes(parseConfigFromIssue(issue) || { labels: { prefixes: DEFAULT_LABEL_PREFIXES } } as any);
   const existingLabels = (issue.labels || [])
-    .filter((l) => !l.name?.startsWith('priority/'))
+    .filter((l) => !l.name || matchLabel(prefixes.priority, l.name) === null)
     .map((l) => l.id)
     .filter((id): id is number => id !== undefined);
 
