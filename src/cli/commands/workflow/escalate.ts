@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseConfig } from '../../../utils/workflow-config.js';
+import { parseConfig, getLabelPrefixes, buildLabel, matchLabel } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface EscalateOptions {
@@ -89,6 +89,8 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
     };
     const issues = await client.get<IssueType[]>(`/repos/${owner}/${repo}/issues`, { state: 'open' });
 
+    const prefixes = getLabelPrefixes(config);
+
     // 获取仓库所有标签
     type LabelType = { id?: number; name?: string };
     const repoLabels = await client.get<LabelType[]>(`/repos/${owner}/${repo}/labels`);
@@ -102,13 +104,13 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
       const labels = (issue.labels || []).map((l) => l.name || '');
 
       // 检查是否是安全相关 Issue
-      const isSecurityIssue = labels.includes('type/security') ||
+      const isSecurityIssue = labels.some((l) => matchLabel(prefixes.type, l) === 'security') ||
         /security|vulnerability|cve|漏洞|安全/i.test(issue.title || '') ||
         /security|vulnerability|cve|漏洞|安全/i.test(issue.body || '');
 
       // 安全 Issue 直接升级到 P0
-      if (isSecurityIssue && !labels.includes('priority/P0')) {
-        const oldPriority = labels.find((l) => l.startsWith('priority/'))?.replace('priority/', '') || '无';
+      if (isSecurityIssue && !labels.includes(buildLabel(prefixes.priority, 'P0'))) {
+        const oldPriority = labels.find((l) => matchLabel(prefixes.priority, l) !== null)?.replace(prefixes.priority, '') || '无';
 
         results.push({
           number: issue.number || 0,
@@ -119,16 +121,16 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
         });
 
         if (!options.dryRun) {
-          await updatePriority(client, owner, repo, issue, repoLabels, 'priority/P0');
+          await updatePriority(client, owner, repo, issue, repoLabels, buildLabel(prefixes.priority, 'P0'));
         }
         continue;
       }
 
       // 获取当前优先级
-      const priorityLabel = labels.find((l) => l.startsWith('priority/'));
+      const priorityLabel = labels.find((l) => matchLabel(prefixes.priority, l) !== null);
       if (!priorityLabel) continue;
 
-      const currentPriority = priorityLabel.replace('priority/', '') as keyof typeof ESCALATION_RULES;
+      const currentPriority = matchLabel(prefixes.priority, priorityLabel) as keyof typeof ESCALATION_RULES;
       const rule = ESCALATION_RULES[currentPriority];
       if (!rule) continue; // P0 没有升级规则
 
@@ -147,7 +149,7 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
         });
 
         if (!options.dryRun) {
-          await updatePriority(client, owner, repo, issue, repoLabels, `priority/${rule.nextPriority}`);
+          await updatePriority(client, owner, repo, issue, repoLabels, buildLabel(prefixes.priority, rule.nextPriority));
         }
       }
     }
