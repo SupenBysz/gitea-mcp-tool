@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseConfig, getSLAHours } from '../../../utils/workflow-config.js';
+import { parseConfig, getSLAHours, getLabelPrefixes, matchLabel } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface ReportOptions {
@@ -143,22 +143,24 @@ export async function generateReport(options: ReportOptions): Promise<void> {
     const byPriority: Record<string, number> = {};
     const byType: Record<string, number> = {};
 
+    const prefixes = getLabelPrefixes(config);
+
     for (const issue of openIssues) {
       const labels = (issue.labels || []).map((l) => l.name || '');
 
       // 统计状态
-      const statusLabel = labels.find((l) => l.startsWith('status/'));
-      const status = statusLabel ? statusLabel.replace('status/', '') : 'no-status';
+      const statusLabel = labels.find((l) => matchLabel(prefixes.status, l) !== null);
+      const status = statusLabel ? matchLabel(prefixes.status, statusLabel) : 'no-status';
       byStatus[status] = (byStatus[status] || 0) + 1;
 
       // 统计优先级
-      const priorityLabel = labels.find((l) => l.startsWith('priority/'));
-      const priority = priorityLabel ? priorityLabel.replace('priority/', '') : 'no-priority';
+      const priorityLabel = labels.find((l) => matchLabel(prefixes.priority, l) !== null);
+      const priority = priorityLabel ? matchLabel(prefixes.priority, priorityLabel) : 'no-priority';
       byPriority[priority] = (byPriority[priority] || 0) + 1;
 
       // 统计类型
-      const typeLabel = labels.find((l) => l.startsWith('type/'));
-      const type = typeLabel ? typeLabel.replace('type/', '') : 'no-type';
+      const typeLabel = labels.find((l) => matchLabel(prefixes.type, l) !== null);
+      const type = typeLabel ? matchLabel(prefixes.type, typeLabel) : 'no-type';
       byType[type] = (byType[type] || 0) + 1;
     }
 
@@ -168,8 +170,8 @@ export async function generateReport(options: ReportOptions): Promise<void> {
 
     for (const issue of openIssues) {
       const labels = (issue.labels || []).map((l) => l.name || '');
-      const priorityLabel = labels.find((l) => l.startsWith('priority/'));
-      const priority = priorityLabel?.replace('priority/', '').toUpperCase() || 'P3';
+      const priorityLabel = labels.find((l) => matchLabel(prefixes.priority, l) !== null);
+      const priority = priorityLabel ? (matchLabel(prefixes.priority, priorityLabel)?.toUpperCase() || 'P3') : 'P3';
       const issueSla = getSLAHours(config, priority) || defaultSla[priority as keyof typeof defaultSla] || defaultSla.P3;
 
       const updatedAt = new Date(issue.updated_at || issue.created_at || now).getTime();

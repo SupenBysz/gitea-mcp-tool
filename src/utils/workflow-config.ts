@@ -7,6 +7,14 @@ import { parse as parseYAML, stringify as stringifyYAML } from 'yaml';
 
 // ============ 类型定义 ============
 
+export interface LabelPrefixes {
+  status: string;   // 状态标签前缀，默认 "status/"
+  priority: string; // 优先级标签前缀，默认 "priority/"
+  type: string;     // 类型标签前缀，默认 "type/"
+  area: string;     // 领域标签前缀，默认 "area/"
+  workflow: string; // 工作流标签前缀，默认 "workflow/"
+}
+
 export type ProjectType = 'backend' | 'frontend' | 'fullstack' | 'library';
 export type SyncDirection = 'label-to-board' | 'board-to-label' | 'both';
 export type ConflictResolution = 'board-wins' | 'label-wins';
@@ -24,6 +32,7 @@ export interface LabelsConfig {
   area?: Record<string, LabelConfig>;
   workflow?: Record<string, LabelConfig>;
   special?: Record<string, LabelConfig>;
+  prefixes?: Partial<LabelPrefixes>;
 }
 
 export interface BoardColumn {
@@ -123,6 +132,52 @@ export interface ValidationResult {
   warnings: string[];
 }
 
+// ============ 前缀默认值与工具 ============
+
+export const DEFAULT_LABEL_PREFIXES: LabelPrefixes = {
+  status: 'status/',
+  priority: 'priority/',
+  type: 'type/',
+  area: 'area/',
+  workflow: 'workflow/',
+};
+
+/**
+ * 获取标签前缀配置（带默认值）
+ */
+export function getLabelPrefixes(config: WorkflowConfig): LabelPrefixes {
+  const prefixes = config.labels.prefixes || {};
+  return {
+    status: prefixes.status ?? DEFAULT_LABEL_PREFIXES.status,
+    priority: prefixes.priority ?? DEFAULT_LABEL_PREFIXES.priority,
+    type: prefixes.type ?? DEFAULT_LABEL_PREFIXES.type,
+    area: prefixes.area ?? DEFAULT_LABEL_PREFIXES.area,
+    workflow: prefixes.workflow ?? DEFAULT_LABEL_PREFIXES.workflow,
+  };
+}
+
+/**
+ * 构造标签名：根据配置前缀拼接，前缀为空则直接返回值
+ */
+export function buildLabel(prefix: string, value: string): string {
+  if (!prefix) return value;
+  return `${prefix}${value}`;
+}
+
+/**
+ * 判断标签是否匹配某个类别前缀，返回去除前缀后的名称
+ */
+export function matchLabel(prefix: string, label: string): string | null {
+  if (!prefix) {
+    // 无前缀模式：直接使用 label 作为值
+    return label;
+  }
+  if (label.startsWith(prefix)) {
+    return label.slice(prefix.length);
+  }
+  return null;
+}
+
 // ============ 默认配置 ============
 
 const DEFAULT_STATUS_LABELS: Record<string, LabelConfig> = {
@@ -212,16 +267,16 @@ const DEFAULT_PRIORITY_KEYWORDS: Record<string, string[]> = {
 };
 
 const DEFAULT_ESCALATION_RULES: EscalationRule[] = [
-  { condition: 'label:type/security', action: 'force_priority:P0' },
-  { condition: 'label:priority/P3 AND age_days > 30', action: 'upgrade_to:P2' },
-  { condition: 'label:priority/P2 AND age_days > 14', action: 'upgrade_to:P1' },
-  { condition: 'label:priority/P1 AND age_days > 3', action: 'upgrade_to:P0' },
+  { condition: 'label:{type}/security', action: 'force_priority:P0' },
+  { condition: 'label:{priority}/P3 AND age_days > 30', action: 'upgrade_to:P2' },
+  { condition: 'label:{priority}/P2 AND age_days > 14', action: 'upgrade_to:P1' },
+  { condition: 'label:{priority}/P1 AND age_days > 3', action: 'upgrade_to:P0' },
 ];
 
 const DEFAULT_BLOCKED_RULES: EscalationRule[] = [
-  { condition: 'label:priority/P0 AND no_update_hours > 4', action: 'add_label:workflow/blocked' },
-  { condition: 'label:priority/P1 AND no_update_hours > 24', action: 'add_label:workflow/blocked' },
-  { condition: 'label:workflow/needs-info AND no_update_hours > 48', action: 'add_label:workflow/blocked' },
+  { condition: 'label:{priority}/P0 AND no_update_hours > 4', action: 'add_label:{workflow}/blocked' },
+  { condition: 'label:{priority}/P1 AND no_update_hours > 24', action: 'add_label:{workflow}/blocked' },
+  { condition: 'label:{workflow}/needs-info AND no_update_hours > 48', action: 'add_label:{workflow}/blocked' },
 ];
 
 // ============ 配置生成器 ============
@@ -249,6 +304,7 @@ export function generateDefaultConfig(
       area: AREA_LABELS_BY_TYPE[projectType],
       workflow: DEFAULT_WORKFLOW_LABELS,
       special: DEFAULT_SPECIAL_LABELS,
+      prefixes: DEFAULT_LABEL_PREFIXES,
     },
     board: {
       name: 'Issue Workflow Board',
@@ -448,13 +504,14 @@ export function mergeConfig(base: WorkflowConfig, override: Partial<WorkflowConf
  */
 export function getAllLabels(config: WorkflowConfig): Array<{ category: string; name: string; config: LabelConfig }> {
   const labels: Array<{ category: string; name: string; config: LabelConfig }> = [];
+  const prefixes = getLabelPrefixes(config);
 
   const categories: Array<{ key: keyof LabelsConfig; prefix: string }> = [
-    { key: 'status', prefix: 'status' },
-    { key: 'priority', prefix: 'priority' },
-    { key: 'type', prefix: 'type' },
-    { key: 'area', prefix: 'area' },
-    { key: 'workflow', prefix: 'workflow' },
+    { key: 'status', prefix: prefixes.status },
+    { key: 'priority', prefix: prefixes.priority },
+    { key: 'type', prefix: prefixes.type },
+    { key: 'area', prefix: prefixes.area },
+    { key: 'workflow', prefix: prefixes.workflow },
     { key: 'special', prefix: '' }, // special 标签不加前缀
   ];
 
@@ -464,7 +521,7 @@ export function getAllLabels(config: WorkflowConfig): Array<{ category: string; 
       for (const [name, labelConfig] of Object.entries(categoryLabels)) {
         labels.push({
           category: key,
-          name: prefix ? `${prefix}/${name}` : name,
+          name: prefix ? `${prefix}${name}` : name,
           config: labelConfig,
         });
       }
@@ -474,6 +531,23 @@ export function getAllLabels(config: WorkflowConfig): Array<{ category: string; 
   return labels;
 }
 
+/**
+ * 将规则中的占位符替换为实际前缀
+ */
+export function resolveRulePlaceholders(rule: EscalationRule, prefixes: LabelPrefixes): EscalationRule {
+  const replace = (text: string) =>
+    text
+      .replaceAll('{status}', prefixes.status ?? '')
+      .replaceAll('{priority}', prefixes.priority ?? '')
+      .replaceAll('{type}', prefixes.type ?? '')
+      .replaceAll('{area}', prefixes.area ?? '')
+      .replaceAll('{workflow}', prefixes.workflow ?? '');
+
+  return {
+    condition: replace(rule.condition),
+    action: replace(rule.action),
+  };
+}
 /**
  * 根据标签名查找列映射
  */

@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseConfig } from '../../../utils/workflow-config.js';
+import { parseConfig, getLabelPrefixes, matchLabel, buildLabel } from '../../../utils/workflow-config.js';
 import { createClient as createClientAsync, getContextFromConfig } from '../../utils/client.js';
 
 export interface CheckBlockedOptions {
@@ -115,10 +115,11 @@ export async function checkBlocked(options: CheckBlockedOptions): Promise<void> 
 
     for (const issue of issues) {
       const labels = (issue.labels || []).map((l) => l.name || '');
+      const prefixes = getLabelPrefixes(config);
 
       // 获取优先级
-      const priorityLabel = labels.find((l) => l.startsWith('priority/'));
-      const priority = priorityLabel ? priorityLabel.replace('priority/', '').toUpperCase() : null;
+      const priorityLabel = labels.find((l) => matchLabel(prefixes.priority, l) !== null);
+      const priority = priorityLabel ? matchLabel(prefixes.priority, priorityLabel)?.toUpperCase() : null;
 
       // 获取 SLA
       let issueSla: number;

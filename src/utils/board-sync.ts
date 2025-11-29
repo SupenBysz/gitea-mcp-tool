@@ -5,6 +5,7 @@
 
 import type { WorkflowConfig, SyncDirection, BoardColumn } from './workflow-config.js';
 import type { Issue } from './label-inference.js';
+import { getLabelPrefixes, buildLabel, matchLabel } from './workflow-config.js';
 
 // ============ 类型定义 ============
 
@@ -155,8 +156,10 @@ export class BoardSyncManager {
    * 获取 Backlog 列信息
    */
   getBacklogColumn(): BoardColumn | undefined {
+    const prefixes = getLabelPrefixes(this.config);
+    const backlogLabel = buildLabel(prefixes.status, 'backlog');
     return this.config.board.columns.find(
-      (col) => col.maps_to === 'status/backlog' || col.name.toLowerCase() === 'backlog'
+      (col) => col.maps_to === backlogLabel || col.name.toLowerCase() === 'backlog'
     );
   }
 
@@ -165,7 +168,8 @@ export class BoardSyncManager {
    */
   checkLabelConflicts(issue: Issue): string[] {
     const conflicts: string[] = [];
-    const statusLabels = issue.labels.filter((l) => l.name.startsWith('status/'));
+    const prefixes = getLabelPrefixes(this.config);
+    const statusLabels = issue.labels.filter((l) => matchLabel(prefixes.status, l.name) !== null);
 
     if (statusLabels.length > 1) {
       conflicts.push(
@@ -173,7 +177,7 @@ export class BoardSyncManager {
       );
     }
 
-    const priorityLabels = issue.labels.filter((l) => l.name.startsWith('priority/'));
+    const priorityLabels = issue.labels.filter((l) => matchLabel(prefixes.priority, l.name) !== null);
     if (priorityLabels.length > 1) {
       conflicts.push(
         `Issue #${issue.number} 有多个优先级标签: ${priorityLabels.map((l) => l.name).join(', ')}`
@@ -190,7 +194,8 @@ export class BoardSyncManager {
     const actions: SyncAction[] = [];
 
     // 解决状态标签冲突
-    const statusLabels = issue.labels.filter((l) => l.name.startsWith('status/'));
+    const prefixes = getLabelPrefixes(this.config);
+    const statusLabels = issue.labels.filter((l) => matchLabel(prefixes.status, l.name) !== null);
     if (statusLabels.length > 1) {
       const toRemove =
         conflictResolution === 'keep-first' ? statusLabels.slice(1) : statusLabels.slice(0, -1);
@@ -206,7 +211,7 @@ export class BoardSyncManager {
     }
 
     // 解决优先级标签冲突
-    const priorityLabels = issue.labels.filter((l) => l.name.startsWith('priority/'));
+    const priorityLabels = issue.labels.filter((l) => matchLabel(prefixes.priority, l.name) !== null);
     if (priorityLabels.length > 1) {
       const toRemove =
         conflictResolution === 'keep-first' ? priorityLabels.slice(1) : priorityLabels.slice(0, -1);
@@ -278,7 +283,8 @@ export class BoardSyncManager {
   // ============ 私有方法 ============
 
   private getStatusLabel(issue: Issue): string | null {
-    const statusLabel = issue.labels.find((l) => l.name.startsWith('status/'));
+    const prefixes = getLabelPrefixes(this.config);
+    const statusLabel = issue.labels.find((l) => matchLabel(prefixes.status, l.name) !== null);
     return statusLabel?.name || null;
   }
 
@@ -351,14 +357,19 @@ export function validateBoardConfig(config: WorkflowConfig): string[] {
       }
       if (!column.maps_to) {
         errors.push(`看板列 "${column.name}" 缺少标签映射`);
-      } else if (!column.maps_to.startsWith('status/')) {
-        errors.push(`看板列 "${column.name}" 的映射应该以 "status/" 开头`);
+      } else {
+        const prefixes = getLabelPrefixes(config);
+        if (prefixes.status && !column.maps_to.startsWith(prefixes.status)) {
+          errors.push(`看板列 "${column.name}" 的映射应该以 "${prefixes.status}" 开头`);
+        }
       }
     }
 
     // 检查是否有 Backlog 列
+    const prefixes = getLabelPrefixes(config);
+    const backlogLabel = buildLabel(prefixes.status, 'backlog');
     const hasBacklog = config.board.columns.some(
-      (col) => col.maps_to === 'status/backlog' || col.name.toLowerCase() === 'backlog'
+      (col) => col.maps_to === backlogLabel || col.name.toLowerCase() === 'backlog'
     );
     if (!hasBacklog) {
       errors.push('建议添加 Backlog 列');
