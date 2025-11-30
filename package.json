@@ -1,6 +1,6 @@
 {
   "name": "gitea-mcp-tool",
-  "version": "1.7.5-beta.2.1",
+  "version": "1.7.5",
   "description": "Universal MCP Server for Gitea - 通用 MCP 服务器，支持 Claude Desktop、Cline、Continue 等所有符合 MCP 规范的客户端访问 Gitea API",
   "type": "module",
   "main": "./dist/index.js",
