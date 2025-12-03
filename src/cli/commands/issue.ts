@@ -11,6 +11,10 @@ import {
   updateIssue,
   closeIssue,
   commentIssue,
+  listIssueComments,
+  getIssueComment,
+  editIssueComment,
+  deleteIssueComment,
 } from '../../tools/issue.js';
 
 /**
@@ -214,6 +218,128 @@ export async function issueComment(index: number, options: ClientOptions & {
     }, options);
   } catch (err: any) {
     error(`添加评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 列出 Issue 评论
+ */
+export async function issueCommentsList(index: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  limit?: string;
+  page?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await listIssueComments({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      limit: parseInt(options.limit || '30'),
+      page: parseInt(options.page || '1'),
+    });
+
+    if (result.comments.length === 0) {
+      info(`Issue #${index} 没有评论`, options);
+      return;
+    }
+
+    const comments = result.comments.map((comment: any) => ({
+      'ID': comment.id,
+      author: comment.user?.login || '-',
+      body: comment.body.length > 50 ? comment.body.substring(0, 50) + '...' : comment.body,
+      created: comment.created_at?.split('T')[0] || '-',
+    }));
+
+    outputList(comments, options);
+  } catch (err: any) {
+    error(`列出评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 获取评论详情
+ */
+export async function issueCommentGet(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await getIssueComment({ client, contextManager }, { owner, repo, id });
+    const comment = result.comment;
+
+    outputDetails({
+      id: comment.id,
+      author: comment.user?.login || '-',
+      body: comment.body,
+      created: comment.created_at?.split('T')[0],
+      updated: comment.updated_at?.split('T')[0],
+      url: comment.html_url,
+    }, options);
+  } catch (err: any) {
+    error(`获取评论详情失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 编辑评论
+ */
+export async function issueCommentEdit(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  body: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await editIssueComment({ client, contextManager }, {
+      owner,
+      repo,
+      id,
+      body: options.body,
+    });
+
+    success(`评论 #${result.comment.id} 编辑成功`, options);
+    outputDetails({
+      id: result.comment.id,
+      body: result.comment.body,
+      updated: result.comment.updated_at?.split('T')[0],
+    }, options);
+  } catch (err: any) {
+    error(`编辑评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 删除评论
+ */
+export async function issueCommentDelete(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    await deleteIssueComment({ client, contextManager }, { owner, repo, id });
+    success(`评论 #${id} 已删除`, options);
+  } catch (err: any) {
+    error(`删除评论失败: ${err.message}`);
     process.exit(1);
   }
 }

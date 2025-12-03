@@ -305,5 +305,126 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
     }
   );
 
-  logger.info('Registered 9 issue tools');
+  // gitea_issue_comments_list - 获取 Issue 评论列表
+  mcpServer.registerTool(
+    'gitea_issue_comments_list',
+    {
+      title: '获取 Issue 评论列表',
+      description: 'List all comments on an issue',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        index: z.number().int().positive().describe('Issue index number'),
+        since: z.string().optional().describe('Only comments updated after this time (ISO 8601 format)'),
+        before: z.string().optional().describe('Only comments updated before this time (ISO 8601 format)'),
+        page: z.number().optional().describe('Page number (default: 1)'),
+        limit: z.number().optional().describe('Items per page (default: 30)'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.listIssueComments(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // gitea_issue_comment_get - 获取单个评论详情
+  mcpServer.registerTool(
+    'gitea_issue_comment_get',
+    {
+      title: '获取评论详情',
+      description: 'Get a specific comment by ID',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        id: z.number().int().positive().describe('Comment ID'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.getIssueComment(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // gitea_issue_comment_edit - 编辑评论
+  mcpServer.registerTool(
+    'gitea_issue_comment_edit',
+    {
+      title: '编辑评论',
+      description: 'Edit a comment',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        id: z.number().int().positive().describe('Comment ID'),
+        body: z.string().min(1).describe('New comment body'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.editIssueComment(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // gitea_issue_comment_delete - 删除评论
+  mcpServer.registerTool(
+    'gitea_issue_comment_delete',
+    {
+      title: '删除评论',
+      description: 'Delete a comment',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        id: z.number().int().positive().describe('Comment ID'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.deleteIssueComment(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  logger.info('Registered 13 issue tools');
 }
