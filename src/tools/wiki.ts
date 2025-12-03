@@ -43,17 +43,72 @@ function cleanPageName(name: string | undefined): string | undefined {
 }
 
 /**
- * 获取所有页面名称的可能变体
- * Gitea 的 Wiki 页面可能有 ".-" 后缀(用于 .md 文件)
+ * 检查字符串是否已被 URL 编码
  */
-function getPageNameVariants(pageName: string): string[] {
-  const variants = [
-    pageName,                        // 原始名称
-    `${pageName}.-`,                 // 添加 .- 后缀(Gitea .md 文件格式)
-    pageName.replace(/\.-$/, ''),    // 移除 .- 后缀(如果用户传入了带后缀的名称)
-  ];
-  // 去重并返回
-  return [...new Set(variants)];
+function isUrlEncoded(str: string): boolean {
+  return /%[0-9A-Fa-f]{2}/.test(str);
+}
+
+/**
+ * 安全解码 URI 组件
+ */
+function safeDecodeURIComponent(str: string): string {
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+}
+
+/**
+ * 获取所有页面名称的可能变体
+ * Gitea Wiki API 的特殊行为：
+ * - 对于 ASCII 页面（如 "Home"），直接使用页面名即可
+ * - 对于非 ASCII 页面（如中文"违规处理"），**必须**添加 ".md" 后缀才能获取
+ */
+function getPageNameVariants(pageName: string): Array<{ name: string; needsEncoding: boolean }> {
+  const variants: Array<{ name: string; needsEncoding: boolean }> = [];
+
+  let rawName = pageName;
+  let encodedName = pageName;
+
+  // 移除已有的 .md 后缀以便统一处理
+  const hasMdSuffix = pageName.endsWith('.md') || pageName.endsWith('.md.-');
+  if (hasMdSuffix) {
+    rawName = pageName.replace(/\.md(\.-)?$/, '');
+  }
+
+  // 处理已编码的输入
+  if (isUrlEncoded(rawName)) {
+    rawName = safeDecodeURIComponent(rawName);
+    encodedName = rawName;
+  }
+  encodedName = encodeURIComponent(rawName);
+
+  // 检测是否为非 ASCII 名称（中文等）
+  const hasNonAscii = /[^\x00-\x7F]/.test(rawName);
+
+  if (hasNonAscii) {
+    // 对于非 ASCII 页面，优先使用 .md 后缀（这是 Gitea 的要求）
+    variants.push({ name: `${encodedName}.md`, needsEncoding: false });
+    variants.push({ name: `${rawName}.md`, needsEncoding: true });
+  }
+
+  // 原始名称（无后缀）
+  variants.push({ name: rawName, needsEncoding: true });
+  variants.push({ name: encodedName, needsEncoding: false });
+
+  // .- 后缀变体（某些旧版本可能使用）
+  variants.push({ name: `${rawName}.-`, needsEncoding: true });
+
+  // 去重
+  const seen = new Set<string>();
+  return variants.filter(v => {
+    const key = `${v.name}:${v.needsEncoding}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 /**
@@ -71,7 +126,7 @@ function decodeBase64Content(base64: string | undefined): string | undefined {
 
 /**
  * 尝试使用不同页面名称变体执行 API 调用
- * 处理 Gitea Wiki 页面的 ".-" 后缀问题
+ * 处理 Gitea Wiki 页面的编码和后缀问题
  */
 async function tryWithPageNameVariants<T>(
   ctx: WikiToolsContext,
@@ -88,13 +143,15 @@ async function tryWithPageNameVariants<T>(
 
   for (const variant of variants) {
     try {
-      const encodedPageName = encodeURIComponent(variant);
+      const encodedPageName = variant.needsEncoding
+        ? encodeURIComponent(variant.name)
+        : variant.name;
       const result = await apiCall(encodedPageName);
-      logger.debug({ pageName, variant }, 'Wiki API call succeeded with variant');
+      logger.debug({ pageName, variant: variant.name }, 'Wiki API call succeeded with variant');
       return result;
     } catch (error) {
       if (error instanceof GiteaAPIError && error.status === 404) {
-        logger.debug({ pageName, variant }, 'Wiki page not found, trying next variant');
+        logger.debug({ pageName, variant: variant.name }, 'Wiki page not found, trying next variant');
         lastError = error;
         continue;
       }
