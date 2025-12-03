@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as ActionTools from '../tools/action.js';
 import { ToolContext } from '../types.js';
 
@@ -19,6 +22,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -42,6 +46,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         workflow_id: z.string().min(1).describe('Workflow ID or filename (e.g., "ci.yml" or workflow ID)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -65,6 +70,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         workflow_id: z.string().min(1).describe('Workflow ID or filename'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -88,6 +94,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         workflow_id: z.string().min(1).describe('Workflow ID or filename'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -113,6 +120,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         workflow_id: z.string().min(1).describe('Workflow ID or filename'),
         ref: z.string().min(1).describe('Git reference (branch or tag) to run workflow on'),
         inputs: z.record(z.string()).optional().describe('Input parameters for the workflow'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -144,6 +152,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         event: z.string().optional().describe('Filter by event type (e.g., "push", "pull_request")'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -167,6 +176,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         run: z.string().min(1).describe('Run ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -190,6 +200,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         run: z.string().min(1).describe('Run ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -215,6 +226,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         run: z.string().min(1).describe('Run ID'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -240,6 +252,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         run: z.string().min(1).describe('Run ID'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -266,6 +279,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -289,6 +303,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         job_id: z.string().min(1).describe('Job ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -312,6 +327,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         job_id: z.string().min(1).describe('Job ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -338,6 +354,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number (1-based)'),
         limit: z.number().optional().describe('Page size'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -361,6 +378,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         artifact_id: z.string().min(1).describe('Artifact ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -384,6 +402,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         artifact_id: z.string().min(1).describe('Artifact ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -407,6 +426,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         artifact_id: z.string().min(1).describe('Artifact ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -431,6 +451,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -455,6 +476,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         secretname: z.string().min(1).describe('Secret name'),
         data: z.string().min(1).describe('Secret value (will be encrypted)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -478,6 +500,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         secretname: z.string().min(1).describe('Secret name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -502,6 +525,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -525,6 +549,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         variablename: z.string().min(1).describe('Variable name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -549,6 +574,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         variablename: z.string().min(1).describe('Variable name'),
         value: z.string().min(1).describe('Variable value'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -573,6 +599,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         variablename: z.string().min(1).describe('Variable name'),
         value: z.string().min(1).describe('Variable value'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -596,6 +623,7 @@ export function registerActionTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         variablename: z.string().min(1).describe('Variable name'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

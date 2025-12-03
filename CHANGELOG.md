@@ -5,6 +5,42 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased]
+
+### 新增
+
+#### Issue 评论完整操作支持
+- **MCP 工具** (4个新增)
+  - `gitea_issue_comments_list` - 列出 Issue 所有评论
+  - `gitea_issue_comment_get` - 获取单个评论详情
+  - `gitea_issue_comment_edit` - 编辑评论内容
+  - `gitea_issue_comment_delete` - 删除评论
+- **CLI 命令** (4个新增)
+  - `keactl issue comments <index>` - 列出 Issue 评论
+  - `keactl issue comment-get <id>` - 获取评论详情
+  - `keactl issue comment-edit <id> --body "内容"` - 编辑评论
+  - `keactl issue comment-delete <id>` - 删除评论
+
+#### Issue 被依赖列表查询
+- **MCP 工具** (1个新增)
+  - `gitea_issue_blocks_list` - 获取依赖当前 Issue 的其他 Issue 列表（反向依赖查询）
+
+### 修复
+- 中文 Wiki 页面获取 404 问题 (#47)
+  - 优化 Wiki 页面名称变体生成逻辑
+  - 对于非 ASCII 页面（如中文），优先使用 `.md` 后缀
+  - 改进 URL 编码处理
+- Codex 无法发现 MCP：新增项目级 `.mcp.json` 分发并在 README 增补通用客户端配置指引，确保 Codex/通用 MCP 客户端可自动检测 gitea-mcp-tool。
+- 配置加载回退：服务器启动时将从 `.gitea-mcp.json` / `.gitea-mcp.local.json` / 全局配置解析 baseUrl 与 token（含 tokenRef/apiTokenEnv），不再仅依赖环境变量。
+- 发行脚本：`pack.sh` 将 `.mcp.json` 打入发布包；`.gitignore` 忽略 `.mcp.local.json`。
+
+### 文档
+- README 更新工具数量为 217 个 MCP 工具
+- README 新增 CLI 评论操作命令说明
+- README 新增 Codex/LM Studio 等通用 MCP 客户端的 `.mcp.json` 示例与 token 配置提示
+
+---
+
 ## [1.3.0] - 2025-11-23
 
 ### 🎉 新增

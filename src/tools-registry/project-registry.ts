@@ -5,6 +5,9 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as ProjectTools from '../tools/project.js';
 import type { ToolContext } from '../index.js';
 import { createLogger } from '../logger.js';
@@ -31,6 +34,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         title: z.string().min(1).describe('Project title'),
         description: z.string().optional().describe('Project description'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -59,6 +63,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Project ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -89,6 +94,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         state: z.enum(['open', 'closed', 'all']).optional().describe('Project state filter (default: open)'),
         page: z.number().optional().describe('Page number (default: 1)'),
         limit: z.number().optional().describe('Items per page (default: 30)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -120,6 +126,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         title: z.string().optional().describe('New project title'),
         description: z.string().optional().describe('New project description'),
         state: z.enum(['open', 'closed']).optional().describe('New state'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -148,6 +155,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Project ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -176,6 +184,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Project ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -205,6 +214,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Project ID'),
         title: z.string().min(1).describe('Column title'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -235,6 +245,7 @@ export function registerProjectTools(mcpServer: McpServer, ctx: ToolContext) {
         projectId: z.number().int().positive().describe('Project ID'),
         columnId: z.number().int().positive().describe('Column ID'),
         issueIndex: z.number().int().positive().describe('Issue index'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

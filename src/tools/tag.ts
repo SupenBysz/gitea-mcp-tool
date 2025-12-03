@@ -1,8 +1,8 @@
-import { GiteaClient } from '../gitea-api-client.js';
-import { ContextManager } from '../context-manager.js';
-import pino from 'pino';
+import type { GiteaClient } from '../gitea-client.js';
+import type { ContextManager } from '../context-manager.js';
+import { createLogger } from '../logger.js';
 
-const logger = pino({ name: 'tag-tools' });
+const logger = createLogger('tools:tag');
 
 export interface TagToolsContext {
   client: GiteaClient;
@@ -13,6 +13,7 @@ export interface TagToolsContext {
 export interface TagParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 // List tags
@@ -36,7 +37,8 @@ export async function listTags(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/tags`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -68,6 +70,7 @@ export async function createTag(
     method: 'POST',
     path: `/repos/${owner}/${repo}/tags`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -89,6 +92,7 @@ export async function getTag(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/tags/${encodeURIComponent(params.tag)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -106,6 +110,7 @@ export async function deleteTag(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/tags/${encodeURIComponent(params.tag)}`,
+    token: params.token,
   });
 
   return response.data;
@@ -127,6 +132,7 @@ export async function getAnnotatedTag(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/git/tags/${params.sha}`,
+    token: params.token,
   });
 
   return response.data;
@@ -153,7 +159,8 @@ export async function listTagProtections(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/tag_protections`,
-    params: queryParams,
+    query: queryParams,
+    token: params.token,
   });
 
   return response.data;
@@ -184,6 +191,7 @@ export async function createTagProtection(
     method: 'POST',
     path: `/repos/${owner}/${repo}/tag_protections`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -205,6 +213,7 @@ export async function getTagProtection(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/tag_protections/${params.id}`,
+    token: params.token,
   });
 
   return response.data;
@@ -236,6 +245,7 @@ export async function updateTagProtection(
     method: 'PATCH',
     path: `/repos/${owner}/${repo}/tag_protections/${params.id}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -253,6 +263,7 @@ export async function deleteTagProtection(
   const response = await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/tag_protections/${params.id}`,
+    token: params.token,
   });
 
   return response.data;

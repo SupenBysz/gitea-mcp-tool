@@ -13,6 +13,8 @@ import type {
   IssueListOptions,
   GiteaComment,
   CreateCommentOptions,
+  UpdateCommentOptions,
+  CommentListOptions,
 } from '../types/gitea.js';
 import { createLogger } from '../logger.js';
 
@@ -38,6 +40,7 @@ export async function createIssue(
     milestone?: number;
     labels?: number[];
     due_date?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating issue');
@@ -56,7 +59,8 @@ export async function createIssue(
 
   const issue = await ctx.client.post<GiteaIssue>(
     `/repos/${owner}/${repo}/issues`,
-    createOptions
+    createOptions,
+    args.token
   );
 
   logger.info({ owner, repo, issue: issue.number }, 'Issue created successfully');
@@ -94,6 +98,7 @@ export async function getIssue(
     owner?: string;
     repo?: string;
     index: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting issue');
@@ -101,7 +106,9 @@ export async function getIssue(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   const issue = await ctx.client.get<GiteaIssue>(
-    `/repos/${owner}/${repo}/issues/${args.index}`
+    `/repos/${owner}/${repo}/issues/${args.index}`,
+    undefined,
+    args.token
   );
 
   logger.debug({ owner, repo, issue: issue.number }, 'Issue retrieved');
@@ -162,6 +169,7 @@ export async function listIssues(
     page?: number;
     limit?: number;
     milestones?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing issues');
@@ -180,7 +188,8 @@ export async function listIssues(
 
   const issues = await ctx.client.get<GiteaIssue[]>(
     `/repos/${owner}/${repo}/issues`,
-    listOptions as any
+    listOptions as any,
+    args.token
   );
 
   logger.debug({ count: issues.length }, 'Issues listed');
@@ -231,6 +240,7 @@ export async function updateIssue(
     state?: 'open' | 'closed';
     due_date?: string;
     unset_due_date?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating issue');
@@ -250,7 +260,8 @@ export async function updateIssue(
 
   const issue = await ctx.client.patch<GiteaIssue>(
     `/repos/${owner}/${repo}/issues/${args.index}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ owner, repo, issue: issue.number }, 'Issue updated successfully');
@@ -281,6 +292,7 @@ export async function commentIssue(
     repo?: string;
     index: number;
     body: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Adding comment to issue');
@@ -293,7 +305,8 @@ export async function commentIssue(
 
   const comment = await ctx.client.post<GiteaComment>(
     `/repos/${owner}/${repo}/issues/${args.index}/comments`,
-    commentOptions
+    commentOptions,
+    args.token
   );
 
   logger.info({ owner, repo, issue: args.index }, 'Comment added successfully');
@@ -323,6 +336,7 @@ export async function closeIssue(
     owner?: string;
     repo?: string;
     index: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Closing issue');
@@ -331,7 +345,8 @@ export async function closeIssue(
 
   const issue = await ctx.client.patch<GiteaIssue>(
     `/repos/${owner}/${repo}/issues/${args.index}`,
-    { state: 'closed' }
+    { state: 'closed' },
+    args.token
   );
 
   logger.info({ owner, repo, issue: issue.number }, 'Issue closed successfully');
@@ -347,5 +362,378 @@ export async function closeIssue(
       html_url: issue.html_url,
       closed_at: issue.closed_at,
     },
+  };
+}
+
+/**
+ * 获取 Issue 依赖列表
+ */
+export async function listIssueDependencies(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    page?: number;
+    limit?: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Listing issue dependencies');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  const params: Record<string, any> = {};
+  if (args.page) params.page = args.page;
+  if (args.limit) params.limit = args.limit;
+
+  const dependencies = await ctx.client.get<GiteaIssue[]>(
+    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
+    Object.keys(params).length > 0 ? params : undefined,
+    args.token
+  );
+
+  logger.debug({ count: dependencies.length }, 'Issue dependencies listed');
+
+  return {
+    success: true,
+    dependencies: dependencies.map((issue) => ({
+      id: issue.id,
+      number: issue.number,
+      title: issue.title,
+      state: issue.state,
+      user: {
+        id: issue.user.id,
+        login: issue.user.login,
+      },
+      html_url: issue.html_url,
+      created_at: issue.created_at,
+      updated_at: issue.updated_at,
+    })),
+    pagination: {
+      page: args.page || 1,
+      limit: args.limit || 30,
+      total: dependencies.length,
+    },
+  };
+}
+
+/**
+ * 添加 Issue 依赖关系
+ * 使当前 Issue 依赖于指定的 Issue
+ */
+export async function addIssueDependency(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    dependencyIndex: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Adding issue dependency');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  // 添加依赖关系
+  // Gitea API 要求 IssueMeta 格式: { owner, repo, index } - 三个字段都是必需的
+  // index 是 Issue Number (如 #33)，不是内部 ID
+  // 即使是同仓库的依赖，也必须显式指定 owner 和 repo
+  const result = await ctx.client.post<GiteaIssue>(
+    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
+    { owner, repo, index: args.dependencyIndex },
+    args.token
+  );
+
+  // 获取依赖 Issue 的详情用于返回
+  const dependencyIssue = await ctx.client.get<GiteaIssue>(
+    `/repos/${owner}/${repo}/issues/${args.dependencyIndex}`,
+    undefined,
+    args.token
+  );
+
+  logger.info(
+    { owner, repo, issue: args.index, dependency: args.dependencyIndex },
+    'Issue dependency added successfully'
+  );
+
+  return {
+    success: true,
+    message: `Issue #${args.index} now depends on #${args.dependencyIndex}`,
+    issue: {
+      id: result.id,
+      number: result.number,
+      title: result.title,
+      state: result.state,
+      html_url: result.html_url,
+    },
+    dependency: {
+      id: dependencyIssue.id,
+      number: dependencyIssue.number,
+      title: dependencyIssue.title,
+      state: dependencyIssue.state,
+      html_url: dependencyIssue.html_url,
+    },
+  };
+}
+
+/**
+ * 移除 Issue 依赖关系
+ */
+export async function removeIssueDependency(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    dependencyIndex: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Removing issue dependency');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  // 移除依赖关系
+  // Gitea API 要求 IssueMeta 格式: { owner, repo, index } - 三个字段都是必需的
+  // index 是 Issue Number (如 #33)，不是内部 ID
+  // 即使是同仓库的依赖，也必须显式指定 owner 和 repo
+  await ctx.client.delete(
+    `/repos/${owner}/${repo}/issues/${args.index}/dependencies`,
+    { owner, repo, index: args.dependencyIndex },
+    args.token
+  );
+
+  logger.info(
+    { owner, repo, issue: args.index, dependency: args.dependencyIndex },
+    'Issue dependency removed successfully'
+  );
+
+  return {
+    success: true,
+    message: `Dependency on #${args.dependencyIndex} removed from Issue #${args.index}`,
+  };
+}
+
+/**
+ * 获取依赖当前 Issue 的其他 Issue 列表（被依赖列表）
+ */
+export async function listIssueBlocks(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    page?: number;
+    limit?: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Listing issues that depend on this issue');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  const params: Record<string, any> = {};
+  if (args.page) params.page = args.page;
+  if (args.limit) params.limit = args.limit;
+
+  const blocks = await ctx.client.get<GiteaIssue[]>(
+    `/repos/${owner}/${repo}/issues/${args.index}/blocks`,
+    Object.keys(params).length > 0 ? params : undefined,
+    args.token
+  );
+
+  logger.debug({ count: blocks.length }, 'Issue blocks listed');
+
+  return {
+    success: true,
+    blocks: blocks.map((issue) => ({
+      id: issue.id,
+      number: issue.number,
+      title: issue.title,
+      state: issue.state,
+      html_url: issue.html_url,
+      user: {
+        id: issue.user.id,
+        login: issue.user.login,
+      },
+      created_at: issue.created_at,
+      updated_at: issue.updated_at,
+    })),
+    count: blocks.length,
+    message: `Found ${blocks.length} issue(s) that depend on #${args.index}`,
+  };
+}
+
+/**
+ * 获取 Issue 评论列表
+ */
+export async function listIssueComments(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    since?: string;
+    before?: string;
+    page?: number;
+    limit?: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Listing issue comments');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  const params: CommentListOptions = {};
+  if (args.since) params.since = args.since;
+  if (args.before) params.before = args.before;
+  if (args.page) params.page = args.page;
+  if (args.limit) params.limit = args.limit;
+
+  const comments = await ctx.client.get<GiteaComment[]>(
+    `/repos/${owner}/${repo}/issues/${args.index}/comments`,
+    Object.keys(params).length > 0 ? (params as any) : undefined,
+    args.token
+  );
+
+  logger.debug({ count: comments.length }, 'Issue comments listed');
+
+  return {
+    success: true,
+    comments: comments.map((comment) => ({
+      id: comment.id,
+      body: comment.body,
+      user: {
+        id: comment.user.id,
+        login: comment.user.login,
+        full_name: comment.user.full_name,
+      },
+      html_url: comment.html_url,
+      created_at: comment.created_at,
+      updated_at: comment.updated_at,
+    })),
+    pagination: {
+      page: args.page || 1,
+      limit: args.limit || 30,
+      total: comments.length,
+    },
+  };
+}
+
+/**
+ * 获取单个评论详情
+ */
+export async function getIssueComment(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    id: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Getting issue comment');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  const comment = await ctx.client.get<GiteaComment>(
+    `/repos/${owner}/${repo}/issues/comments/${args.id}`,
+    undefined,
+    args.token
+  );
+
+  logger.debug({ owner, repo, commentId: comment.id }, 'Issue comment retrieved');
+
+  return {
+    success: true,
+    comment: {
+      id: comment.id,
+      body: comment.body,
+      user: {
+        id: comment.user.id,
+        login: comment.user.login,
+        full_name: comment.user.full_name,
+      },
+      html_url: comment.html_url,
+      issue_url: comment.issue_url,
+      created_at: comment.created_at,
+      updated_at: comment.updated_at,
+    },
+  };
+}
+
+/**
+ * 编辑评论
+ */
+export async function editIssueComment(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    id: number;
+    body: string;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Editing issue comment');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  const updateOptions: UpdateCommentOptions = {
+    body: args.body,
+  };
+
+  const comment = await ctx.client.patch<GiteaComment>(
+    `/repos/${owner}/${repo}/issues/comments/${args.id}`,
+    updateOptions,
+    args.token
+  );
+
+  logger.info({ owner, repo, commentId: comment.id }, 'Issue comment edited successfully');
+
+  return {
+    success: true,
+    comment: {
+      id: comment.id,
+      body: comment.body,
+      user: {
+        id: comment.user.id,
+        login: comment.user.login,
+      },
+      html_url: comment.html_url,
+      updated_at: comment.updated_at,
+    },
+  };
+}
+
+/**
+ * 删除评论
+ */
+export async function deleteIssueComment(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    id: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Deleting issue comment');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  await ctx.client.delete(
+    `/repos/${owner}/${repo}/issues/comments/${args.id}`,
+    undefined,
+    args.token
+  );
+
+  logger.info({ owner, repo, commentId: args.id }, 'Issue comment deleted successfully');
+
+  return {
+    success: true,
+    message: `Comment #${args.id} has been deleted`,
   };
 }

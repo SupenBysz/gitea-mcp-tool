@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as DeployKeyTools from '../tools/deploy-key.js';
 import { ToolContext } from '../types.js';
 
@@ -15,6 +18,7 @@ export function registerDeployKeyTools(mcpServer: McpServer, ctx: ToolContext) {
       inputSchema: z.object({
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -38,6 +42,7 @@ export function registerDeployKeyTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Deploy key ID'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -63,6 +68,7 @@ export function registerDeployKeyTools(mcpServer: McpServer, ctx: ToolContext) {
         title: z.string().min(1).describe('Title/name for this deploy key'),
         key: z.string().min(1).describe('SSH public key content (e.g., "ssh-rsa AAAA...")'),
         read_only: z.boolean().optional().describe('Whether this key has only read access (default: true for deploy keys)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -86,6 +92,7 @@ export function registerDeployKeyTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().int().positive().describe('Deploy key ID to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

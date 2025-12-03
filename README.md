@@ -4,13 +4,14 @@ Gitea API 的 MCP (Model Context Protocol) 服务器，让 AI 助手能够与 Gi
 
 [![npm version](https://img.shields.io/npm/v/gitea-mcp-tool.svg)](https://www.npmjs.com/package/gitea-mcp-tool)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub](https://img.shields.io/badge/GitHub-SupenBysz%2Fgitea--mcp--tool-blue?logo=github)](https://github.com/SupenBysz/gitea-mcp-tool)
 
 ## 特性
 
-- **199 个工具** - 覆盖 99% Gitea API
+- **218 个 MCP 工具** - 覆盖 99% Gitea API + CI/CD 配置
 - **12 个交互式 Prompts** - 引导式操作模板
 - **多客户端支持** - Claude Desktop、Claude CLI、Cline、Cursor、Windsurf
-- **CLI 工具** - `keactl` 命令行工具
+- **CLI 工具** - `keactl` 命令行工具，完整的 Issue/PR/Repo 管理
 
 ## 快速安装
 
@@ -59,6 +60,26 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install
 }
 ```
 
+**通用 (.mcp.json，适用于 Codex/LM Studio 等遵循 MCP 的客户端)** (`.mcp.json` 放在项目根目录):
+
+```json
+{
+  "mcpServers": {
+    "gitea-mcp-tool": {
+      "type": "stdio",
+      "command": "gitea-mcp",
+      "env": {
+        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
+        "GITEA_DEFAULT_OWNER": "Kysion",
+        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
+      }
+    }
+  }
+}
+```
+
+> 在运行前，请在环境变量中提供 `GITEA_API_TOKEN`（或直接在 `.mcp.json` 中填写），否则服务器会因缺少认证而启动失败。
+
 ### 2. 获取 API Token
 
 1. 登录 Gitea → 设置 → 应用
@@ -89,29 +110,49 @@ gitea_wiki_create({ title: "Guide", content: "# 指南\n..." })
 
 ```bash
 # 配置
-keactl config init
+keactl init                    # 交互式初始化
+keactl config init             # 初始化项目配置
 
 # 仓库操作
 keactl repo list
+keactl repo get
+
+# Issue 操作
 keactl issue list --state open
+keactl issue get <index>
 keactl issue create --title "Bug" --body "描述"
+keactl issue update <index> --state closed
+keactl issue close <index>
+
+# Issue 评论操作
+keactl issue comment <index> --body "评论内容"
+keactl issue comments <index>           # 列出评论
+keactl issue comment-get <id>           # 获取评论详情
+keactl issue comment-edit <id> --body "新内容"
+keactl issue comment-delete <id>
+
+# CI/CD 配置
+keactl cicd init               # 初始化 CI/CD 配置
+keactl cicd templates          # 列出可用模板
+keactl cicd status             # 查看配置状态
+keactl cicd validate           # 验证配置
 ```
 
 ## 文档
 
-详细文档请参阅 [Wiki](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki):
+详细文档请参阅 [Wiki](https://github.com/SupenBysz/gitea-mcp-tool/wiki):
 
-- [安装指南](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Installation)
-- [配置说明](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Configuration)
-- [工具列表](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Tools)
-- [Prompts 使用](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Prompts)
-- [CLI 指南](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/CLI)
-- [API 参考](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/API-Reference)
-- [更新日志](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Changelog)
+- [安装指南](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Installation)
+- [配置说明](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Configuration)
+- [工具列表](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Tools)
+- [Prompts 使用](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Prompts)
+- [CLI 指南](https://github.com/SupenBysz/gitea-mcp-tool/wiki/CLI)
+- [API 参考](https://github.com/SupenBysz/gitea-mcp-tool/wiki/API-Reference)
+- [更新日志](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Changelog)
 
 ## 版本
 
-**当前版本**: v1.6.3 | **工具数**: 199 | **API 覆盖**: 99%
+**当前版本**: v1.7.5 | **MCP 工具数**: 218 | **API 覆盖**: 99%
 
 ## 许可证
 
@@ -119,4 +160,4 @@ MIT License
 
 ## 问题反馈
 
-[提交 Issue](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues)
+[提交 Issue](https://github.com/SupenBysz/gitea-mcp-tool/issues)

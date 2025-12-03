@@ -726,6 +726,7 @@ async function saveConfiguration(
           token: state.token!.value,
           username: state.project!.owner,
           createdBy: state.token!.method === 'password' ? 'password' : 'manual',
+          createdAt: new Date().toISOString(),
           isDefault: true,
         });
         tokenId = newToken?.id;
@@ -769,7 +770,7 @@ async function saveConfiguration(
       filesCreated.push(projectConfig.getLocalConfigPath());
     } else if (state.tokenSave!.method === 'env') {
       // Save env variable reference
-      const envVar = state.tokenSave.envVarName || state.token!.name;
+      const envVar = state.tokenSave!.envVarName || state.token!.name;
       projectConfig.createLocalConfig({
         apiTokenEnv: `\${${envVar}}`,
       });

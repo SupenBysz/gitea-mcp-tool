@@ -1,0 +1,103 @@
+name: Publish Beta
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  publish-beta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "Gitea Actions"
+          git config --global user.email "actions@gitea.local"
+
+      - name: Bump beta version
+        id: version
+        run: |
+          # 获取当前版本
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          echo "Current version: $CURRENT_VERSION"
+          echo "Package name: $PACKAGE_NAME"
+
+          # 获取 npm 上已发布的 beta 版本
+          NPM_BETA_VERSIONS=$(npm view "$PACKAGE_NAME" versions --json 2>/dev/null | grep -oP '\d+\.\d+\.\d+-beta\.\d+' || echo "")
+          echo "Existing beta versions on npm: $NPM_BETA_VERSIONS"
+
+          # 计算基础版本号
+          if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
+            BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
+          else
+            # 不是 beta 版本，递增 patch 版本作为基础
+            MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+            MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+            PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3 | cut -d- -f1)
+            NEW_PATCH=$((PATCH + 1))
+            BASE_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+          fi
+          echo "Base version: $BASE_VERSION"
+
+          # 查找该基础版本下最大的 beta 号
+          MAX_BETA=0
+          for v in $NPM_BETA_VERSIONS; do
+            if [[ "$v" == "${BASE_VERSION}-beta."* ]]; then
+              BETA_NUM=$(echo "$v" | grep -oP '(?<=-beta\.)\d+')
+              if [[ "$BETA_NUM" -gt "$MAX_BETA" ]]; then
+                MAX_BETA=$BETA_NUM
+              fi
+            fi
+          done
+          echo "Max beta number for $BASE_VERSION: $MAX_BETA"
+
+          # 生成新版本号
+          NEW_BETA_NUM=$((MAX_BETA + 1))
+          NEW_VERSION="${BASE_VERSION}-beta.${NEW_BETA_NUM}"
+
+          echo "New version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          # 更新 package.json
+          npm version "$NEW_VERSION" --no-git-tag-version
+
+      - name: Publish to npm (beta)
+        run: npm publish --tag beta --registry https://registry.npmjs.org/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit version bump
+        run: |
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }} [skip ci]" || true
+          git push origin dev || true
+
+      - name: Create summary
+        run: |
+          echo "## Beta 版本发布成功 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**版本号**: \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**安装命令**:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "npm install -g gitea-mcp-tool@beta" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

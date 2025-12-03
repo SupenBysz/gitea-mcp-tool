@@ -31,6 +31,7 @@ export async function createProject(
     repo?: string;
     title: string;
     description?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating project');
@@ -46,7 +47,8 @@ export async function createProject(
 
   const project = await ctx.client.post<GiteaProject>(
     `/repos/${owner}/${repo}/projects`,
-    createOptions
+    createOptions,
+    args.token
   );
 
   logger.debug({ project }, 'Received project response');
@@ -96,6 +98,7 @@ export async function getProject(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting project');
@@ -103,7 +106,9 @@ export async function getProject(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   const project = await ctx.client.get<GiteaProject>(
-    `/repos/${owner}/${repo}/projects/${args.id}`
+    `/repos/${owner}/${repo}/projects/${args.id}`,
+    undefined,
+    args.token
   );
 
   logger.debug({ owner, repo, project: project.id }, 'Project retrieved');
@@ -139,6 +144,7 @@ export async function listProjects(
     state?: 'open' | 'closed' | 'all';
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing projects');
@@ -151,7 +157,8 @@ export async function listProjects(
       state: args.state || 'open',
       page: args.page || 1,
       limit: args.limit || 30,
-    }
+    },
+    args.token
   );
 
   logger.debug({ count: projects.length }, 'Projects listed');
@@ -186,6 +193,7 @@ export async function updateProject(
     title?: string;
     description?: string;
     state?: 'open' | 'closed';
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating project');
@@ -200,7 +208,8 @@ export async function updateProject(
 
   const project = await ctx.client.patch<GiteaProject>(
     `/repos/${owner}/${repo}/projects/${args.id}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ owner, repo, project: project.id }, 'Project updated successfully');
@@ -226,13 +235,14 @@ export async function deleteProject(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting project');
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/projects/${args.id}`);
+  await ctx.client.delete(`/repos/${owner}/${repo}/projects/${args.id}`, undefined, args.token);
 
   logger.info({ owner, repo, project: args.id }, 'Project deleted successfully');
 
@@ -251,6 +261,7 @@ export async function listProjectColumns(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing project columns');
@@ -258,7 +269,9 @@ export async function listProjectColumns(
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
   const columns = await ctx.client.get<GiteaProjectColumn[]>(
-    `/repos/${owner}/${repo}/projects/${args.id}/columns`
+    `/repos/${owner}/${repo}/projects/${args.id}/columns`,
+    undefined,
+    args.token
   );
 
   logger.debug({ count: columns.length }, 'Project columns listed');
@@ -287,6 +300,7 @@ export async function createProjectColumn(
     repo?: string;
     id: number;
     title: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating project column');
@@ -295,7 +309,8 @@ export async function createProjectColumn(
 
   const column = await ctx.client.post<GiteaProjectColumn>(
     `/repos/${owner}/${repo}/projects/${args.id}/columns`,
-    { title: args.title }
+    { title: args.title },
+    args.token
   );
 
   logger.info(
@@ -327,6 +342,7 @@ export async function addIssueToProjectColumn(
     projectId: number;
     columnId: number;
     issueIndex: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Adding issue to project column');
@@ -336,7 +352,9 @@ export async function addIssueToProjectColumn(
   try {
     // 首先获取 Issue 的实际 ID（API 需要 issue_id 而不是 issue index）
     const issue = await ctx.client.get<{ id: number }>(
-      `/repos/${owner}/${repo}/issues/${args.issueIndex}`
+      `/repos/${owner}/${repo}/issues/${args.issueIndex}`,
+      undefined,
+      args.token
     );
 
     if (!issue || !issue.id) {
@@ -350,7 +368,8 @@ export async function addIssueToProjectColumn(
     // 参数：issue_id（Issue 的实际 ID，不是 index）
     const result = await ctx.client.post<any>(
       `/repos/${owner}/${repo}/projects/columns/${args.columnId}/issues`,
-      { issue_id: issue.id }
+      { issue_id: issue.id },
+      args.token
     );
 
     logger.info(

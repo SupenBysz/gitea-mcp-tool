@@ -35,6 +35,7 @@ export async function createRepository(
     gitignores?: string;
     license?: string;
     readme?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating repository');
@@ -60,11 +61,12 @@ export async function createRepository(
     // 在组织下创建
     repo = await ctx.client.post<GiteaRepository>(
       `/orgs/${owner}/repos`,
-      createOptions
+      createOptions,
+      args.token
     );
   } else {
     // 在用户下创建
-    repo = await ctx.client.post<GiteaRepository>('/user/repos', createOptions);
+    repo = await ctx.client.post<GiteaRepository>('/user/repos', createOptions, args.token);
   }
 
   logger.info({ owner, repo: repo.name }, 'Repository created successfully');
@@ -94,13 +96,14 @@ export async function getRepository(
   args: {
     owner?: string;
     repo?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting repository');
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
-  const repository = await ctx.client.get<GiteaRepository>(`/repos/${owner}/${repo}`);
+  const repository = await ctx.client.get<GiteaRepository>(`/repos/${owner}/${repo}`, undefined, args.token);
 
   logger.debug({ owner, repo }, 'Repository retrieved');
 
@@ -172,6 +175,7 @@ export async function updateRepository(
     default_merge_style?: 'merge' | 'rebase' | 'rebase-merge' | 'squash';
     default_allow_maintainer_edit?: boolean;
     ignore_whitespace_conflicts?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating repository');
@@ -207,7 +211,8 @@ export async function updateRepository(
 
   const repository = await ctx.client.patch<GiteaRepository>(
     `/repos/${owner}/${repo}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ owner, repo: repository.name }, 'Repository updated successfully');
@@ -274,6 +279,7 @@ export async function listRepositories(
     owner?: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing repositories');
@@ -289,13 +295,13 @@ export async function listRepositories(
     repositories = await ctx.client.get<GiteaRepository[]>(`/users/${owner}/repos`, {
       page,
       limit,
-    });
+    }, args.token);
   } else {
     // 列出当前用户的仓库
     repositories = await ctx.client.get<GiteaRepository[]>('/user/repos', {
       page,
       limit,
-    });
+    }, args.token);
   }
 
   logger.debug({ count: repositories.length }, 'Repositories listed');
@@ -331,13 +337,14 @@ export async function deleteRepository(
   args: {
     owner?: string;
     repo?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting repository');
 
   const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
 
-  await ctx.client.delete(`/repos/${owner}/${repo}`);
+  await ctx.client.delete(`/repos/${owner}/${repo}`, undefined, args.token);
 
   logger.info({ owner, repo }, 'Repository deleted successfully');
 
@@ -363,6 +370,7 @@ export async function searchRepositories(
     order?: 'asc' | 'desc';
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Searching repositories');
@@ -382,7 +390,8 @@ export async function searchRepositories(
 
   const result = await ctx.client.get<{ data: GiteaRepository[]; ok: boolean }>(
     '/repos/search',
-    searchOptions as any
+    searchOptions as any,
+    args.token
   );
 
   logger.debug({ count: result.data.length }, 'Repositories found');

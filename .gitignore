@@ -45,3 +45,6 @@ temp_gitea-mcp-*
 gitea-mcp-v*
 RELEASE_NOTES_*.md
 releases/
+.gitea-mcp.local.json
+.mcp.local.json
+.gitea-mcp.json

@@ -118,20 +118,26 @@ async function loadProjectConfig() {
   try {
     const projectRoot = cwd();
     const projectConfigPath = join(projectRoot, '.gitea-mcp.json');
-    const localConfigPath = join(projectRoot, '.gitea-mcp.local.json');
 
     if (!existsSync(projectConfigPath)) {
       return null;
     }
 
     const projectConfigManager = new ProjectConfigManager(projectRoot);
-    const config = projectConfigManager.loadConfig();
+    const config = projectConfigManager.loadProjectConfig();
+
+    if (!config) {
+      return null;
+    }
+
+    // 加载本地配置获取 token
+    const localConfig = projectConfigManager.loadLocalConfig();
 
     return {
-      giteaUrl: config.giteaUrl,
-      owner: config.owner,
-      repo: config.repo,
-      token: config.token,
+      giteaUrl: config.gitea?.url,
+      owner: config.project?.owner,
+      repo: config.project?.repo,
+      token: localConfig?.gitea?.apiToken,
     };
   } catch (err) {
     // 忽略配置加载错误
@@ -145,18 +151,18 @@ async function loadProjectConfig() {
 async function loadGlobalConfig() {
   try {
     const globalConfigManager = new GlobalConfigManager();
-    const config = globalConfigManager.loadConfig();
+    const defaultServer = globalConfigManager.getDefaultServer();
 
-    // 获取默认服务器
-    if (!config.servers || config.servers.length === 0) {
+    if (!defaultServer) {
       return null;
     }
 
-    const defaultServer = config.servers.find(s => s.isDefault) || config.servers[0];
+    // 获取默认 token
+    const defaultToken = defaultServer.tokens.find(t => t.isDefault) || defaultServer.tokens[0];
 
     return {
       serverUrl: defaultServer.url,
-      token: defaultServer.token,
+      token: defaultToken?.token,
     };
   } catch (err) {
     // 忽略配置加载错误
@@ -193,4 +199,31 @@ export function resolveOwnerRepo(
   }
 
   return { owner, repo };
+}
+
+/**
+ * 同步获取项目配置中的上下文信息（owner/repo）
+ * 用于不需要完整客户端的场景
+ */
+export function getContextFromConfig(): { owner?: string; repo?: string; giteaUrl?: string } {
+  try {
+    const projectRoot = cwd();
+    const projectConfigPath = join(projectRoot, '.gitea-mcp.json');
+
+    if (existsSync(projectConfigPath)) {
+      const projectConfigManager = new ProjectConfigManager(projectRoot);
+      const config = projectConfigManager.loadProjectConfig();
+      if (config) {
+        return {
+          owner: config.project?.owner,
+          repo: config.project?.repo,
+          giteaUrl: config.gitea?.url,
+        };
+      }
+    }
+  } catch {
+    // 忽略错误
+  }
+
+  return {};
 }

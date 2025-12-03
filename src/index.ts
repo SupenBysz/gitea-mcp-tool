@@ -15,7 +15,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { createLogger } from './logger.js';
-import { loadConfigFromEnv, validateConfig } from './config.js';
+import { loadConfig, validateConfig } from './config.js';
 import { GiteaClient } from './gitea-client.js';
 import { ContextManager } from './context-manager.js';
 import { getProjectConfig } from './config/project.js';
@@ -48,7 +48,9 @@ import { registerFollowingTools } from './tools-registry/following-registry.js';
 import { registerTopicsTools } from './tools-registry/topics-registry.js';
 import { registerPackageTools } from './tools-registry/package-registry.js';
 import { registerAdminTools } from './tools-registry/admin-registry.js';
-import { registerAllPrompts } from './prompts/index.js';
+import { registerCICDTools } from './tools-registry/cicd-registry.js';
+import { registerWorkflowTools } from './tools-registry/workflow-registry.js';
+import { registerAllPrompts } from './mcp-prompts/index.js';
 
 const logger = createLogger('mcp-server');
 
@@ -70,7 +72,7 @@ async function main() {
 
     // 1. 加载并验证配置
     logger.info('Loading configuration...');
-    const config = loadConfigFromEnv();
+    const config = loadConfig();
     validateConfig(config);
 
     // 2. 创建 Gitea Client
@@ -155,6 +157,8 @@ async function main() {
     registerTopicsTools(mcpServer, toolContext);
     registerPackageTools(mcpServer, toolContext);
     registerAdminTools(mcpServer, toolContext);
+    registerCICDTools(mcpServer, toolContext);
+    registerWorkflowTools(mcpServer, toolContext);
 
     // 7. 注册 Prompts
     logger.info('Registering prompts...');
@@ -629,6 +633,14 @@ function registerPrompts(mcpServer: McpServer, ctx: ToolContext) {
   // - gitea-mcp-tool:创建Issue (from issue-prompts.ts)
   // - gitea-mcp-tool:创建PR (from pr-prompts.ts)
 }
+
+// 全局错误兜底，防止未捕获异常导致 MCP 连接被关闭（Transport closed）
+process.on('uncaughtException', (err) => {
+  logger.error({ err }, 'Uncaught exception');
+});
+process.on('unhandledRejection', (reason) => {
+  logger.error({ reason }, 'Unhandled rejection');
+});
 
 // 启动服务器
 main();

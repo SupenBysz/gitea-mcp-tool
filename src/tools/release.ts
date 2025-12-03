@@ -23,6 +23,7 @@ export interface ReleaseToolsContext {
 export interface ReleaseParams {
   owner?: string;
   repo?: string;
+  token?: string;
 }
 
 export interface CreateReleaseParams extends ReleaseParams {
@@ -111,6 +112,7 @@ export async function createRelease(
     method: 'POST',
     path: `/repos/${owner}/${repo}/releases`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -131,6 +133,7 @@ export async function getRelease(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/releases/${params.id}`,
+    token: params.token,
   });
 
   return response.data;
@@ -151,6 +154,7 @@ export async function getReleaseByTag(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/releases/tags/${params.tag}`,
+    token: params.token,
   });
 
   return response.data;
@@ -185,6 +189,7 @@ export async function listReleases(
     method: 'GET',
     path: `/repos/${owner}/${repo}/releases`,
     query,
+    token: params.token,
   });
 
   return response.data;
@@ -215,6 +220,7 @@ export async function updateRelease(
     method: 'PATCH',
     path: `/repos/${owner}/${repo}/releases/${params.id}`,
     body,
+    token: params.token,
   });
 
   return response.data;
@@ -235,6 +241,7 @@ export async function deleteRelease(
   await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/releases/${params.id}`,
+    token: params.token,
   });
 
   return { success: true, message: 'Release deleted successfully' };
@@ -255,6 +262,7 @@ export async function listReleaseAttachments(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/releases/${params.id}/assets`,
+    token: params.token,
   });
 
   return response.data;
@@ -278,6 +286,7 @@ export async function getReleaseAttachment(
   const response = await ctx.client.request({
     method: 'GET',
     path: `/repos/${owner}/${repo}/releases/${params.id}/assets/${params.attachment_id}`,
+    token: params.token,
   });
 
   return response.data;
@@ -301,6 +310,7 @@ export async function deleteReleaseAttachment(
   await ctx.client.request({
     method: 'DELETE',
     path: `/repos/${owner}/${repo}/releases/${params.id}/assets/${params.attachment_id}`,
+    token: params.token,
   });
 
   return { success: true, message: 'Release attachment deleted successfully' };

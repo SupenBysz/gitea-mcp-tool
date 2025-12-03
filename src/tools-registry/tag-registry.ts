@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+/** Token 参数 Schema - 用于所有需要鉴权的工具 */
+const tokenSchema = z.string().optional().describe('Optional API token to override default authentication');
 import * as TagTools from '../tools/tag.js';
 import { ToolContext } from '../types.js';
 
@@ -17,6 +20,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number of results (1-based)'),
         limit: z.number().optional().describe('Page size of results'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -42,6 +46,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         tag_name: z.string().min(1).describe('Name of the tag (e.g., "v1.0.0")'),
         target: z.string().optional().describe('Target commit SHA or branch name (defaults to default branch)'),
         message: z.string().optional().describe('Message for annotated tag (leave empty for lightweight tag)'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -65,6 +70,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         tag: z.string().min(1).describe('Tag name (e.g., "v1.0.0")'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -88,6 +94,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         tag: z.string().min(1).describe('Tag name to delete (e.g., "v1.0.0")'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -111,6 +118,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         sha: z.string().min(1).describe('Git object SHA of the annotated tag'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -135,6 +143,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         page: z.number().optional().describe('Page number of results (1-based)'),
         limit: z.number().optional().describe('Page size of results'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -160,6 +169,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         name_pattern: z.string().optional().describe('Pattern to match tag names (e.g., "v*", "release/*")'),
         whitelist_usernames: z.array(z.string()).optional().describe('Usernames allowed to create/delete protected tags'),
         whitelist_teams: z.array(z.string()).optional().describe('Team names allowed to create/delete protected tags'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -183,6 +193,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().describe('ID of the tag protection rule'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -209,6 +220,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         name_pattern: z.string().optional().describe('Pattern to match tag names (e.g., "v*", "release/*")'),
         whitelist_usernames: z.array(z.string()).optional().describe('Usernames allowed to create/delete protected tags'),
         whitelist_teams: z.array(z.string()).optional().describe('Team names allowed to create/delete protected tags'),
+              token: tokenSchema,
       }),
     },
     async (args) => {
@@ -232,6 +244,7 @@ export function registerTagTools(mcpServer: McpServer, ctx: ToolContext) {
         owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
         repo: z.string().optional().describe('Repository name. Uses context if not provided'),
         id: z.number().describe('ID of the tag protection rule to delete'),
+              token: tokenSchema,
       }),
     },
     async (args) => {

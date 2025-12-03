@@ -37,6 +37,7 @@ export async function createRepoLabel(
     description?: string;
     exclusive?: boolean;
     is_archived?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating repository label');
@@ -54,7 +55,8 @@ export async function createRepoLabel(
 
   const label = await ctx.client.post<GiteaLabel>(
     `/repos/${owner}/${repo}/labels`,
-    labelOptions
+    labelOptions,
+    args.token
   );
 
   logger.info({ owner, repo, label: label.name }, 'Repository label created successfully');
@@ -83,6 +85,7 @@ export async function listRepoLabels(
     repo?: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing repository labels');
@@ -93,7 +96,7 @@ export async function listRepoLabels(
   const labels = await ctx.client.get<GiteaLabel[]>(`/repos/${owner}/${repo}/labels`, {
     page: args.page || 1,
     limit: args.limit || 30,
-  });
+  }, args.token);
 
   logger.debug({ count: labels.length }, 'Repository labels listed');
 
@@ -125,6 +128,7 @@ export async function getRepoLabel(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting repository label');
@@ -132,7 +136,7 @@ export async function getRepoLabel(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  const label = await ctx.client.get<GiteaLabel>(`/repos/${owner}/${repo}/labels/${args.id}`);
+  const label = await ctx.client.get<GiteaLabel>(`/repos/${owner}/${repo}/labels/${args.id}`, undefined, args.token);
 
   logger.debug({ label: label.name }, 'Repository label retrieved');
 
@@ -164,6 +168,7 @@ export async function updateRepoLabel(
     description?: string;
     exclusive?: boolean;
     is_archived?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating repository label');
@@ -181,7 +186,8 @@ export async function updateRepoLabel(
 
   const label = await ctx.client.patch<GiteaLabel>(
     `/repos/${owner}/${repo}/labels/${args.id}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ owner, repo, label: label.name }, 'Repository label updated successfully');
@@ -209,6 +215,7 @@ export async function deleteRepoLabel(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting repository label');
@@ -216,7 +223,7 @@ export async function deleteRepoLabel(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/labels/${args.id}`);
+  await ctx.client.delete(`/repos/${owner}/${repo}/labels/${args.id}`, undefined, args.token);
 
   logger.info({ owner, repo, label_id: args.id }, 'Repository label deleted successfully');
 
@@ -242,6 +249,7 @@ export async function createOrgLabel(
     description?: string;
     exclusive?: boolean;
     is_archived?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating organization label');
@@ -256,7 +264,8 @@ export async function createOrgLabel(
 
   const label = await ctx.client.post<GiteaLabel>(
     `/orgs/${args.org}/labels`,
-    labelOptions
+    labelOptions,
+    args.token
   );
 
   logger.info({ org: args.org, label: label.name }, 'Organization label created successfully');
@@ -284,6 +293,7 @@ export async function listOrgLabels(
     org: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing organization labels');
@@ -291,7 +301,7 @@ export async function listOrgLabels(
   const labels = await ctx.client.get<GiteaLabel[]>(`/orgs/${args.org}/labels`, {
     page: args.page || 1,
     limit: args.limit || 30,
-  });
+  }, args.token);
 
   logger.debug({ count: labels.length }, 'Organization labels listed');
 
@@ -322,11 +332,12 @@ export async function getOrgLabel(
   args: {
     org: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting organization label');
 
-  const label = await ctx.client.get<GiteaLabel>(`/orgs/${args.org}/labels/${args.id}`);
+  const label = await ctx.client.get<GiteaLabel>(`/orgs/${args.org}/labels/${args.id}`, undefined, args.token);
 
   logger.debug({ label: label.name }, 'Organization label retrieved');
 
@@ -357,6 +368,7 @@ export async function updateOrgLabel(
     description?: string;
     exclusive?: boolean;
     is_archived?: boolean;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating organization label');
@@ -371,7 +383,8 @@ export async function updateOrgLabel(
 
   const label = await ctx.client.patch<GiteaLabel>(
     `/orgs/${args.org}/labels/${args.id}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ org: args.org, label: label.name }, 'Organization label updated successfully');
@@ -398,11 +411,12 @@ export async function deleteOrgLabel(
   args: {
     org: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting organization label');
 
-  await ctx.client.delete(`/orgs/${args.org}/labels/${args.id}`);
+  await ctx.client.delete(`/orgs/${args.org}/labels/${args.id}`, undefined, args.token);
 
   logger.info({ org: args.org, label_id: args.id }, 'Organization label deleted successfully');
 
@@ -426,6 +440,7 @@ export async function addIssueLabels(
     repo?: string;
     index: number;
     labels: number[];
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Adding labels to issue');
@@ -435,7 +450,8 @@ export async function addIssueLabels(
 
   const labels = await ctx.client.post<GiteaLabel[]>(
     `/repos/${owner}/${repo}/issues/${args.index}/labels`,
-    { labels: args.labels }
+    { labels: args.labels },
+    args.token
   );
 
   logger.info(
@@ -464,6 +480,7 @@ export async function replaceIssueLabels(
     repo?: string;
     index: number;
     labels: number[];
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Replacing issue labels');
@@ -473,7 +490,8 @@ export async function replaceIssueLabels(
 
   const labels = await ctx.client.put<GiteaLabel[]>(
     `/repos/${owner}/${repo}/issues/${args.index}/labels`,
-    { labels: args.labels }
+    { labels: args.labels },
+    args.token
   );
 
   logger.info(
@@ -502,6 +520,7 @@ export async function removeIssueLabel(
     repo?: string;
     index: number;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Removing label from issue');
@@ -509,7 +528,7 @@ export async function removeIssueLabel(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels/${args.id}`);
+  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels/${args.id}`, undefined, args.token);
 
   logger.info(
     { owner, repo, issue: args.index, label_id: args.id },
@@ -531,6 +550,7 @@ export async function clearIssueLabels(
     owner?: string;
     repo?: string;
     index: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Clearing all labels from issue');
@@ -538,7 +558,7 @@ export async function clearIssueLabels(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels`);
+  await ctx.client.delete(`/repos/${owner}/${repo}/issues/${args.index}/labels`, undefined, args.token);
 
   logger.info(
     { owner, repo, issue: args.index },

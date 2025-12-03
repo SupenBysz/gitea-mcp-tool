@@ -43,6 +43,7 @@ export async function createRepoWebhook(
     active?: boolean;
     branch_filter?: string;
     authorization_header?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating repository webhook');
@@ -61,7 +62,8 @@ export async function createRepoWebhook(
 
   const webhook = await ctx.client.post<GiteaWebhook>(
     `/repos/${owner}/${repo}/hooks`,
-    webhookOptions
+    webhookOptions,
+    args.token
   );
 
   logger.info({ owner, repo, webhook_id: webhook.id, type: webhook.type }, 'Repository webhook created successfully');
@@ -91,6 +93,7 @@ export async function listRepoWebhooks(
     repo?: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing repository webhooks');
@@ -101,7 +104,7 @@ export async function listRepoWebhooks(
   const webhooks = await ctx.client.get<GiteaWebhook[]>(`/repos/${owner}/${repo}/hooks`, {
     page: args.page || 1,
     limit: args.limit || 30,
-  });
+  }, args.token);
 
   logger.debug({ count: webhooks.length }, 'Repository webhooks listed');
 
@@ -134,6 +137,7 @@ export async function getRepoWebhook(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting repository webhook');
@@ -141,7 +145,7 @@ export async function getRepoWebhook(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  const webhook = await ctx.client.get<GiteaWebhook>(`/repos/${owner}/${repo}/hooks/${args.id}`);
+  const webhook = await ctx.client.get<GiteaWebhook>(`/repos/${owner}/${repo}/hooks/${args.id}`, undefined, args.token);
 
   logger.debug({ webhook_id: webhook.id, type: webhook.type }, 'Repository webhook retrieved');
 
@@ -175,6 +179,7 @@ export async function updateRepoWebhook(
     active?: boolean;
     branch_filter?: string;
     authorization_header?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating repository webhook');
@@ -192,7 +197,8 @@ export async function updateRepoWebhook(
 
   const webhook = await ctx.client.patch<GiteaWebhook>(
     `/repos/${owner}/${repo}/hooks/${args.id}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ owner, repo, webhook_id: webhook.id }, 'Repository webhook updated successfully');
@@ -220,6 +226,7 @@ export async function deleteRepoWebhook(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting repository webhook');
@@ -227,7 +234,7 @@ export async function deleteRepoWebhook(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.delete(`/repos/${owner}/${repo}/hooks/${args.id}`);
+  await ctx.client.delete(`/repos/${owner}/${repo}/hooks/${args.id}`, undefined, args.token);
 
   logger.info({ owner, repo, webhook_id: args.id }, 'Repository webhook deleted successfully');
 
@@ -246,6 +253,7 @@ export async function testRepoWebhook(
     owner?: string;
     repo?: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Testing repository webhook');
@@ -253,7 +261,7 @@ export async function testRepoWebhook(
   const owner = args.owner || ctx.contextManager.getOwner();
   const repo = args.repo || ctx.contextManager.getRepo();
 
-  await ctx.client.post(`/repos/${owner}/${repo}/hooks/${args.id}/tests`, {});
+  await ctx.client.post(`/repos/${owner}/${repo}/hooks/${args.id}/tests`, {}, args.token);
 
   logger.info({ owner, repo, webhook_id: args.id }, 'Repository webhook test triggered successfully');
 
@@ -285,6 +293,7 @@ export async function createOrgWebhook(
     active?: boolean;
     branch_filter?: string;
     authorization_header?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Creating organization webhook');
@@ -300,7 +309,8 @@ export async function createOrgWebhook(
 
   const webhook = await ctx.client.post<GiteaWebhook>(
     `/orgs/${args.org}/hooks`,
-    webhookOptions
+    webhookOptions,
+    args.token
   );
 
   logger.info({ org: args.org, webhook_id: webhook.id, type: webhook.type }, 'Organization webhook created successfully');
@@ -329,6 +339,7 @@ export async function listOrgWebhooks(
     org: string;
     page?: number;
     limit?: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Listing organization webhooks');
@@ -336,7 +347,7 @@ export async function listOrgWebhooks(
   const webhooks = await ctx.client.get<GiteaWebhook[]>(`/orgs/${args.org}/hooks`, {
     page: args.page || 1,
     limit: args.limit || 30,
-  });
+  }, args.token);
 
   logger.debug({ count: webhooks.length }, 'Organization webhooks listed');
 
@@ -368,11 +379,12 @@ export async function getOrgWebhook(
   args: {
     org: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Getting organization webhook');
 
-  const webhook = await ctx.client.get<GiteaWebhook>(`/orgs/${args.org}/hooks/${args.id}`);
+  const webhook = await ctx.client.get<GiteaWebhook>(`/orgs/${args.org}/hooks/${args.id}`, undefined, args.token);
 
   logger.debug({ webhook_id: webhook.id, type: webhook.type }, 'Organization webhook retrieved');
 
@@ -405,6 +417,7 @@ export async function updateOrgWebhook(
     active?: boolean;
     branch_filter?: string;
     authorization_header?: string;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Updating organization webhook');
@@ -419,7 +432,8 @@ export async function updateOrgWebhook(
 
   const webhook = await ctx.client.patch<GiteaWebhook>(
     `/orgs/${args.org}/hooks/${args.id}`,
-    updateOptions
+    updateOptions,
+    args.token
   );
 
   logger.info({ org: args.org, webhook_id: webhook.id }, 'Organization webhook updated successfully');
@@ -446,11 +460,12 @@ export async function deleteOrgWebhook(
   args: {
     org: string;
     id: number;
+    token?: string;
   }
 ) {
   logger.debug({ args }, 'Deleting organization webhook');
 
-  await ctx.client.delete(`/orgs/${args.org}/hooks/${args.id}`);
+  await ctx.client.delete(`/orgs/${args.org}/hooks/${args.id}`, undefined, args.token);
 
   logger.info({ org: args.org, webhook_id: args.id }, 'Organization webhook deleted successfully');
 

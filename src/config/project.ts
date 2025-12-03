@@ -215,6 +215,7 @@ export class ProjectConfigManager {
     project: ProjectConfig | null;
     local: LocalConfig | null;
     url?: string;
+    serverRef?: string;
     owner?: string;
     repo?: string;
     org?: string;
@@ -231,6 +232,7 @@ export class ProjectConfigManager {
       local,
       // Server info (project config)
       url: project?.gitea.url,
+      serverRef: project?.gitea.serverRef,
       // Project info (project config, overridden by local)
       owner: local?.overrides?.owner || project?.project.owner,
       repo: local?.overrides?.repo || project?.project.repo,

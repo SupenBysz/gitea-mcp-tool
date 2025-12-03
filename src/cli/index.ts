@@ -10,6 +10,9 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
+import { createInitCommand } from './commands/init/index.js';
+import { createCICDCommand } from './commands/cicd/index.js';
+import { createWorkflowCommand } from './commands/workflow/index.js';
 
 // 获取 package.json 的版本信息
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +34,27 @@ program
   .option('-r, --repo <repo>', '仓库名称')
   .option('--json', '以 JSON 格式输出结果')
   .option('--no-color', '禁用彩色输出');
+
+// Help 头部显示版本信息
+program.addHelpText('beforeAll', `
+◆ keactl v${packageJson.version} - Gitea Command Line Tool
+`);
+
+// Help 尾部显示仓库链接
+program.addHelpText('afterAll', `
+GitHub: https://github.com/SupenBysz/gitea-mcp-tool
+Wiki:   https://github.com/SupenBysz/gitea-mcp-tool/wiki
+Issues: https://github.com/SupenBysz/gitea-mcp-tool/issues
+`);
+
+// 初始化命令 (放在最前面，最常用)
+program.addCommand(createInitCommand());
+
+// CI/CD 管理命令
+program.addCommand(createCICDCommand());
+
+// Issue 工作流管理命令
+program.addCommand(createWorkflowCommand());
 
 // 上下文管理命令
 program
@@ -217,6 +241,53 @@ program
       .action(async (index, options) => {
         const { issueComment } = await import('./commands/issue.js');
         await issueComment(parseInt(index), { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('comments')
+      .description('列出 Issue 评论')
+      .argument('<index>', 'Issue 编号')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('-l, --limit <number>', '每页数量', '30')
+      .option('-p, --page <number>', '页码', '1')
+      .action(async (index, options) => {
+        const { issueCommentsList } = await import('./commands/issue.js');
+        await issueCommentsList(parseInt(index), { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('comment-get')
+      .description('获取评论详情')
+      .argument('<id>', '评论 ID')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (id, options) => {
+        const { issueCommentGet } = await import('./commands/issue.js');
+        await issueCommentGet(parseInt(id), { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('comment-edit')
+      .description('编辑评论')
+      .argument('<id>', '评论 ID')
+      .requiredOption('-b, --body <body>', '新评论内容')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (id, options) => {
+        const { issueCommentEdit } = await import('./commands/issue.js');
+        await issueCommentEdit(parseInt(id), { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('comment-delete')
+      .description('删除评论')
+      .argument('<id>', '评论 ID')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (id, options) => {
+        const { issueCommentDelete } = await import('./commands/issue.js');
+        await issueCommentDelete(parseInt(id), { ...program.opts(), ...options });
       })
   );
 

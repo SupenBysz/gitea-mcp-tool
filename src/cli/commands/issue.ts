@@ -11,6 +11,10 @@ import {
   updateIssue,
   closeIssue,
   commentIssue,
+  listIssueComments,
+  getIssueComment,
+  editIssueComment,
+  deleteIssueComment,
 } from '../../tools/issue.js';
 
 /**
@@ -36,12 +40,12 @@ export async function issueList(options: ClientOptions & {
       page: parseInt(options.page || '1'),
     });
 
-    if (result.length === 0) {
+    if (result.issues.length === 0) {
       info('没有找到 Issues', options);
       return;
     }
 
-    const issues = result.map((issue: any) => ({
+    const issues = result.issues.map((issue: any) => ({
       '#': issue.number,
       title: issue.title,
       state: issue.state,
@@ -70,20 +74,21 @@ export async function issueGet(index: number, options: ClientOptions & {
     const { owner, repo } = resolveOwnerRepo(contextManager, options);
 
     const result = await getIssue({ client, contextManager }, { owner, repo, index });
+    const issue = result.issue;
 
     outputDetails({
-      number: result.number,
-      title: result.title,
-      state: result.state,
-      author: result.user?.login || '-',
-      assignees: result.assignees?.map((a: any) => a.login).join(', ') || '-',
-      labels: result.labels?.map((l: any) => l.name).join(', ') || '-',
-      milestone: result.milestone?.title || '-',
-      comments: result.comments,
-      created: result.created_at?.split('T')[0],
-      updated: result.updated_at?.split('T')[0],
-      body: result.body || '(无内容)',
-      url: result.html_url,
+      number: issue.number,
+      title: issue.title,
+      state: issue.state,
+      author: issue.user?.login || '-',
+      assignees: issue.assignees?.map((a: any) => a.login).join(', ') || '-',
+      labels: issue.labels?.map((l: any) => l.name).join(', ') || '-',
+      milestone: issue.milestone?.title || '-',
+      comments: issue.comments,
+      created: issue.created_at?.split('T')[0],
+      updated: issue.updated_at?.split('T')[0],
+      body: issue.body || '(无内容)',
+      url: issue.html_url,
     }, options);
   } catch (err: any) {
     error(`获取 Issue 详情失败: ${err.message}`);
@@ -116,11 +121,11 @@ export async function issueCreate(options: ClientOptions & {
       labels: options.labels?.map(id => parseInt(id)),
     });
 
-    success(`Issue 创建成功: #${result.number}`, options);
+    success(`Issue 创建成功: #${result.issue.number}`, options);
     outputDetails({
-      number: result.number,
-      title: result.title,
-      url: result.html_url,
+      number: result.issue.number,
+      title: result.issue.title,
+      url: result.issue.html_url,
     }, options);
   } catch (err: any) {
     error(`创建 Issue 失败: ${err.message}`);
@@ -152,11 +157,11 @@ export async function issueUpdate(index: number, options: ClientOptions & {
       state: options.state as 'open' | 'closed',
     });
 
-    success(`Issue 更新成功: #${result.number}`, options);
+    success(`Issue 更新成功: #${result.issue.number}`, options);
     outputDetails({
-      number: result.number,
-      title: result.title,
-      state: result.state,
+      number: result.issue.number,
+      title: result.issue.title,
+      state: result.issue.state,
     }, options);
   } catch (err: any) {
     error(`更新 Issue 失败: ${err.message}`);
@@ -177,7 +182,7 @@ export async function issueClose(index: number, options: ClientOptions & {
     const { owner, repo } = resolveOwnerRepo(contextManager, options);
 
     const result = await closeIssue({ client, contextManager }, { owner, repo, index });
-    success(`Issue #${result.number} 已关闭`, options);
+    success(`Issue #${result.issue.number} 已关闭`, options);
   } catch (err: any) {
     error(`关闭 Issue 失败: ${err.message}`);
     process.exit(1);
@@ -206,13 +211,135 @@ export async function issueComment(index: number, options: ClientOptions & {
 
     success(`评论添加成功`, options);
     outputDetails({
-      id: result.id,
-      author: result.user?.login || '-',
-      body: result.body,
-      created: result.created_at?.split('T')[0],
+      id: result.comment.id,
+      author: result.comment.user?.login || '-',
+      body: result.comment.body,
+      created: result.comment.created_at?.split('T')[0],
     }, options);
   } catch (err: any) {
     error(`添加评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 列出 Issue 评论
+ */
+export async function issueCommentsList(index: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  limit?: string;
+  page?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await listIssueComments({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      limit: parseInt(options.limit || '30'),
+      page: parseInt(options.page || '1'),
+    });
+
+    if (result.comments.length === 0) {
+      info(`Issue #${index} 没有评论`, options);
+      return;
+    }
+
+    const comments = result.comments.map((comment: any) => ({
+      'ID': comment.id,
+      author: comment.user?.login || '-',
+      body: comment.body.length > 50 ? comment.body.substring(0, 50) + '...' : comment.body,
+      created: comment.created_at?.split('T')[0] || '-',
+    }));
+
+    outputList(comments, options);
+  } catch (err: any) {
+    error(`列出评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 获取评论详情
+ */
+export async function issueCommentGet(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await getIssueComment({ client, contextManager }, { owner, repo, id });
+    const comment = result.comment;
+
+    outputDetails({
+      id: comment.id,
+      author: comment.user?.login || '-',
+      body: comment.body,
+      created: comment.created_at?.split('T')[0],
+      updated: comment.updated_at?.split('T')[0],
+      url: comment.html_url,
+    }, options);
+  } catch (err: any) {
+    error(`获取评论详情失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 编辑评论
+ */
+export async function issueCommentEdit(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  body: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await editIssueComment({ client, contextManager }, {
+      owner,
+      repo,
+      id,
+      body: options.body,
+    });
+
+    success(`评论 #${result.comment.id} 编辑成功`, options);
+    outputDetails({
+      id: result.comment.id,
+      body: result.comment.body,
+      updated: result.comment.updated_at?.split('T')[0],
+    }, options);
+  } catch (err: any) {
+    error(`编辑评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 删除评论
+ */
+export async function issueCommentDelete(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    await deleteIssueComment({ client, contextManager }, { owner, repo, id });
+    success(`评论 #${id} 已删除`, options);
+  } catch (err: any) {
+    error(`删除评论失败: ${err.message}`);
     process.exit(1);
   }
 }
