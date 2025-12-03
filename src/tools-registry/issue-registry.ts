@@ -305,6 +305,37 @@ export function registerIssueTools(mcpServer: McpServer, ctx: ToolContext) {
     }
   );
 
+  // gitea_issue_blocks_list - 获取依赖当前 Issue 的其他 Issue 列表
+  mcpServer.registerTool(
+    'gitea_issue_blocks_list',
+    {
+      title: '获取被依赖列表',
+      description: 'List all issues that depend on this issue (reverse dependency lookup)',
+      inputSchema: z.object({
+        owner: z.string().optional().describe('Repository owner. Uses context if not provided'),
+        repo: z.string().optional().describe('Repository name. Uses context if not provided'),
+        index: z.number().int().positive().describe('Issue index number'),
+        page: z.number().optional().describe('Page number (default: 1)'),
+        limit: z.number().optional().describe('Items per page (default: 30)'),
+        token: tokenSchema,
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await IssueTools.listIssueBlocks(toolsContext, args as any);
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
   // gitea_issue_comments_list - 获取 Issue 评论列表
   mcpServer.registerTool(
     'gitea_issue_comments_list',
