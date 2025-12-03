@@ -131,10 +131,30 @@ jobs:
           # 更新 package.json
           npm version "$NEW_VERSION" --no-git-tag-version
 
-      - name: Update README version
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh || true
+
+      - name: Update CHANGELOG
         run: |
           NEW_VERSION="${{ steps.version.outputs.version }}"
+          echo "正在更新 CHANGELOG..."
+          if [ -f scripts/update-changelog.sh ]; then
+            ./scripts/update-changelog.sh "$NEW_VERSION"
+          else
+            echo "update-changelog.sh 不存在，跳过"
+          fi
+
+      - name: Update README version and tool count
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+
+          # 更新版本号
           sed -i "s/\*\*当前版本\*\*: v[0-9.]*/**当前版本**: v${NEW_VERSION}/" README.md || true
+
+          # 更新工具数量
+          if [ -f scripts/count-tools.sh ]; then
+            ./scripts/count-tools.sh --update
+          fi
 
       - name: Publish to npm
         run: npm publish --tag latest --registry https://registry.npmjs.org/
@@ -144,10 +164,10 @@ jobs:
       - name: Commit and tag
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          git add package.json README.md
+          git add package.json README.md CHANGELOG.md
           git commit -m "chore: release v${VERSION} [skip ci]" || true
           git tag -a "v${VERSION}" -m "Release v${VERSION}"
-          git push origin main --tags || true
+          git push origin release --tags || true
 
       - name: Create Gitea Release
         uses: https://gitea.com/actions/release-action@main
@@ -167,7 +187,7 @@ jobs:
             ```
 
             ---
-            查看完整更新日志: [Changelog](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/wiki/Changelog)
+            查看完整更新日志: [Changelog](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Changelog)
           tag_name: "v${{ steps.version.outputs.version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
