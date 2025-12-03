@@ -8,7 +8,7 @@ Gitea API 的 MCP (Model Context Protocol) 服务器，让 AI 助手能够与 Gi
 
 ## 特性
 
-- **217 个 MCP 工具** - 覆盖 99% Gitea API + CI/CD 配置
+- **218 个 MCP 工具** - 覆盖 99% Gitea API + CI/CD 配置
 - **12 个交互式 Prompts** - 引导式操作模板
 - **多客户端支持** - Claude Desktop、Claude CLI、Cline、Cursor、Windsurf
 - **CLI 工具** - `keactl` 命令行工具，完整的 Issue/PR/Repo 管理
@@ -152,7 +152,7 @@ keactl cicd validate           # 验证配置
 
 ## 版本
 
-**当前版本**: v1.7.5 | **MCP 工具数**: 217 | **API 覆盖**: 99%
+**当前版本**: v1.7.5 | **MCP 工具数**: 218 | **API 覆盖**: 99%
 
 ## 许可证
 
