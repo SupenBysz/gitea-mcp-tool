@@ -517,6 +517,56 @@ export async function removeIssueDependency(
 }
 
 /**
+ * 获取依赖当前 Issue 的其他 Issue 列表（被依赖列表）
+ */
+export async function listIssueBlocks(
+  ctx: IssueToolsContext,
+  args: {
+    owner?: string;
+    repo?: string;
+    index: number;
+    page?: number;
+    limit?: number;
+    token?: string;
+  }
+) {
+  logger.debug({ args }, 'Listing issues that depend on this issue');
+
+  const { owner, repo } = ctx.contextManager.resolveOwnerRepo(args.owner, args.repo);
+
+  const params: Record<string, any> = {};
+  if (args.page) params.page = args.page;
+  if (args.limit) params.limit = args.limit;
+
+  const blocks = await ctx.client.get<GiteaIssue[]>(
+    `/repos/${owner}/${repo}/issues/${args.index}/blocks`,
+    Object.keys(params).length > 0 ? params : undefined,
+    args.token
+  );
+
+  logger.debug({ count: blocks.length }, 'Issue blocks listed');
+
+  return {
+    success: true,
+    blocks: blocks.map((issue) => ({
+      id: issue.id,
+      number: issue.number,
+      title: issue.title,
+      state: issue.state,
+      html_url: issue.html_url,
+      user: {
+        id: issue.user.id,
+        login: issue.user.login,
+      },
+      created_at: issue.created_at,
+      updated_at: issue.updated_at,
+    })),
+    count: blocks.length,
+    message: `Found ${blocks.length} issue(s) that depend on #${args.index}`,
+  };
+}
+
+/**
  * 获取 Issue 评论列表
  */
 export async function listIssueComments(
