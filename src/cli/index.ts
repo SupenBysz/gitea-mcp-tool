@@ -435,6 +435,19 @@ program
       })
   );
 
+// 升级命令 (顶层命令，方便使用)
+program
+  .command('upgrade')
+  .description('检查并升级到新版本')
+  .argument('[version]', '指定版本号（如 1.7.5）')
+  .option('-b, --beta', '升级到 beta 版本')
+  .option('-c, --check', '仅检查版本，不执行升级')
+  .option('-y, --yes', '跳过确认，直接执行')
+  .action(async (version, options) => {
+    const { upgrade } = await import('./commands/upgrade.js');
+    await upgrade(version, { ...program.opts(), ...options });
+  });
+
 // 配置管理命令
 program
   .command('config')
