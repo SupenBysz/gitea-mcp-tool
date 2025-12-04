@@ -396,6 +396,110 @@ program
       })
   );
 
+// Wiki 管理命令
+program
+  .command('wiki')
+  .description('Wiki 页面管理')
+  .addCommand(
+    new Command('list')
+      .description('列出 Wiki 页面')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('-l, --limit <number>', '每页数量', '30')
+      .option('-p, --page <number>', '页码', '1')
+      .action(async (options) => {
+        const { wikiList } = await import('./commands/wiki.js');
+        await wikiList({ ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('get')
+      .description('获取 Wiki 页面内容')
+      .argument('<page>', '页面名称')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (page, options) => {
+        const { wikiGet } = await import('./commands/wiki.js');
+        await wikiGet(page, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('create')
+      .description('创建 Wiki 页面')
+      .requiredOption('-t, --title <title>', '页面标题')
+      .requiredOption('-c, --content <content>', '页面内容 (Markdown)')
+      .option('-m, --message <message>', '提交信息')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (options) => {
+        const { wikiCreate } = await import('./commands/wiki.js');
+        await wikiCreate({ ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('update')
+      .description('更新 Wiki 页面')
+      .argument('<page>', '页面名称')
+      .option('-t, --title <title>', '新标题')
+      .option('-c, --content <content>', '新内容 (Markdown)')
+      .option('-m, --message <message>', '提交信息')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (page, options) => {
+        const { wikiUpdate } = await import('./commands/wiki.js');
+        await wikiUpdate(page, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('delete')
+      .description('删除 Wiki 页面')
+      .argument('<page>', '页面名称')
+      .option('-y, --yes', '跳过确认')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (page, options) => {
+        const { wikiDelete } = await import('./commands/wiki.js');
+        await wikiDelete(page, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('search')
+      .description('搜索 Wiki 页面')
+      .argument('<query>', '搜索关键词')
+      .option('-l, --limit <number>', '结果数量', '20')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (query, options) => {
+        const { wikiSearch } = await import('./commands/wiki.js');
+        await wikiSearch(query, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('revisions')
+      .description('查看 Wiki 页面修订历史')
+      .argument('<page>', '页面名称')
+      .option('-l, --limit <number>', '每页数量', '20')
+      .option('-p, --page <number>', '页码', '1')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (page, options) => {
+        const { wikiRevisions } = await import('./commands/wiki.js');
+        await wikiRevisions(page, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('revision-get')
+      .description('获取 Wiki 页面特定版本')
+      .argument('<page>', '页面名称')
+      .argument('<revision>', '版本 SHA')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (page, revision, options) => {
+        const { wikiRevisionGet } = await import('./commands/wiki.js');
+        await wikiRevisionGet(page, revision, { ...program.opts(), ...options });
+      })
+  );
+
 // 项目看板管理命令
 program
   .command('project')
