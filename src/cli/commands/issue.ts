@@ -15,6 +15,10 @@ import {
   getIssueComment,
   editIssueComment,
   deleteIssueComment,
+  listIssueDependencies,
+  addIssueDependency,
+  removeIssueDependency,
+  listIssueBlocks,
 } from '../../tools/issue.js';
 
 /**
@@ -340,6 +344,146 @@ export async function issueCommentDelete(id: number, options: ClientOptions & {
     success(`评论 #${id} 已删除`, options);
   } catch (err: any) {
     error(`删除评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 列出 Issue 依赖列表
+ */
+export async function issueDeps(index: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  limit?: string;
+  page?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await listIssueDependencies({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      limit: parseInt(options.limit || '30'),
+      page: parseInt(options.page || '1'),
+    });
+
+    if (result.dependencies.length === 0) {
+      info(`Issue #${index} 没有依赖其他 Issue`, options);
+      return;
+    }
+
+    const deps = result.dependencies.map((dep: any) => ({
+      '#': dep.number,
+      title: dep.title,
+      state: dep.state,
+      author: dep.user?.login || '-',
+      updated: dep.updated_at?.split('T')[0] || '-',
+    }));
+
+    outputList(deps, options);
+  } catch (err: any) {
+    error(`获取依赖列表失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 添加 Issue 依赖
+ */
+export async function issueDepAdd(index: number, dependencyIndex: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await addIssueDependency({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      dependencyIndex,
+    });
+
+    success(`依赖添加成功: Issue #${index} 现在依赖 #${dependencyIndex}`, options);
+    outputDetails({
+      issue: `#${result.issue.number} - ${result.issue.title}`,
+      dependency: `#${result.dependency.number} - ${result.dependency.title}`,
+    }, options);
+  } catch (err: any) {
+    error(`添加依赖失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 移除 Issue 依赖
+ */
+export async function issueDepRemove(index: number, dependencyIndex: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    await removeIssueDependency({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      dependencyIndex,
+    });
+
+    success(`依赖移除成功: Issue #${index} 不再依赖 #${dependencyIndex}`, options);
+  } catch (err: any) {
+    error(`移除依赖失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 列出依赖当前 Issue 的其他 Issue（被依赖列表/反向查询）
+ */
+export async function issueBlocks(index: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  limit?: string;
+  page?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await listIssueBlocks({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      limit: parseInt(options.limit || '30'),
+      page: parseInt(options.page || '1'),
+    });
+
+    if (result.blocks.length === 0) {
+      info(`没有其他 Issue 依赖 #${index}`, options);
+      return;
+    }
+
+    const blocks = result.blocks.map((block: any) => ({
+      '#': block.number,
+      title: block.title,
+      state: block.state,
+      author: block.user?.login || '-',
+      updated: block.updated_at?.split('T')[0] || '-',
+    }));
+
+    outputList(blocks, options);
+  } catch (err: any) {
+    error(`获取被依赖列表失败: ${err.message}`);
     process.exit(1);
   }
 }

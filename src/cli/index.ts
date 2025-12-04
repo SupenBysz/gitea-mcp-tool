@@ -289,6 +289,56 @@ program
         const { issueCommentDelete } = await import('./commands/issue.js');
         await issueCommentDelete(parseInt(id), { ...program.opts(), ...options });
       })
+  )
+  .addCommand(
+    new Command('deps')
+      .description('查看 Issue 依赖列表')
+      .argument('<index>', 'Issue 编号')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('-l, --limit <number>', '每页数量', '30')
+      .option('-p, --page <number>', '页码', '1')
+      .action(async (index, options) => {
+        const { issueDeps } = await import('./commands/issue.js');
+        await issueDeps(parseInt(index), { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('dep-add')
+      .description('添加 Issue 依赖关系')
+      .argument('<index>', 'Issue 编号')
+      .argument('<dependency-index>', '依赖的 Issue 编号')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (index, dependencyIndex, options) => {
+        const { issueDepAdd } = await import('./commands/issue.js');
+        await issueDepAdd(parseInt(index), parseInt(dependencyIndex), { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('dep-remove')
+      .description('移除 Issue 依赖关系')
+      .argument('<index>', 'Issue 编号')
+      .argument('<dependency-index>', '要移除的依赖 Issue 编号')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (index, dependencyIndex, options) => {
+        const { issueDepRemove } = await import('./commands/issue.js');
+        await issueDepRemove(parseInt(index), parseInt(dependencyIndex), { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('blocks')
+      .description('查看哪些 Issue 依赖当前 Issue（反向查询）')
+      .argument('<index>', 'Issue 编号')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('-l, --limit <number>', '每页数量', '30')
+      .option('-p, --page <number>', '页码', '1')
+      .action(async (index, options) => {
+        const { issueBlocks } = await import('./commands/issue.js');
+        await issueBlocks(parseInt(index), { ...program.opts(), ...options });
+      })
   );
 
 // PR 管理命令
