@@ -58,17 +58,25 @@ jobs:
           # 移除 beta 后缀获取本地基础版本
           LOCAL_BASE=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
 
-          # 比较本地版本和 npm latest，取较大的作为参考基础
-          COMPARE_BASE=$(printf "%s\n%s" "$LOCAL_BASE" "$NPM_LATEST" | sort -V | tail -1)
-          echo "Reference base (max of local=$LOCAL_BASE, npm=$NPM_LATEST): $COMPARE_BASE"
+          # 计算 beta 基础版本
+          # 规则：
+          #   1. 如果 LOCAL_BASE > NPM_LATEST，说明已经手动 bump 过，直接使用 LOCAL_BASE
+          #   2. 如果 LOCAL_BASE <= NPM_LATEST，使用 NPM_LATEST + 0.0.1
+          COMPARE_RESULT=$(printf "%s\n%s" "$LOCAL_BASE" "$NPM_LATEST" | sort -V | tail -1)
 
-          # Beta 版本必须基于参考基础的下一个 patch 版本
-          MAJOR=$(echo "$COMPARE_BASE" | cut -d. -f1)
-          MINOR=$(echo "$COMPARE_BASE" | cut -d. -f2)
-          PATCH=$(echo "$COMPARE_BASE" | cut -d. -f3)
-          NEXT_PATCH=$((PATCH + 1))
-          BASE_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
-          echo "Beta base version: $BASE_VERSION"
+          if [[ "$LOCAL_BASE" == "$COMPARE_RESULT" && "$LOCAL_BASE" != "$NPM_LATEST" ]]; then
+            # LOCAL_BASE > NPM_LATEST，使用 LOCAL_BASE 作为 beta 基础版本
+            BASE_VERSION="$LOCAL_BASE"
+            echo "Using LOCAL_BASE as beta base (already bumped): $BASE_VERSION"
+          else
+            # LOCAL_BASE <= NPM_LATEST，需要基于 NPM_LATEST 递增 patch
+            MAJOR=$(echo "$NPM_LATEST" | cut -d. -f1)
+            MINOR=$(echo "$NPM_LATEST" | cut -d. -f2)
+            PATCH=$(echo "$NPM_LATEST" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            BASE_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            echo "Using NPM_LATEST + 0.0.1 as beta base: $BASE_VERSION"
+          fi
 
           # 查找该基础版本下最大的 beta 号
           MAX_BETA=0
