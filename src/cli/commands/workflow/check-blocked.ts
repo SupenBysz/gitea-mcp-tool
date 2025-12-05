@@ -119,7 +119,7 @@ export async function checkBlocked(options: CheckBlockedOptions): Promise<void> 
 
       // 获取优先级
       const priorityLabel = labels.find((l) => matchLabel(prefixes.priority, l) !== null);
-      const priority = priorityLabel ? matchLabel(prefixes.priority, priorityLabel)?.toUpperCase() : null;
+      const priority = priorityLabel ? matchLabel(prefixes.priority, priorityLabel)?.toUpperCase() ?? null : null;
 
       // 获取 SLA
       let issueSla: number;

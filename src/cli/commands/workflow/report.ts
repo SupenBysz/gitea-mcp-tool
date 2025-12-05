@@ -150,17 +150,17 @@ export async function generateReport(options: ReportOptions): Promise<void> {
 
       // 统计状态
       const statusLabel = labels.find((l) => matchLabel(prefixes.status, l) !== null);
-      const status = statusLabel ? matchLabel(prefixes.status, statusLabel) : 'no-status';
+      const status = statusLabel ? (matchLabel(prefixes.status, statusLabel) || 'no-status') : 'no-status';
       byStatus[status] = (byStatus[status] || 0) + 1;
 
       // 统计优先级
       const priorityLabel = labels.find((l) => matchLabel(prefixes.priority, l) !== null);
-      const priority = priorityLabel ? matchLabel(prefixes.priority, priorityLabel) : 'no-priority';
+      const priority = priorityLabel ? (matchLabel(prefixes.priority, priorityLabel) || 'no-priority') : 'no-priority';
       byPriority[priority] = (byPriority[priority] || 0) + 1;
 
       // 统计类型
       const typeLabel = labels.find((l) => matchLabel(prefixes.type, l) !== null);
-      const type = typeLabel ? matchLabel(prefixes.type, typeLabel) : 'no-type';
+      const type = typeLabel ? (matchLabel(prefixes.type, typeLabel) || 'no-type') : 'no-type';
       byType[type] = (byType[type] || 0) + 1;
     }
 
