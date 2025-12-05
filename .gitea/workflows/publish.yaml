@@ -3,7 +3,7 @@ name: Publish Release
 on:
   push:
     branches:
-      - release
+      - main
 
 jobs:
   publish:
@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,103 +33,64 @@ jobs:
           git config --global user.name "Gitea Actions"
           git config --global user.email "actions@gitea.local"
 
-      - name: Validate release merge source
-        run: |
-          # 确保 release 分支最新提交是从 dev 合并而来
-          git fetch origin dev
-          DEV_HEAD=$(git rev-parse origin/dev)
-          P1=$(git rev-parse HEAD^1 2>/dev/null || true)
-          P2=$(git rev-parse HEAD^2 2>/dev/null || true)
-
-          if [ -z "$P2" ]; then
-            echo "::error::release 分支发布必须由 dev 分支的合并提交触发（需要 merge commit）"
-            exit 1
-          fi
-
-          if [ "$P1" != "$DEV_HEAD" ] && [ "$P2" != "$DEV_HEAD" ]; then
-            echo "::error::当前 release 提交未包含最新 dev（HEAD 父提交不匹配 dev），请先手动将 dev 合并到 release 再推送"
-            exit 1
-          fi
-
-          echo "✓ release merge 来源校验通过：包含 dev@${DEV_HEAD}"
-
-      - name: Determine version bump type
-        id: bump_type
-        run: |
-          # 获取最近的 commit message
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Commit message: $COMMIT_MSG"
-
-          # 根据 commit message 前缀确定版本类型
-          if [[ "$COMMIT_MSG" == *"breaking"* ]] || [[ "$COMMIT_MSG" == *"BREAKING"* ]]; then
-            echo "type=major" >> $GITHUB_OUTPUT
-          elif [[ "$COMMIT_MSG" == feat:* ]] || [[ "$COMMIT_MSG" == feat\(* ]]; then
-            echo "type=minor" >> $GITHUB_OUTPUT
-          else
-            echo "type=patch" >> $GITHUB_OUTPUT
-          fi
-
       - name: Get npm latest version
         id: npm_latest
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
-          NPM_LATEST=$(npm view "$PACKAGE_NAME" version --registry https://registry.npmjs.org 2>/dev/null || true)
-          echo "npm latest version: ${NPM_LATEST:-none}"
+          NPM_LATEST=$(npm view "$PACKAGE_NAME" version --registry https://registry.npmjs.org 2>/dev/null || echo "0.0.0")
+          echo "npm latest version: $NPM_LATEST"
           echo "npm_latest=$NPM_LATEST" >> $GITHUB_OUTPUT
 
-      - name: Bump version
+      - name: Determine release version
         id: version
         run: |
           # 获取当前版本
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "Current version: $CURRENT_VERSION"
-
-          # 移除 beta 后缀（如果有）
-          BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
-
-          # 解析版本号
-          MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
-          MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
-          PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
-
-          # 与 npm 最新正式版对齐，避免版本冲突
           NPM_LATEST="${{ steps.npm_latest.outputs.npm_latest }}"
-          if [ -n "$NPM_LATEST" ]; then
-            COMPARE_BASE=$(printf "%s\n%s\n" "$BASE_VERSION" "$NPM_LATEST" | sort -V | tail -1)
-            echo "Compare base vs npm latest: base=$BASE_VERSION, npm=$NPM_LATEST, chosen=$COMPARE_BASE"
-            BASE_VERSION="$COMPARE_BASE"
-            MAJOR=$(echo "$BASE_VERSION" | cut -d. -f1)
-            MINOR=$(echo "$BASE_VERSION" | cut -d. -f2)
-            PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+          echo "Current version: $CURRENT_VERSION"
+          echo "npm latest: $NPM_LATEST"
+
+          # 移除 beta 后缀获取基础版本
+          BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
+          echo "Base version: $BASE_VERSION"
+
+          # 检查是否是 beta 版本转正式版
+          if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
+            # beta 版本：直接使用基础版本作为正式版
+            NEW_VERSION="$BASE_VERSION"
+            echo "Converting beta to release: $CURRENT_VERSION -> $NEW_VERSION"
+          else
+            # 非 beta 版本：基于 npm 最新版本递增 patch
+            MAJOR=$(echo "$NPM_LATEST" | cut -d. -f1)
+            MINOR=$(echo "$NPM_LATEST" | cut -d. -f2)
+            PATCH=$(echo "$NPM_LATEST" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            NEW_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            echo "Non-beta release: incrementing patch $NPM_LATEST -> $NEW_VERSION"
           fi
 
-          # 根据类型递增版本
-          BUMP_TYPE="${{ steps.bump_type.outputs.type }}"
-          case "$BUMP_TYPE" in
-            major)
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              ;;
-            minor)
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              ;;
-            patch)
-              # 如果当前是 beta 版本，直接使用 base version
-              if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
-                : # 保持 PATCH 不变
-              else
-                PATCH=$((PATCH + 1))
-              fi
-              ;;
-          esac
+          # 确保新版本大于 npm 最新版本
+          if [ -n "$NPM_LATEST" ] && [ "$NPM_LATEST" != "0.0.0" ]; then
+            COMPARE_RESULT=$(printf "%s\n%s" "$NEW_VERSION" "$NPM_LATEST" | sort -V | tail -1)
+            if [ "$COMPARE_RESULT" = "$NPM_LATEST" ] && [ "$NEW_VERSION" != "$NPM_LATEST" ]; then
+              echo "::error::New version $NEW_VERSION is not greater than npm latest $NPM_LATEST"
+              exit 1
+            fi
+          fi
 
-          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-          echo "New version: $NEW_VERSION (bump type: $BUMP_TYPE)"
+          echo "New release version: $NEW_VERSION"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-          # 更新 package.json
+          # 计算下一个开发版本 (patch + 1, beta.0)
+          MAJOR=$(echo "$NEW_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$NEW_VERSION" | cut -d. -f2)
+          PATCH=$(echo "$NEW_VERSION" | cut -d. -f3)
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_DEV_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-beta.0"
+          echo "Next dev version: $NEXT_DEV_VERSION"
+          echo "next_dev_version=$NEXT_DEV_VERSION" >> $GITHUB_OUTPUT
+
+          # 更新 package.json 为正式版本
           npm version "$NEW_VERSION" --no-git-tag-version
 
       - name: Make scripts executable
@@ -161,13 +123,32 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Commit and tag
+      - name: Commit, tag and push to main
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           git add package.json README.md CHANGELOG.md
           git commit -m "chore: release v${VERSION} [skip ci]" || true
           git tag -a "v${VERSION}" -m "Release v${VERSION}"
-          git push origin release --tags || true
+          git push origin main --tags
+
+      - name: Sync version to dev branch
+        run: |
+          NEXT_DEV_VERSION="${{ steps.version.outputs.next_dev_version }}"
+          RELEASE_VERSION="${{ steps.version.outputs.version }}"
+
+          echo "Syncing to dev branch..."
+          git fetch origin dev
+          git checkout dev
+          git pull origin dev
+
+          # 更新 package.json 为下一个开发版本
+          npm version "$NEXT_DEV_VERSION" --no-git-tag-version
+
+          git add package.json
+          git commit -m "chore: set next dev version to ${NEXT_DEV_VERSION} after release v${RELEASE_VERSION} [skip ci]"
+          git push origin dev
+
+          echo "✓ Dev branch updated to $NEXT_DEV_VERSION"
 
       - name: Create Gitea Release
         uses: https://gitea.com/actions/release-action@main
@@ -197,6 +178,8 @@ jobs:
           echo "## 正式版本发布成功 🎉" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**版本号**: \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**下一个开发版本**: \`${{ steps.version.outputs.next_dev_version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**安装命令**:" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
