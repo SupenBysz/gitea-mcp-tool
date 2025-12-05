@@ -500,6 +500,130 @@ program
       })
   );
 
+// Release 发布管理命令
+program
+  .command('release')
+  .description('发布版本管理')
+  .addCommand(
+    new Command('list')
+      .description('列出发布版本')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('-l, --limit <number>', '每页数量', '30')
+      .option('-p, --page <number>', '页码', '1')
+      .option('--draft', '只显示草稿')
+      .option('--prerelease', '只显示预发布版本')
+      .action(async (options) => {
+        const { releaseList } = await import('./commands/release.js');
+        await releaseList({ ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('get')
+      .description('获取发布版本详情（按 ID）')
+      .argument('<id>', '发布 ID')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (id, options) => {
+        const { releaseGet } = await import('./commands/release.js');
+        await releaseGet(id, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('get-by-tag')
+      .description('获取发布版本详情（按 Tag）')
+      .argument('<tag>', 'Tag 名称')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (tag, options) => {
+        const { releaseGetByTag } = await import('./commands/release.js');
+        await releaseGetByTag(tag, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('create')
+      .description('创建发布版本')
+      .requiredOption('-t, --tag <tag>', 'Tag 名称')
+      .option('-n, --name <name>', '发布名称')
+      .option('-b, --body <body>', '发布说明')
+      .option('--draft', '创建为草稿')
+      .option('--prerelease', '标记为预发布版本')
+      .option('--target <branch>', '目标分支或 commit SHA')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (options) => {
+        const { releaseCreate } = await import('./commands/release.js');
+        await releaseCreate({ ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('update')
+      .description('更新发布版本')
+      .argument('<id>', '发布 ID')
+      .option('-t, --tag <tag>', '新 Tag 名称')
+      .option('-n, --name <name>', '新发布名称')
+      .option('-b, --body <body>', '新发布说明')
+      .option('--draft', '设置为草稿')
+      .option('--no-draft', '取消草稿状态')
+      .option('--prerelease', '设置为预发布版本')
+      .option('--no-prerelease', '取消预发布状态')
+      .option('--target <branch>', '新目标分支或 commit SHA')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (id, options) => {
+        const { releaseUpdate } = await import('./commands/release.js');
+        await releaseUpdate(id, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('delete')
+      .description('删除发布版本')
+      .argument('<id>', '发布 ID')
+      .option('-y, --yes', '跳过确认')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (id, options) => {
+        const { releaseDelete } = await import('./commands/release.js');
+        await releaseDelete(id, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('attachments')
+      .description('列出发布版本附件')
+      .argument('<id>', '发布 ID')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (id, options) => {
+        const { releaseAttachments } = await import('./commands/release.js');
+        await releaseAttachments(id, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('attachment-get')
+      .description('获取发布附件详情')
+      .argument('<release-id>', '发布 ID')
+      .argument('<attachment-id>', '附件 ID')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (releaseId, attachmentId, options) => {
+        const { releaseAttachmentGet } = await import('./commands/release.js');
+        await releaseAttachmentGet(releaseId, attachmentId, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('attachment-delete')
+      .description('删除发布附件')
+      .argument('<release-id>', '发布 ID')
+      .argument('<attachment-id>', '附件 ID')
+      .option('-y, --yes', '跳过确认')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (releaseId, attachmentId, options) => {
+        const { releaseAttachmentDelete } = await import('./commands/release.js');
+        await releaseAttachmentDelete(releaseId, attachmentId, { ...program.opts(), ...options });
+      })
+  );
+
 // 项目看板管理命令
 program
   .command('project')
