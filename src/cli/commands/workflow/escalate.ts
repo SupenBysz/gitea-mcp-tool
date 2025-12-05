@@ -52,6 +52,8 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
     return;
   }
 
+  const config = parseResult.config;
+
   // 获取上下文
   const context = getContextFromConfig();
   const owner = options.owner || context.owner;
@@ -121,7 +123,7 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
         });
 
         if (!options.dryRun) {
-          await updatePriority(client, owner, repo, issue, repoLabels, buildLabel(prefixes.priority, 'P0'));
+          await updatePriority(client, owner, repo, issue, repoLabels, buildLabel(prefixes.priority, 'P0'), prefixes);
         }
         continue;
       }
@@ -149,7 +151,7 @@ export async function escalatePriority(options: EscalateOptions): Promise<void> 
         });
 
         if (!options.dryRun) {
-          await updatePriority(client, owner, repo, issue, repoLabels, buildLabel(prefixes.priority, rule.nextPriority));
+          await updatePriority(client, owner, repo, issue, repoLabels, buildLabel(prefixes.priority, rule.nextPriority), prefixes);
         }
       }
     }
@@ -190,12 +192,12 @@ async function updatePriority(
   repo: string,
   issue: { number?: number; labels?: Array<{ id?: number; name?: string }> },
   repoLabels: Array<{ id?: number; name?: string }>,
-  newPriorityLabel: string
+  newPriorityLabel: string,
+  prefixes: ReturnType<typeof getLabelPrefixes>
 ): Promise<void> {
   if (!client) return;
 
   // 移除旧的优先级标签，添加新的
-  const prefixes = getLabelPrefixes(parseConfigFromIssue(issue) || { labels: { prefixes: DEFAULT_LABEL_PREFIXES } } as any);
   const existingLabels = (issue.labels || [])
     .filter((l) => !l.name || matchLabel(prefixes.priority, l.name) === null)
     .map((l) => l.id)
