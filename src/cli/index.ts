@@ -479,6 +479,74 @@ program
         const { issueBlocks } = await import('./commands/issue.js');
         await issueBlocks(parseInt(index), { ...program.opts(), ...options });
       })
+  )
+  // ===== 工作流集成命令 =====
+  .addCommand(
+    new Command('infer-labels')
+      .description('智能推断 Issue 标签')
+      .argument('<index>', 'Issue 编号')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('--apply', '自动应用推断的标签')
+      .action(async (index, options) => {
+        const { inferLabels } = await import('./commands/workflow/infer-labels.js');
+        await inferLabels({
+          ...program.opts(),
+          ...options,
+          issue: index,
+          autoApply: options.apply,
+        });
+      })
+  )
+  .addCommand(
+    new Command('check')
+      .description('检查单个 Issue 是否符合工作流规范')
+      .argument('<index>', 'Issue 编号')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('--json', '以 JSON 格式输出')
+      .action(async (index, options) => {
+        const { checkIssues } = await import('./commands/workflow/check-issues.js');
+        await checkIssues({
+          ...program.opts(),
+          ...options,
+          issue: index,
+        });
+      })
+  )
+  .addCommand(
+    new Command('check-all')
+      .description('检查所有开放 Issue 是否符合工作流规范')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('--json', '以 JSON 格式输出')
+      .action(async (options) => {
+        const { checkIssues } = await import('./commands/workflow/check-issues.js');
+        await checkIssues({ ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('check-blocked')
+      .description('检测阻塞或超期的 Issue')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('--threshold <hours>', 'SLA 阈值（小时）')
+      .option('--json', '以 JSON 格式输出')
+      .action(async (options) => {
+        const { checkBlocked } = await import('./commands/workflow/check-blocked.js');
+        await checkBlocked({ ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('escalate')
+      .description('自动升级老化 Issue 的优先级')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('--dry-run', '预览变更但不执行')
+      .action(async (options) => {
+        const { escalatePriority } = await import('./commands/workflow/escalate.js');
+        await escalatePriority({ ...program.opts(), ...options, dryRun: options.dryRun });
+      })
   );
 
 // PR 管理命令
