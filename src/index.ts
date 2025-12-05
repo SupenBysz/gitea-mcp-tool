@@ -117,7 +117,6 @@ async function main() {
     registerUserTools(mcpServer, toolContext);
 
     // 智能内容生成 (2个): gitea_issue_create, gitea_pr_create
-    // TODO: #74 将精简这些 registry，只保留 create 工具
     registerIssueTools(mcpServer, toolContext);
     registerPullRequestTools(mcpServer, toolContext);
 
