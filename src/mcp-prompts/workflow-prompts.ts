@@ -246,7 +246,7 @@ export function registerWorkflowPrompts(context: PromptContext): void {
   server.registerPrompt(
     '配置多项目工作流',
     {
-      description: '批量为多个项目配置工作流，适用于组织级别的统一管理',
+      description: '批量为多个项目配置工作流，适用于组织级别的统一管理（使用 keactl CLI）',
     },
     async (args) => {
       const orgName = args.org || '指定组织';
@@ -259,11 +259,19 @@ export function registerWorkflowPrompts(context: PromptContext): void {
               type: 'text',
               text: `请帮我为 ${orgName} 组织下的多个仓库配置 Issue 工作流。
 
+**MCP 2.0 混合模式说明**：
+此功能使用 MCP 智能工具 + keactl CLI 混合模式完成。
+- 获取组织仓库列表：使用 \`keactl repo list --owner <org>\` CLI 命令
+- 配置工作流：使用 MCP 工具
+
 **批量配置流程**：
 
-1. **选择目标仓库**
-   - 指定组织名称，获取所有仓库列表
-   - 或手动指定仓库列表
+1. **获取目标仓库列表**
+   使用 keactl CLI 命令：
+   \`\`\`bash
+   # 列出组织下所有仓库
+   keactl repo list --owner ${orgName}
+   \`\`\`
 
 2. **选择配置模式**
    | 模式 | 说明 |
@@ -272,27 +280,21 @@ export function registerWorkflowPrompts(context: PromptContext): void {
    | 按类型配置 | 根据仓库检测的项目类型自动选择模板 |
    | 自定义配置 | 为每个仓库单独指定配置 |
 
-3. **预览配置差异**
-   - 显示将要创建/更新的标签
-   - 显示将要创建的看板和列
-   - 显示与现有配置的差异
+3. **为每个仓库执行配置**
+   对每个目标仓库依次执行：
+   - \`gitea_workflow_init\` - 生成配置文件
+   - \`gitea_workflow_sync_labels\` - 同步标签
+   - \`gitea_workflow_sync_board\` - 创建看板
 
-4. **执行配置**
-   - 批量同步标签
-   - 批量创建看板
-   - 生成配置报告
-
-**使用的工具**：
-- \`gitea_org_repos\` - 获取组织仓库列表
-- \`gitea_workflow_init\` - 为每个仓库生成配置
-- \`gitea_workflow_sync_labels\` - 同步标签
-- \`gitea_workflow_sync_board\` - 创建看板
+4. **生成汇总报告**
+   - 显示每个仓库的配置结果
+   - 统计成功/失败数量
 
 **请提供以下信息**：
 
 1. 组织名称或仓库列表
 2. 配置模式（统一模板/按类型配置/自定义配置）
-3. 如选择统一模板，请指定项目类型
+3. 如选择统一模板，请指定项目类型（backend/frontend/fullstack/library）
 
 **示例**：
 - "为 Kysion 组织的所有仓库配置 backend 类型的工作流"
