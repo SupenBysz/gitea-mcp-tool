@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -79,7 +80,7 @@ jobs:
           fi
 
           # 查找该基础版本下最大的 beta 号
-          MAX_BETA=0
+          MAX_BETA=-1
           for v in $NPM_BETA_VERSIONS; do
             if [[ "$v" == "${BASE_VERSION}-beta."* ]]; then
               BETA_NUM=$(echo "$v" | grep -oP '(?<=-beta\.)\d+')
@@ -107,9 +108,10 @@ jobs:
 
       - name: Commit version bump
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
           git add package.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }} [skip ci]" || true
-          git push origin dev || true
+          git diff --cached --quiet || git commit -m "chore: bump version to ${VERSION} [skip ci]"
+          git push origin dev || echo "::warning::Failed to push version update to dev branch"
 
       - name: Create summary
         run: |
