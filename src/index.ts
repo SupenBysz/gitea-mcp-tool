@@ -1,14 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * Gitea Service MCP Server (McpServer API版本)
+ * Gitea MCP Server v2.0 - 智能工具精简版
  *
- * 通用 MCP 服务器，支持所有符合 MCP 规范的客户端
- * - Claude Desktop
- * - Claude CLI (支持 Prompts 和 Elicitation)
- * - Cline (VSCode)
- * - Continue (VSCode/JetBrains)
- * - 其他 MCP 客户端
+ * MCP 2.0 架构：精简工具 + CLI 混合模式
+ * - MCP 工具: ~15 个智能分析/生成工具（优化 Context 消耗）
+ * - keactl CLI: 完整 CRUD 操作（200+ 命令）
+ *
+ * 支持的 MCP 客户端:
+ * - Claude Desktop / Claude CLI
+ * - OpenCode / Codex CLI
+ * - Cline / Continue
+ * - 其他符合 MCP 规范的客户端
+ *
+ * CRUD 操作请使用 keactl CLI:
+ * - keactl repo/issue/pr/branch/release/wiki/project/workflow/cicd
+ * - 详见: https://github.com/SupenBysz/gitea-mcp-tool#keactl-cli
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -20,35 +27,10 @@ import { GiteaClient } from './gitea-client.js';
 import { ContextManager } from './context-manager.js';
 import { getProjectConfig } from './config/project.js';
 import { detectGitInfo } from './utils/git-detector.js';
-import { registerRepositoryTools } from './tools-registry/repository-registry.js';
+// MCP 2.0: 只保留智能工具的 registry
+// CRUD 操作请使用 keactl CLI
 import { registerIssueTools } from './tools-registry/issue-registry.js';
 import { registerPullRequestTools } from './tools-registry/pr-registry.js';
-import { registerMilestoneTools } from './tools-registry/milestone-registry.js';
-import { registerOrganizationTools } from './tools-registry/org-registry.js';
-import { registerUserTools as registerUserExtendedTools } from './tools-registry/user-registry.js';
-import { registerTokenTools } from './tools-registry/token-registry.js';
-import { registerProjectTools } from './tools-registry/project-registry.js';
-import { registerWikiTools } from './tools-registry/wiki-registry.js';
-import { registerTeamTools } from './tools-registry/team-registry.js';
-import { registerLabelTools } from './tools-registry/label-registry.js';
-import { registerWebhookTools } from './tools-registry/webhook-registry.js';
-import { registerReleaseTools } from './tools-registry/release-registry.js';
-import { registerBranchTools } from './tools-registry/branch-registry.js';
-import { registerContentsTools } from './tools-registry/contents-registry.js';
-import { registerCommitTools } from './tools-registry/commit-registry.js';
-import { registerTagTools } from './tools-registry/tag-registry.js';
-import { registerNotificationTools } from './tools-registry/notification-registry.js';
-import { registerCollaboratorTools } from './tools-registry/collaborator-registry.js';
-import { registerActionTools } from './tools-registry/action-registry.js';
-import { registerSSHKeyTools } from './tools-registry/ssh-key-registry.js';
-import { registerDeployKeyTools } from './tools-registry/deploy-key-registry.js';
-import { registerGPGKeyTools } from './tools-registry/gpg-key-registry.js';
-import { registerStarredTools } from './tools-registry/starred-registry.js';
-import { registerFollowingTools } from './tools-registry/following-registry.js';
-import { registerTopicsTools } from './tools-registry/topics-registry.js';
-import { registerPackageTools } from './tools-registry/package-registry.js';
-import { registerAdminTools } from './tools-registry/admin-registry.js';
-import { registerCICDTools } from './tools-registry/cicd-registry.js';
 import { registerWorkflowTools } from './tools-registry/workflow-registry.js';
 import { registerComplianceTools } from './tools-registry/compliance-registry.js';
 import { registerAllPrompts } from './mcp-prompts/index.js';
@@ -125,41 +107,24 @@ async function main() {
       server: mcpServer,
     };
 
-    // 6. 注册工具
-    logger.info('Registering tools...');
+    // 6. 注册工具 (MCP 2.0: 精简为 ~15 个智能工具)
+    // CRUD 操作请使用 keactl CLI: https://github.com/SupenBysz/gitea-mcp-tool#keactl-cli
+    logger.info('Registering MCP 2.0 smart tools...');
+
+    // 基础工具 (4个): gitea_init, gitea_mcp_upgrade, gitea_context_get/set, gitea_user_current
     registerInitTools(mcpServer, toolContext);
     registerContextTools(mcpServer, toolContext);
     registerUserTools(mcpServer, toolContext);
-    registerRepositoryTools(mcpServer, toolContext);
+
+    // 智能内容生成 (2个): gitea_issue_create, gitea_pr_create
+    // TODO: #74 将精简这些 registry，只保留 create 工具
     registerIssueTools(mcpServer, toolContext);
     registerPullRequestTools(mcpServer, toolContext);
-    registerMilestoneTools(mcpServer, toolContext);
-    registerUserExtendedTools(mcpServer, toolContext);
-    registerOrganizationTools(mcpServer, toolContext);
-    registerTokenTools(mcpServer, toolContext);
-    registerProjectTools(mcpServer, toolContext);
-    registerWikiTools(mcpServer, toolContext);
-    registerTeamTools(mcpServer, toolContext);
-    registerLabelTools(mcpServer, toolContext);
-    registerWebhookTools(mcpServer, toolContext);
-    registerReleaseTools(mcpServer, toolContext);
-    registerBranchTools(mcpServer, toolContext);
-    registerContentsTools(mcpServer, toolContext);
-    registerCommitTools(mcpServer, toolContext);
-    registerTagTools(mcpServer, toolContext);
-    registerNotificationTools(mcpServer, toolContext);
-    registerCollaboratorTools(mcpServer, toolContext);
-    registerActionTools(mcpServer, toolContext);
-    registerSSHKeyTools(mcpServer, toolContext);
-    registerDeployKeyTools(mcpServer, toolContext);
-    registerGPGKeyTools(mcpServer, toolContext);
-    registerStarredTools(mcpServer, toolContext);
-    registerFollowingTools(mcpServer, toolContext);
-    registerTopicsTools(mcpServer, toolContext);
-    registerPackageTools(mcpServer, toolContext);
-    registerAdminTools(mcpServer, toolContext);
-    registerCICDTools(mcpServer, toolContext);
+
+    // 工作流智能分析 (5个): infer_labels, check_issues, check_blocked, escalate_priority, generate_report
     registerWorkflowTools(mcpServer, toolContext);
+
+    // 规范检查 (5个): check_branch, check_commit, check_pr, check_all, init
     registerComplianceTools(mcpServer, toolContext);
 
     // 7. 注册 Prompts
@@ -171,10 +136,12 @@ async function main() {
     const transport = new StdioServerTransport();
     await mcpServer.connect(transport);
 
-    logger.info('Gitea Service MCP Server is running');
+    logger.info('Gitea MCP Server v2.0 is running');
     logger.info({
-      version: '1.0.0',
-      api: 'McpServer',
+      version: '2.0.0',
+      architecture: 'MCP Lite + CLI Hybrid',
+      mcpTools: '~15 smart tools',
+      cliCommands: '200+ via keactl',
       capabilities: ['tools', 'prompts', 'elicitation'],
     });
   } catch (error) {
