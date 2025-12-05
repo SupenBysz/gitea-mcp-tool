@@ -401,6 +401,15 @@ export interface CreateCommentOptions {
   body: string;
 }
 
+export interface UpdateCommentOptions {
+  body: string;
+}
+
+export interface CommentListOptions extends ListOptions {
+  since?: string;
+  before?: string;
+}
+
 // ============================================================
 // Project 相关
 // ============================================================

@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,34 +33,54 @@ jobs:
           git config --global user.name "Gitea Actions"
           git config --global user.email "actions@gitea.local"
 
+      - name: Get npm latest version
+        id: npm_latest
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          NPM_LATEST=$(npm view "$PACKAGE_NAME" version --registry https://registry.npmjs.org 2>/dev/null || echo "0.0.0")
+          echo "npm latest version: $NPM_LATEST"
+          echo "npm_latest=$NPM_LATEST" >> $GITHUB_OUTPUT
+
       - name: Bump beta version
         id: version
         run: |
           # 获取当前版本
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           PACKAGE_NAME=$(node -p "require('./package.json').name")
+          NPM_LATEST="${{ steps.npm_latest.outputs.npm_latest }}"
           echo "Current version: $CURRENT_VERSION"
           echo "Package name: $PACKAGE_NAME"
+          echo "npm latest: $NPM_LATEST"
 
           # 获取 npm 上已发布的 beta 版本
           NPM_BETA_VERSIONS=$(npm view "$PACKAGE_NAME" versions --json 2>/dev/null | grep -oP '\d+\.\d+\.\d+-beta\.\d+' || echo "")
           echo "Existing beta versions on npm: $NPM_BETA_VERSIONS"
 
-          # 计算基础版本号
-          if [[ "$CURRENT_VERSION" == *"-beta."* ]]; then
-            BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
+          # 移除 beta 后缀获取本地基础版本
+          LOCAL_BASE=$(echo "$CURRENT_VERSION" | sed 's/-beta.*//')
+
+          # 计算 beta 基础版本
+          # 规则：
+          #   1. 如果 LOCAL_BASE > NPM_LATEST，说明已经手动 bump 过，直接使用 LOCAL_BASE
+          #   2. 如果 LOCAL_BASE <= NPM_LATEST，使用 NPM_LATEST + 0.0.1
+          COMPARE_RESULT=$(printf "%s\n%s" "$LOCAL_BASE" "$NPM_LATEST" | sort -V | tail -1)
+
+          if [[ "$LOCAL_BASE" == "$COMPARE_RESULT" && "$LOCAL_BASE" != "$NPM_LATEST" ]]; then
+            # LOCAL_BASE > NPM_LATEST，使用 LOCAL_BASE 作为 beta 基础版本
+            BASE_VERSION="$LOCAL_BASE"
+            echo "Using LOCAL_BASE as beta base (already bumped): $BASE_VERSION"
           else
-            # 不是 beta 版本，递增 patch 版本作为基础
-            MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
-            MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
-            PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3 | cut -d- -f1)
-            NEW_PATCH=$((PATCH + 1))
-            BASE_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+            # LOCAL_BASE <= NPM_LATEST，需要基于 NPM_LATEST 递增 patch
+            MAJOR=$(echo "$NPM_LATEST" | cut -d. -f1)
+            MINOR=$(echo "$NPM_LATEST" | cut -d. -f2)
+            PATCH=$(echo "$NPM_LATEST" | cut -d. -f3)
+            NEXT_PATCH=$((PATCH + 1))
+            BASE_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            echo "Using NPM_LATEST + 0.0.1 as beta base: $BASE_VERSION"
           fi
-          echo "Base version: $BASE_VERSION"
 
           # 查找该基础版本下最大的 beta 号
-          MAX_BETA=0
+          MAX_BETA=-1
           for v in $NPM_BETA_VERSIONS; do
             if [[ "$v" == "${BASE_VERSION}-beta."* ]]; then
               BETA_NUM=$(echo "$v" | grep -oP '(?<=-beta\.)\d+')
@@ -87,9 +108,10 @@ jobs:
 
       - name: Commit version bump
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
           git add package.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }} [skip ci]" || true
-          git push origin dev || true
+          git diff --cached --quiet || git commit -m "chore: bump version to ${VERSION} [skip ci]"
+          git push origin dev || echo "::warning::Failed to push version update to dev branch"
 
       - name: Create summary
         run: |

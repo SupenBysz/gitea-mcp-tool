@@ -29,6 +29,7 @@ import {
   getSLAHours,
   getLabelPrefixes,
   buildLabel,
+  matchLabel,
   resolveRulePlaceholders,
 } from '../utils/workflow-config.js';
 import {
@@ -450,7 +451,7 @@ export async function workflowCheckIssues(
 
       // 检查是否需要添加到 Backlog
       if (boardSyncManager.shouldAddToBacklog(issue)) {
-        const prefixes = getLabelPrefixes(ctx.config);
+        const prefixes = getLabelPrefixes(config);
         suggestions.push(`建议添加 ${buildLabel(prefixes.status, 'backlog')} 标签`);
       }
 

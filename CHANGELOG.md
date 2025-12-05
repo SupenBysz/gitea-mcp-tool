@@ -5,16 +5,87 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [Unreleased] - 2025-11-29
+## [Unreleased]
 
-### 修复
-- Codex 无法发现 MCP：新增项目级 `.mcp.json` 分发并在 README 增补通用客户端配置指引，确保 Codex/通用 MCP 客户端可自动检测 gitea-mcp-tool。
-- 配置加载回退：服务器启动时将从 `.gitea-mcp.json` / `.gitea-mcp.local.json` / 全局配置解析 baseUrl 与 token（含 tokenRef/apiTokenEnv），不再仅依赖环境变量。
-- 发行脚本：`pack.sh` 将 `.mcp.json` 打入发布包；`.gitignore` 忽略 `.mcp.local.json`。
-- 版本同步：package 版本提升至 v1.8.1，对齐 npm 最新发布（>=1.7.4）并包含最近的 Issue 依赖 API 修复（主干已合并）。
+---
 
-### 文档
-- README 新增 Codex/LM Studio 等通用 MCP 客户端的 `.mcp.json` 示例与 token 配置提示。
+## [2.0.0-beta.0] - 2025-12-05
+
+### 🚀 重大变更 - MCP 2.0 混合架构
+
+本版本实现了 MCP 2.0 架构重构，采用"智能 MCP + CLI CRUD"的混合模式。
+
+#### 架构变更
+- **MCP 工具精简**: 从 218 个减少到 22 个（减少 90%）
+- **Context 消耗优化**: 从 ~87k tokens 降至 ~6.6k tokens（减少 92%）
+- **CLI 工具补充**: 新增 keactl CLI 提供 ~79 个命令
+
+#### MCP 智能工具 (22个)
+
+**基础设施 (5个)**:
+- `gitea_init` - 初始化项目配置
+- `gitea_mcp_upgrade` - 升级 MCP 工具
+- `gitea_context_get` - 获取当前上下文
+- `gitea_context_set` - 设置默认上下文
+- `gitea_user_current` - 获取当前用户
+
+**工作流智能分析 (10个)**:
+- `gitea_workflow_init` - 初始化工作流配置
+- `gitea_workflow_load_config` - 加载工作流配置
+- `gitea_workflow_sync_labels` - 同步标签系统
+- `gitea_workflow_sync_board` - 同步项目看板
+- `gitea_workflow_check_issues` - 检查 Issue 工作流
+- `gitea_workflow_infer_labels` - 智能标签推断
+- `gitea_workflow_check_blocked` - 检测阻塞 Issue
+- `gitea_workflow_escalate_priority` - 优先级自动升级
+- `gitea_workflow_sync_status` - 状态双向同步
+- `gitea_workflow_generate_report` - 生成工作流报告
+
+**规范检查 (5个)**:
+- `gitea_compliance_init` - 初始化规范配置
+- `gitea_compliance_check_branch` - 检查分支命名
+- `gitea_compliance_check_commit` - 检查提交信息
+- `gitea_compliance_check_pr` - 检查 PR 规范
+- `gitea_compliance_check_all` - 全面规范检查
+
+**智能内容生成 (2个)**:
+- `gitea_issue_create` - AI 辅助创建 Issue
+- `gitea_pr_create` - AI 辅助创建 PR
+
+### 🎉 新增
+
+#### keactl CLI (命令行工具)
+- **顶级命令** (15个): init, context, user, repo, issue, pr, branch, release, wiki, project, workflow, cicd, label, milestone, upgrade
+- **repo 子命令** (5个): get, list, create, delete, search
+- **issue 子命令** (16个): get, list, create, update, close, comment, comments, comment-get, comment-edit, comment-delete, dependency-list, dependency-add, dependency-remove, blocks-list, label-add, label-remove
+- **pr 子命令** (4个): get, list, create, merge
+- **branch 子命令** (6个): list, get, create, delete, protection-list, protection-create
+- **release 子命令** (9个): list, get, get-by-tag, create, update, delete, attachments, attachment-get, attachment-delete
+- **wiki 子命令** (8个): list, get, create, update, delete, revisions, get-revision, search
+- **project 子命令** (3个): list, get, create
+- **workflow 子命令** (9个): init, status, sync-labels, sync-board, check, infer, blocked, escalate, report
+- **cicd 子命令** (4个): init, status, templates, validate
+
+#### 工作流配置系统
+- `.gitea/issue-workflow.yaml` 配置文件支持
+- 标签分类定义（status, priority, type, area）
+- 项目看板列映射
+- SLA 规则配置
+- 自动化规则引擎
+
+### 🔧 优化
+- 移除 200+ 个 CRUD MCP 工具，改为 CLI 实现
+- 大幅降低 AI 客户端的 Context 消耗
+- 保留需要 AI 智能处理的核心工具
+- 统一的命令行交互体验
+
+### 📚 文档
+- 新增 `docs/configuration.md` - 多客户端配置指南
+- 新增测试报告目录 `docs/test-reports/`
+- 更新 README.md 为 2.0 架构说明
+
+### ⚠️ 废弃
+- 移除 196 个 CRUD 操作 MCP 工具（功能通过 keactl CLI 提供）
 
 ---
 
