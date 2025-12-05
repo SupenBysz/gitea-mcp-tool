@@ -11,6 +11,14 @@ import {
   updateIssue,
   closeIssue,
   commentIssue,
+  listIssueComments,
+  getIssueComment,
+  editIssueComment,
+  deleteIssueComment,
+  listIssueDependencies,
+  addIssueDependency,
+  removeIssueDependency,
+  listIssueBlocks,
 } from '../../tools/issue.js';
 
 /**
@@ -214,6 +222,268 @@ export async function issueComment(index: number, options: ClientOptions & {
     }, options);
   } catch (err: any) {
     error(`添加评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 列出 Issue 评论
+ */
+export async function issueCommentsList(index: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  limit?: string;
+  page?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await listIssueComments({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      limit: parseInt(options.limit || '30'),
+      page: parseInt(options.page || '1'),
+    });
+
+    if (result.comments.length === 0) {
+      info(`Issue #${index} 没有评论`, options);
+      return;
+    }
+
+    const comments = result.comments.map((comment: any) => ({
+      'ID': comment.id,
+      author: comment.user?.login || '-',
+      body: comment.body.length > 50 ? comment.body.substring(0, 50) + '...' : comment.body,
+      created: comment.created_at?.split('T')[0] || '-',
+    }));
+
+    outputList(comments, options);
+  } catch (err: any) {
+    error(`列出评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 获取评论详情
+ */
+export async function issueCommentGet(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await getIssueComment({ client, contextManager }, { owner, repo, id });
+    const comment = result.comment;
+
+    outputDetails({
+      id: comment.id,
+      author: comment.user?.login || '-',
+      body: comment.body,
+      created: comment.created_at?.split('T')[0],
+      updated: comment.updated_at?.split('T')[0],
+      url: comment.html_url,
+    }, options);
+  } catch (err: any) {
+    error(`获取评论详情失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 编辑评论
+ */
+export async function issueCommentEdit(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  body: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await editIssueComment({ client, contextManager }, {
+      owner,
+      repo,
+      id,
+      body: options.body,
+    });
+
+    success(`评论 #${result.comment.id} 编辑成功`, options);
+    outputDetails({
+      id: result.comment.id,
+      body: result.comment.body,
+      updated: result.comment.updated_at?.split('T')[0],
+    }, options);
+  } catch (err: any) {
+    error(`编辑评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 删除评论
+ */
+export async function issueCommentDelete(id: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    await deleteIssueComment({ client, contextManager }, { owner, repo, id });
+    success(`评论 #${id} 已删除`, options);
+  } catch (err: any) {
+    error(`删除评论失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 列出 Issue 依赖列表
+ */
+export async function issueDeps(index: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  limit?: string;
+  page?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await listIssueDependencies({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      limit: parseInt(options.limit || '30'),
+      page: parseInt(options.page || '1'),
+    });
+
+    if (result.dependencies.length === 0) {
+      info(`Issue #${index} 没有依赖其他 Issue`, options);
+      return;
+    }
+
+    const deps = result.dependencies.map((dep: any) => ({
+      '#': dep.number,
+      title: dep.title,
+      state: dep.state,
+      author: dep.user?.login || '-',
+      updated: dep.updated_at?.split('T')[0] || '-',
+    }));
+
+    outputList(deps, options);
+  } catch (err: any) {
+    error(`获取依赖列表失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 添加 Issue 依赖
+ */
+export async function issueDepAdd(index: number, dependencyIndex: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await addIssueDependency({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      dependencyIndex,
+    });
+
+    success(`依赖添加成功: Issue #${index} 现在依赖 #${dependencyIndex}`, options);
+    outputDetails({
+      issue: `#${result.issue.number} - ${result.issue.title}`,
+      dependency: `#${result.dependency.number} - ${result.dependency.title}`,
+    }, options);
+  } catch (err: any) {
+    error(`添加依赖失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 移除 Issue 依赖
+ */
+export async function issueDepRemove(index: number, dependencyIndex: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    await removeIssueDependency({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      dependencyIndex,
+    });
+
+    success(`依赖移除成功: Issue #${index} 不再依赖 #${dependencyIndex}`, options);
+  } catch (err: any) {
+    error(`移除依赖失败: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * 列出依赖当前 Issue 的其他 Issue（被依赖列表/反向查询）
+ */
+export async function issueBlocks(index: number, options: ClientOptions & {
+  owner?: string;
+  repo?: string;
+  limit?: string;
+  page?: string;
+}) {
+  try {
+    const client = await createClient(options);
+    const contextManager = await createContextManager(client, options);
+    const { owner, repo } = resolveOwnerRepo(contextManager, options);
+
+    const result = await listIssueBlocks({ client, contextManager }, {
+      owner,
+      repo,
+      index,
+      limit: parseInt(options.limit || '30'),
+      page: parseInt(options.page || '1'),
+    });
+
+    if (result.blocks.length === 0) {
+      info(`没有其他 Issue 依赖 #${index}`, options);
+      return;
+    }
+
+    const blocks = result.blocks.map((block: any) => ({
+      '#': block.number,
+      title: block.title,
+      state: block.state,
+      author: block.user?.login || '-',
+      updated: block.updated_at?.split('T')[0] || '-',
+    }));
+
+    outputList(blocks, options);
+  } catch (err: any) {
+    error(`获取被依赖列表失败: ${err.message}`);
     process.exit(1);
   }
 }

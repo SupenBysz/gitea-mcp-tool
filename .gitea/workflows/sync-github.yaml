@@ -1,0 +1,151 @@
+name: Sync to GitHub
+
+on:
+  push:
+    branches:
+      - dev
+      - release
+  workflow_dispatch:
+    inputs:
+      sync_wiki:
+        description: '是否同步 Wiki'
+        type: boolean
+        default: true
+
+jobs:
+  sync-code:
+    name: Sync Code to GitHub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "Gitea Sync Bot"
+          git config --global user.email "sync-bot@gitea-mcp.local"
+
+      - name: Determine target branch
+        id: branch
+        run: |
+          CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "current=$CURRENT_BRANCH" >> $GITHUB_OUTPUT
+
+          # 分支映射: dev->dev, release->main
+          if [ "$CURRENT_BRANCH" = "release" ]; then
+            echo "target=main" >> $GITHUB_OUTPUT
+          else
+            echo "target=$CURRENT_BRANCH" >> $GITHUB_OUTPUT
+          fi
+
+          echo "当前分支: $CURRENT_BRANCH"
+
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+
+      - name: Replace Gitea links with GitHub links
+        run: |
+          echo "正在替换私有链接为公开链接..."
+          ./scripts/replace-links.sh .
+
+          # 检查是否有更改
+          if git diff --quiet; then
+            echo "没有链接需要替换"
+          else
+            echo "检测到链接变更:"
+            git diff --stat
+            git add -A
+            git commit -m "docs: replace Gitea links with GitHub links [skip ci]"
+          fi
+
+      - name: Update tool count in README
+        run: |
+          echo "正在更新 README 中的工具数量..."
+          ./scripts/count-tools.sh --update
+
+          if git diff --quiet README.md; then
+            echo "工具数量无变化"
+          else
+            git add README.md
+            git commit -m "docs: update MCP tool count [skip ci]"
+          fi
+
+      - name: Add GitHub remote
+        run: |
+          # 使用 HTTPS + Token 方式添加 GitHub 远程
+          git remote add github "https://${{ secrets.GH_SYNC_TOKEN }}@github.com/SupenBysz/gitea-mcp-tool.git" || true
+
+      - name: Push to GitHub
+        run: |
+          TARGET_BRANCH="${{ steps.branch.outputs.target }}"
+          CURRENT_BRANCH="${{ steps.branch.outputs.current }}"
+
+          echo "推送到 GitHub: $CURRENT_BRANCH -> $TARGET_BRANCH"
+
+          # 强制推送到目标分支
+          git push github HEAD:refs/heads/$TARGET_BRANCH --force
+
+          echo "✓ 代码同步完成"
+
+      - name: Create summary
+        run: |
+          echo "## 代码同步完成 ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**源分支**: \`${{ steps.branch.outputs.current }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**目标分支**: \`${{ steps.branch.outputs.target }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[查看 GitHub 仓库](https://github.com/SupenBysz/gitea-mcp-tool)" >> $GITHUB_STEP_SUMMARY
+
+  sync-wiki:
+    name: Sync Wiki to GitHub
+    runs-on: ubuntu-latest
+    needs: sync-code
+    if: github.ref == 'refs/heads/release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.sync_wiki == 'true')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "Gitea Sync Bot"
+          git config --global user.email "sync-bot@gitea-mcp.local"
+
+      - name: Setup SSH for Gitea Wiki
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SYNC_SSH_KEY }}" > ~/.ssh/gitea_key
+          chmod 600 ~/.ssh/gitea_key
+
+          # 配置 SSH
+          cat >> ~/.ssh/config << EOF
+          Host gitea.ktyun.cc
+            HostName gitea.ktyun.cc
+            User gitea
+            IdentityFile ~/.ssh/gitea_key
+            StrictHostKeyChecking no
+          EOF
+
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+
+      - name: Sync Wiki
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
+          GITEA_WIKI_URL: "gitea@gitea.ktyun.cc:Kysion/entai-gitea-mcp.wiki.git"
+        run: |
+          echo "正在同步 Wiki..."
+          ./scripts/sync-wiki.sh || echo "Wiki 同步跳过或失败"
+
+      - name: Create summary
+        if: success()
+        run: |
+          echo "## Wiki 同步完成 ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[查看 GitHub Wiki](https://github.com/SupenBysz/gitea-mcp-tool/wiki)" >> $GITHUB_STEP_SUMMARY
