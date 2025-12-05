@@ -164,6 +164,146 @@ program
       })
   );
 
+// Branch 分支管理命令
+program
+  .command('branch')
+  .description('分支管理')
+  .addCommand(
+    new Command('list')
+      .description('列出分支')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .option('-l, --limit <number>', '每页数量', '30')
+      .option('-p, --page <number>', '页码', '1')
+      .action(async (options) => {
+        const { branchList } = await import('./commands/branch.js');
+        await branchList({ ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('get')
+      .description('获取分支详情')
+      .argument('<name>', '分支名称')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (name, options) => {
+        const { branchGet } = await import('./commands/branch.js');
+        await branchGet(name, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('create')
+      .description('创建分支')
+      .argument('<name>', '新分支名称')
+      .option('--from <ref>', '从指定分支/tag/commit 创建')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (name, options) => {
+        const { branchCreate } = await import('./commands/branch.js');
+        await branchCreate(name, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('delete')
+      .description('删除分支')
+      .argument('<name>', '分支名称')
+      .option('-y, --yes', '跳过确认')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (name, options) => {
+        const { branchDelete } = await import('./commands/branch.js');
+        await branchDelete(name, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('rename')
+      .description('重命名分支')
+      .argument('<old-name>', '原分支名称')
+      .argument('<new-name>', '新分支名称')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (oldName, newName, options) => {
+        const { branchRename } = await import('./commands/branch.js');
+        await branchRename(oldName, newName, { ...program.opts(), ...options });
+      })
+  )
+  .addCommand(
+    new Command('protection')
+      .description('分支保护规则管理')
+      .addCommand(
+        new Command('list')
+          .description('列出分支保护规则')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (options) => {
+            const { protectionList } = await import('./commands/branch.js');
+            await protectionList({ ...program.opts(), ...options });
+          })
+      )
+      .addCommand(
+        new Command('get')
+          .description('获取分支保护规则详情')
+          .argument('<name>', '规则名称')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (name, options) => {
+            const { protectionGet } = await import('./commands/branch.js');
+            await protectionGet(name, { ...program.opts(), ...options });
+          })
+      )
+      .addCommand(
+        new Command('create')
+          .description('创建分支保护规则')
+          .requiredOption('--rule-name <name>', '规则名称（可使用通配符如 main, release/*）')
+          .option('--enable-push', '允许推送')
+          .option('--required-approvals <number>', '要求的审批数量')
+          .option('--enable-status-check', '启用状态检查')
+          .option('--require-signed-commits', '要求签名提交')
+          .option('--block-on-rejected-reviews', '有拒绝审查时阻止合并')
+          .option('--block-on-outdated-branch', '分支过时时阻止合并')
+          .option('--dismiss-stale-approvals', '推送后取消过时审批')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (options) => {
+            const { protectionCreate } = await import('./commands/branch.js');
+            await protectionCreate({ ...program.opts(), ...options });
+          })
+      )
+      .addCommand(
+        new Command('update')
+          .description('更新分支保护规则')
+          .argument('<name>', '规则名称')
+          .option('--enable-push', '允许推送')
+          .option('--no-enable-push', '禁止推送')
+          .option('--required-approvals <number>', '要求的审批数量')
+          .option('--enable-status-check', '启用状态检查')
+          .option('--no-enable-status-check', '禁用状态检查')
+          .option('--require-signed-commits', '要求签名提交')
+          .option('--no-require-signed-commits', '不要求签名提交')
+          .option('--block-on-rejected-reviews', '有拒绝审查时阻止合并')
+          .option('--block-on-outdated-branch', '分支过时时阻止合并')
+          .option('--dismiss-stale-approvals', '推送后取消过时审批')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (name, options) => {
+            const { protectionUpdate } = await import('./commands/branch.js');
+            await protectionUpdate(name, { ...program.opts(), ...options });
+          })
+      )
+      .addCommand(
+        new Command('delete')
+          .description('删除分支保护规则')
+          .argument('<name>', '规则名称')
+          .option('-y, --yes', '跳过确认')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (name, options) => {
+            const { protectionDelete } = await import('./commands/branch.js');
+            await protectionDelete(name, { ...program.opts(), ...options });
+          })
+      )
+  );
+
 // Issue 管理命令
 program
   .command('issue')
