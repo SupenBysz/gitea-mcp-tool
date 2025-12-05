@@ -242,15 +242,20 @@ keactl cicd validate
 
 ## 文档
 
+### 本地文档
+
+- [多客户端配置指南](./docs/configuration.md) - Claude Desktop/CLI、OpenCode、Cline、Cursor、Continue 配置
+- [MCP + CLI 混合使用指南](./docs/hybrid-usage.md)
+- [v1.x → v2.0 迁移指南](./docs/migration.md)
+- [更新日志](./CHANGELOG.md)
+
+### Wiki 文档
+
 详细文档请参阅 [Wiki](https://github.com/SupenBysz/gitea-mcp-tool/wiki):
 
 - [安装指南](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Installation)
-- [配置说明](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Configuration)
 - [MCP 工具列表](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Tools)
 - [keactl CLI 指南](https://github.com/SupenBysz/gitea-mcp-tool/wiki/CLI)
-- [MCP + CLI 混合使用指南](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Hybrid-Usage)
-- [v1.x → v2.0 迁移指南](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Migration)
-- [更新日志](https://github.com/SupenBysz/gitea-mcp-tool/wiki/Changelog)
 
 ## 版本
 
