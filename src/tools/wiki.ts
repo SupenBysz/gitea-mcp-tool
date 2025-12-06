@@ -452,7 +452,7 @@ export async function getWikiRevisions(
         date: r.committer.date,
       },
     })),
-    count: commits.length,
+    count: Array.isArray(response) ? commits.length : (response.count ?? commits.length),
   };
 }
 
