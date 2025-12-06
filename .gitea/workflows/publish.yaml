@@ -96,6 +96,11 @@ jobs:
       - name: Make scripts executable
         run: chmod +x scripts/*.sh || true
 
+      - name: Check for private links
+        run: |
+          echo "检查 npm 发布文件中是否包含私有链接..."
+          ./scripts/check-private-links.sh
+
       - name: Update CHANGELOG
         run: |
           NEW_VERSION="${{ steps.version.outputs.version }}"
@@ -173,6 +178,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sync to GitHub
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "同步代码和标签到 GitHub..."
+          git remote add github "https://${{ secrets.GH_SYNC_TOKEN }}@github.com/SupenBysz/gitea-mcp-tool.git" 2>/dev/null || true
+
+          # 同步 main 分支
+          git push github main:main --force || echo "::warning::main 分支同步失败"
+
+          # 同步 dev 分支
+          git push github dev:dev --force || echo "::warning::dev 分支同步失败"
+
+          # 同步标签
+          git push github "v${VERSION}" --force || echo "::warning::标签同步失败"
+
+          echo "✓ GitHub 同步完成"
+
       - name: Create summary
         run: |
           echo "## 正式版本发布成功 🎉" >> $GITHUB_STEP_SUMMARY
@@ -187,3 +209,5 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**npm**: https://www.npmjs.com/package/gitea-mcp-tool" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**GitHub**: https://github.com/SupenBysz/gitea-mcp-tool" >> $GITHUB_STEP_SUMMARY

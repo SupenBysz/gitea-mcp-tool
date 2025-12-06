@@ -418,7 +418,7 @@ function registerInitTools(mcpServer: McpServer, ctx: ToolContext) {
 
         // 执行升级
         const installScriptUrl =
-          'https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh';
+          'https://raw.githubusercontent.com/SupenBysz/gitea-mcp-tool/main/install-quick.sh';
 
         logger.info('Downloading and executing upgrade script...');
 
@@ -461,7 +461,7 @@ function registerInitTools(mcpServer: McpServer, ctx: ToolContext) {
                   success: false,
                   error: errorMessage,
                   message: 'Upgrade failed',
-                  fallback: 'You can manually upgrade by running: bash <(curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh)',
+                  fallback: 'You can manually upgrade by running: npm install -g gitea-mcp-tool@latest',
                 },
                 null,
                 2

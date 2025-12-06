@@ -4,9 +4,9 @@
       "type": "stdio",
       "command": "gitea-mcp",
       "env": {
-        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
-        "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
+        "GITEA_BASE_URL": "https://your-gitea-server.com",
+        "GITEA_DEFAULT_OWNER": "your-org",
+        "GITEA_DEFAULT_REPO": "your-repo"
       }
     }
   }

@@ -45,9 +45,6 @@ Gitea API 的 MCP (Model Context Protocol) 服务器，让 AI 助手能够与 Gi
 ```bash
 # npm 安装（推荐）
 npm install -g gitea-mcp-tool
-
-# 或使用安装脚本
-curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
 ```
 
 ## 配置
@@ -113,9 +110,9 @@ curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install
       "type": "stdio",
       "command": "gitea-mcp",
       "env": {
-        "GITEA_BASE_URL": "https://gitea.ktyun.cc",
-        "GITEA_DEFAULT_OWNER": "Kysion",
-        "GITEA_DEFAULT_REPO": "entai-gitea-mcp"
+        "GITEA_BASE_URL": "https://your-gitea-server.com",
+        "GITEA_DEFAULT_OWNER": "your-org",
+        "GITEA_DEFAULT_REPO": "your-repo"
       }
     }
   }

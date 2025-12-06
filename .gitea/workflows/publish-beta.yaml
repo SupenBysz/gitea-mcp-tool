@@ -28,6 +28,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh || true
+
+      - name: Check for private links
+        run: |
+          echo "检查 npm 发布文件中是否包含私有链接..."
+          ./scripts/check-private-links.sh
+
       - name: Configure Git
         run: |
           git config --global user.name "Gitea Actions"
@@ -113,6 +121,13 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: bump version to ${VERSION} [skip ci]"
           git push origin dev || echo "::warning::Failed to push version update to dev branch"
 
+      - name: Sync to GitHub
+        run: |
+          echo "同步代码到 GitHub..."
+          git remote add github "https://${{ secrets.GH_SYNC_TOKEN }}@github.com/SupenBysz/gitea-mcp-tool.git" 2>/dev/null || true
+          git push github dev:dev --force || echo "::warning::GitHub 同步失败"
+          echo "✓ GitHub 同步完成"
+
       - name: Create summary
         run: |
           echo "## Beta 版本发布成功 🚀" >> $GITHUB_STEP_SUMMARY
@@ -123,3 +138,5 @@ jobs:
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
           echo "npm install -g gitea-mcp-tool@beta" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**GitHub**: https://github.com/SupenBysz/gitea-mcp-tool" >> $GITHUB_STEP_SUMMARY
