@@ -9,6 +9,35 @@
 
 ---
 
+## [2.0.0-beta.1] - 2025-12-16
+
+### 🐛 修复
+
+#### 日志输出修复
+- **fix(logger)**: 将日志输出到 stderr，避免 MCP stdio 模式下日志污染 JSON-RPC 通信
+- 解决 Claude Desktop 等客户端 "Transport closed" 错误
+
+#### 标签推断修复
+- **fix(infer-labels)**: 修复 `keactl issue infer-labels --apply` 标签名缺少前缀的问题
+- 现在正确使用带前缀的标签名（如 `类型/功能` 而非 `功能`）
+
+### 🎉 新增
+
+#### Issue 标签 CLI 命令
+- `keactl label list` - 列出仓库所有标签
+- `keactl issue label list <n>` - 列出 Issue 的标签
+- `keactl issue label add <n> -l "标签名"` - 为 Issue 添加标签（支持按名称）
+- `keactl issue label remove <n> -l "标签名"` - 从 Issue 移除标签（支持按名称）
+- `keactl issue label set <n> -l "标签1" "标签2"` - 设置 Issue 的标签（替换所有）
+
+### 📁 文件变更
+- `src/logger.ts` - 修改日志输出到 stderr
+- `src/cli/commands/label.ts` - 新增标签操作命令实现
+- `src/cli/commands/workflow/infer-labels.ts` - 修复标签前缀问题
+- `src/cli/index.ts` - 注册新的 label 命令
+
+---
+
 ## [2.0.0-beta.0] - 2025-12-05
 
 ### 🚀 重大变更 - MCP 2.0 混合架构
