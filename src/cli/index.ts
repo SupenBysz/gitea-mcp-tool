@@ -480,6 +480,58 @@ program
         await issueBlocks(parseInt(index), { ...program.opts(), ...options });
       })
   )
+  // ===== 标签操作命令 =====
+  .addCommand(
+    new Command('label')
+      .description('Issue 标签操作')
+      .addCommand(
+        new Command('list')
+          .description('列出 Issue 的标签')
+          .argument('<index>', 'Issue 编号')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (index, options) => {
+            const { issueLabelList } = await import('./commands/label.js');
+            await issueLabelList(parseInt(index), { ...program.opts(), ...options });
+          })
+      )
+      .addCommand(
+        new Command('add')
+          .description('为 Issue 添加标签')
+          .argument('<index>', 'Issue 编号')
+          .requiredOption('-l, --labels <labels...>', '标签名称（支持多个）')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (index, options) => {
+            const { issueLabelAdd } = await import('./commands/label.js');
+            await issueLabelAdd(parseInt(index), { ...program.opts(), ...options });
+          })
+      )
+      .addCommand(
+        new Command('remove')
+          .description('从 Issue 移除标签')
+          .argument('<index>', 'Issue 编号')
+          .requiredOption('-l, --labels <labels...>', '标签名称（支持多个）')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (index, options) => {
+            const { issueLabelRemove } = await import('./commands/label.js');
+            await issueLabelRemove(parseInt(index), { ...program.opts(), ...options });
+          })
+      )
+      .addCommand(
+        new Command('set')
+          .description('设置 Issue 的标签（替换所有）')
+          .argument('<index>', 'Issue 编号')
+          .requiredOption('-l, --labels <labels...>', '标签名称（支持多个）')
+          .option('-o, --owner <owner>', '仓库所有者')
+          .option('-r, --repo <repo>', '仓库名称')
+          .action(async (index, options) => {
+            const { issueLabelSet } = await import('./commands/label.js');
+            await issueLabelSet(parseInt(index), { ...program.opts(), ...options });
+          })
+      )
+  )
   // ===== 工作流集成命令 =====
   .addCommand(
     new Command('infer-labels')
@@ -601,6 +653,21 @@ program
       .action(async (index, options) => {
         const { prMerge } = await import('./commands/pr.js');
         await prMerge(parseInt(index), { ...program.opts(), ...options });
+      })
+  );
+
+// Label 管理命令
+program
+  .command('label')
+  .description('仓库标签管理')
+  .addCommand(
+    new Command('list')
+      .description('列出仓库所有标签')
+      .option('-o, --owner <owner>', '仓库所有者')
+      .option('-r, --repo <repo>', '仓库名称')
+      .action(async (options) => {
+        const { labelList } = await import('./commands/label.js');
+        await labelList({ ...program.opts(), ...options });
       })
   );
 

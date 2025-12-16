@@ -98,38 +98,27 @@ export async function inferLabels(options: InferLabelsOptions): Promise<void> {
       updated_at: '',
     });
 
-    // 显示推断结果
+    // 显示推断结果 - 使用 inferResult.all 获取带前缀的标签
     console.log(chalk.bold('📋 推断结果:\n'));
 
-    const inferences = [
-      { name: '类型', result: inferResult.type },
-      { name: '优先级', result: inferResult.priority },
-      ...inferResult.areas.map((a, i) => ({ name: `领域 ${i + 1}`, result: a })),
-    ];
-
-    const labelsToAdd: string[] = [];
-
-    for (const inf of inferences) {
-      if (inf.result) {
-        const confidence = Math.round(inf.result.confidence * 100);
-        const confidenceColor = confidence >= 80 ? chalk.green : confidence >= 60 ? chalk.yellow : chalk.gray;
-
-        console.log(`${inf.name}: ${chalk.cyan(inf.result.value)}`);
-        console.log(`  置信度: ${confidenceColor(confidence + '%')}`);
-        console.log(`  原因: ${chalk.gray(inf.result.reason)}`);
-        console.log();
-
-        labelsToAdd.push(inf.result.value);
-      }
-    }
-
-    if (labelsToAdd.length === 0) {
+    if (inferResult.all.length === 0) {
       console.log(chalk.yellow('未能推断出任何标签'));
       return;
     }
 
-    // 检查现有标签
+    for (const item of inferResult.all) {
+      const confidence = Math.round(item.confidence * 100);
+      const confidenceColor = confidence >= 80 ? chalk.green : confidence >= 60 ? chalk.yellow : chalk.gray;
+
+      console.log(`${chalk.cyan(item.label)}`);
+      console.log(`  置信度: ${confidenceColor(confidence + '%')}`);
+      console.log(`  原因: ${chalk.gray(item.reason)}`);
+      console.log();
+    }
+
+    // 检查现有标签 - 使用带前缀的标签名
     const existingLabels = (issue.labels || []).map((l) => l.name || '');
+    const labelsToAdd = inferResult.all.map((item) => item.label);
     const newLabels = labelsToAdd.filter((l) => !existingLabels.includes(l));
 
     if (newLabels.length === 0) {
