@@ -45,6 +45,34 @@ export interface TokenInfo {
 }
 
 /**
+ * Recent owner (user or organization) info
+ */
+export interface RecentOwner {
+  /** Owner name (username or org name) */
+  name: string;
+
+  /** Owner type */
+  type: 'user' | 'org';
+
+  /** Last used timestamp */
+  lastUsed: string;
+}
+
+/**
+ * Recent repository info (server-scoped)
+ */
+export interface RecentRepo {
+  /** Repository owner */
+  owner: string;
+
+  /** Repository name */
+  repo: string;
+
+  /** Last used timestamp */
+  lastUsed: string;
+}
+
+/**
  * Gitea server configuration
  */
 export interface GiteaServer {
@@ -62,6 +90,12 @@ export interface GiteaServer {
 
   /** Associated tokens */
   tokens: TokenInfo[];
+
+  /** Recently used owners (users/orgs) for this server */
+  recentOwners?: RecentOwner[];
+
+  /** Recently used repositories for this server */
+  recentRepos?: RecentRepo[];
 
   /** Additional metadata */
   metadata?: {

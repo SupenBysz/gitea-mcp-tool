@@ -18,6 +18,8 @@ import {
   GiteaServer,
   TokenInfo,
   RecentProject,
+  RecentOwner,
+  RecentRepo,
   GlobalSettings,
 } from './types';
 
@@ -415,6 +417,134 @@ export class GlobalConfigManager {
   clearRecentProjects(): void {
     this.config.recentProjects = [];
     this.save();
+  }
+
+  // ==================== Recent Owners ====================
+
+  /**
+   * Add or update a recent owner for a server
+   */
+  addRecentOwner(serverId: string, owner: Omit<RecentOwner, 'lastUsed'>): void {
+    const server = this.getServer(serverId);
+    if (!server) return;
+
+    if (!server.recentOwners) {
+      server.recentOwners = [];
+    }
+
+    const existing = server.recentOwners.findIndex(o => o.name === owner.name);
+    const recentOwner: RecentOwner = {
+      ...owner,
+      lastUsed: new Date().toISOString(),
+    };
+
+    if (existing !== -1) {
+      server.recentOwners[existing] = recentOwner;
+    } else {
+      server.recentOwners.push(recentOwner);
+    }
+
+    // Sort by last used (most recent first)
+    server.recentOwners.sort(
+      (a, b) => new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime()
+    );
+
+    // Keep only the last 20 owners
+    server.recentOwners = server.recentOwners.slice(0, 20);
+
+    this.save();
+  }
+
+  /**
+   * Get recent owners for a server
+   */
+  getRecentOwners(serverId: string, limit: number = 10): RecentOwner[] {
+    const server = this.getServer(serverId);
+    return server?.recentOwners?.slice(0, limit) || [];
+  }
+
+  /**
+   * Remove a recent owner from a server
+   */
+  removeRecentOwner(serverId: string, ownerName: string): boolean {
+    const server = this.getServer(serverId);
+    if (!server?.recentOwners) return false;
+
+    const index = server.recentOwners.findIndex(o => o.name === ownerName);
+    if (index === -1) return false;
+
+    server.recentOwners.splice(index, 1);
+    this.save();
+    return true;
+  }
+
+  // ==================== Recent Repos ====================
+
+  /**
+   * Add or update a recent repo for a server
+   */
+  addRecentRepo(serverId: string, repo: Omit<RecentRepo, 'lastUsed'>): void {
+    const server = this.getServer(serverId);
+    if (!server) return;
+
+    if (!server.recentRepos) {
+      server.recentRepos = [];
+    }
+
+    const existing = server.recentRepos.findIndex(
+      r => r.owner === repo.owner && r.repo === repo.repo
+    );
+    const recentRepo: RecentRepo = {
+      ...repo,
+      lastUsed: new Date().toISOString(),
+    };
+
+    if (existing !== -1) {
+      server.recentRepos[existing] = recentRepo;
+    } else {
+      server.recentRepos.push(recentRepo);
+    }
+
+    // Sort by last used (most recent first)
+    server.recentRepos.sort(
+      (a, b) => new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime()
+    );
+
+    // Keep only the last 50 repos
+    server.recentRepos = server.recentRepos.slice(0, 50);
+
+    this.save();
+  }
+
+  /**
+   * Get recent repos for a server, optionally filtered by owner
+   */
+  getRecentRepos(serverId: string, owner?: string, limit: number = 10): RecentRepo[] {
+    const server = this.getServer(serverId);
+    if (!server?.recentRepos) return [];
+
+    let repos = server.recentRepos;
+    if (owner) {
+      repos = repos.filter(r => r.owner === owner);
+    }
+    return repos.slice(0, limit);
+  }
+
+  /**
+   * Remove a recent repo from a server
+   */
+  removeRecentRepo(serverId: string, owner: string, repo: string): boolean {
+    const server = this.getServer(serverId);
+    if (!server?.recentRepos) return false;
+
+    const index = server.recentRepos.findIndex(
+      r => r.owner === owner && r.repo === repo
+    );
+    if (index === -1) return false;
+
+    server.recentRepos.splice(index, 1);
+    this.save();
+    return true;
   }
 }
 

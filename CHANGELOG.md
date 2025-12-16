@@ -7,6 +7,24 @@
 
 ## [Unreleased]
 
+### 🎉 新增
+
+#### config init 交互式向导增强 (#111)
+- **feat(config)**: 支持历史记录选择和级联过滤
+  - 步骤1: 选择服务器 URL（从历史记录或 Git 检测）
+  - 步骤2: 选择 Token（按服务器过滤）
+  - 步骤3: 选择 Owner（API 发现用户/组织 + 历史记录）
+  - 步骤4: 选择仓库（当前目录名选项 + 历史记录）
+- 新增 `RecentOwner` 和 `RecentRepo` 数据结构
+- 新增 GlobalConfigManager 方法：`addRecentOwner`、`getRecentOwners`、`addRecentRepo`、`getRecentRepos`
+- 自动检查仓库是否存在，不存在时询问是否创建
+- 所有选择自动保存到全局配置供下次使用
+
+### 📁 文件变更
+- `src/config/types.ts` - 新增 RecentOwner、RecentRepo 接口
+- `src/config/global.ts` - 新增历史记录管理方法
+- `src/cli/commands/config.ts` - 重构 config init 交互流程
+
 ---
 
 ## [2.0.0-beta.1] - 2025-12-16
