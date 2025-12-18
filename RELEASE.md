@@ -79,7 +79,7 @@ git push --tags
 
 ### 5. 创建 GitHub/Gitea 发布
 
-1. 访问：https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/releases/new
+1. 访问：https://github.com/SupenBysz/gitea-mcp-tool/releases/new
 
 2. 选择标签（例如 `v0.8.2`）
 
@@ -106,7 +106,7 @@ git push --tags
 
 ### 快速安装（推荐）
 ```bash
-curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SupenBysz/gitea-mcp-tool/main/install-quick.sh | bash
 ```
 
 ### 下载安装包
@@ -130,7 +130,7 @@ shasum -a 256 gitea-mcp-v0.8.2.tar.gz
 ```
 
 ## 文档
-- [README](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp)
+- [README](https://github.com/SupenBysz/gitea-mcp-tool)
 - [初始化指南](./docs/initialization.md)
 - [API 文档](./docs/)
 
@@ -140,7 +140,7 @@ shasum -a 256 gitea-mcp-v0.8.2.tar.gz
 
 ---
 
-**完整变更日志**：https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/compare/v0.8.1...v0.8.2
+**完整变更日志**：https://github.com/SupenBysz/gitea-mcp-tool/compare/v0.8.1...v0.8.2
 ````
 
 5. **附加文件**：上传 `gitea-mcp-v0.8.2.tar.gz`
@@ -153,7 +153,7 @@ shasum -a 256 gitea-mcp-v0.8.2.tar.gz
 
 ```bash
 # 在新目录中测试
-curl -fsSL https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/raw/branch/main/install-quick.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SupenBysz/gitea-mcp-tool/main/install-quick.sh | bash
 ```
 
 验证：

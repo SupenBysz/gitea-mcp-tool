@@ -493,6 +493,6 @@
 
 ## 链接
 
-- [Git 仓库](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp)
-- [问题追踪](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/issues)
-- [Pull Requests](https://gitea.ktyun.cc/Kysion/entai-gitea-mcp/pulls)
+- [Git 仓库](https://github.com/SupenBysz/gitea-mcp-tool)
+- [问题追踪](https://github.com/SupenBysz/gitea-mcp-tool/issues)
+- [Pull Requests](https://github.com/SupenBysz/gitea-mcp-tool/pulls)

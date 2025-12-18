@@ -164,7 +164,7 @@ npm view gitea-mcp-tool
 
 ## 相关链接
 
-- **Gitea 仓库**: https://gitea.ktyun.cc/Kysion/entai-gitea-mcp
+- **Gitea 仓库**: https://github.com/SupenBysz/gitea-mcp-tool
 - **GitHub 仓库**: https://github.com/SupenBysz/gitea-mcp-tool
 - **npm 包**: https://www.npmjs.com/package/gitea-mcp-tool
 - **GitHub Actions**: https://github.com/SupenBysz/gitea-mcp-tool/actions

@@ -20,6 +20,7 @@ import { Command } from 'commander';
 import { initGlobal, InitGlobalOptions } from './global.js';
 import { initProject, InitProjectOptions } from './project.js';
 import { runInitWizard } from './wizard.js';
+import { runExtraInit, ExtraInitOptions } from './extras.js';
 
 interface InitShortcutOptions {
   global?: boolean;
@@ -36,6 +37,17 @@ interface InitShortcutOptions {
   tokenEnv?: string;
   auto?: boolean;
   force?: boolean;
+  // 可选初始化项
+  withAgentMd?: boolean;
+  withWorkflow?: boolean;
+  withLabels?: boolean;
+  withBoard?: boolean;
+  withCicd?: boolean;
+  withProtection?: boolean;
+  llm?: string;
+  allLlm?: boolean;
+  noLlm?: boolean;
+  all?: boolean;
 }
 
 /**
@@ -62,6 +74,17 @@ export function createInitCommand(): Command {
     .option('--token-env <var>', '[项目] 使用环境变量名')
     .option('--auto', '[项目] 完全自动模式')
     .option('-f, --force', '[项目] 强制覆盖已有配置')
+    // 可选初始化项
+    .option('--with-agent-md', '[可选] 生成 AI 规范文件 (AGENT.md)')
+    .option('--with-workflow', '[可选] 初始化工作流配置')
+    .option('--with-labels', '[可选] 初始化工单标签')
+    .option('--with-board', '[可选] 初始化项目看板')
+    .option('--with-cicd', '[可选] 初始化 CI/CD 配置')
+    .option('--with-protection', '[可选] 初始化分支保护规则')
+    .option('--llm <list>', '[可选] 指定大模型引用文件 (逗号分隔: claude,cursor,deepseek)')
+    .option('--all-llm', '[可选] 生成所有大模型引用文件')
+    .option('--no-llm', '[可选] 不生成大模型引用文件')
+    .option('--all', '[可选] 初始化所有可选项')
     .action(async (options: InitShortcutOptions, cmd: Command) => {
       // 合并父命令选项 (支持 keactl -t xxx -s xxx init -g)
       const parentOpts = cmd.parent?.opts() || {};
@@ -94,6 +117,33 @@ export function createInitCommand(): Command {
           force: mergedOpts.force,
         };
         await initProject(projectOpts);
+
+        // 检查是否有可选初始化项
+        const hasExtraOpts = mergedOpts.withAgentMd || mergedOpts.withWorkflow ||
+          mergedOpts.withLabels || mergedOpts.withBoard || mergedOpts.withCicd ||
+          mergedOpts.withProtection || mergedOpts.all;
+
+        if (hasExtraOpts || !mergedOpts.auto) {
+          const extraOpts: ExtraInitOptions = {
+            withAgentMd: mergedOpts.withAgentMd,
+            withWorkflow: mergedOpts.withWorkflow,
+            withLabels: mergedOpts.withLabels,
+            withBoard: mergedOpts.withBoard,
+            withCicd: mergedOpts.withCicd,
+            withProtection: mergedOpts.withProtection,
+            llm: mergedOpts.llm ? mergedOpts.llm.split(',') : undefined,
+            allLlm: mergedOpts.allLlm,
+            noLlm: mergedOpts.noLlm,
+            all: mergedOpts.all,
+            auto: mergedOpts.auto,
+            force: mergedOpts.force,
+            owner: mergedOpts.owner,
+            repo: mergedOpts.repo,
+            token: mergedOpts.token,
+            server: mergedOpts.server,
+          };
+          await runExtraInit(extraOpts);
+        }
         return;
       }
 
